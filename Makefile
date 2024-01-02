@@ -7,7 +7,7 @@
 ENABLE_UART                   ?= 1
 ENABLE_UART_DEBUG			  ?= 1
 ENABLE_AIRCOPY                ?= 0
-ENABLE_FMRADIO                ?= 0
+ENABLE_FMRADIO                ?= 1
 ENABLE_NOAA                   ?= 0
 ENABLE_VOICE                  ?= 0
 ENABLE_VOX                    ?= 0
