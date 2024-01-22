@@ -29,6 +29,7 @@
 	#include "app/fm.h"
 #endif
 #include "app/scanner.h"
+#include "app/messenger.h"
 #include "audio.h"
 #include "bsp/dp32g030/gpio.h"
 #ifdef ENABLE_FMRADIO
@@ -64,6 +65,10 @@ void (*action_opt_table[])(void) = {
 	[ACTION_OPT_A_B] = &COMMON_SwitchVFOs,
 	[ACTION_OPT_VFO_MR] = &COMMON_SwitchVFOMode,
 	[ACTION_OPT_SWITCH_DEMODUL] = &ACTION_SwitchDemodul,
+
+#ifdef ENABLE_MESSENGER
+    [ACTION_OPT_MSG] = &ACTION_Messenger,
+#endif
 
 #ifdef ENABLE_FLASHLIGHT
 	[ACTION_OPT_FLASHLIGHT] = &ACTION_FlashLight,
@@ -104,6 +109,13 @@ void (*action_opt_table[])(void) = {
 };
 
 //static_assert(ARRAY_SIZE(action_opt_table) == ACTION_OPT_LEN);
+#ifdef ENABLE_MESSENGER
+void ACTION_Messenger(void)
+{
+    hasNewMessage = 0;
+    gRequestDisplayScreen = DISPLAY_MSG;
+}
+#endif
 
 void ACTION_Power(void)
 {

@@ -22,6 +22,11 @@
 void ACTION_Power(void);
 void ACTION_Monitor(void);
 void ACTION_Scan(bool bRestart);
+
+#ifdef ENABLE_MESSENGER
+    void ACTION_Messenger(void);
+#endif
+
 #ifdef ENABLE_VOX
 	void ACTION_Vox(void);
 #endif

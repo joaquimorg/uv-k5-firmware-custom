@@ -16,9 +16,14 @@ typedef enum KeyboardType {
 } KeyboardType;
 
 enum { 
-	TX_MSG_LENGTH = 30,
+	TX_MSG_LENGTH = 29,
 	MSG_HEADER_LENGTH = 20,
-	MAX_RX_MSG_LENGTH = TX_MSG_LENGTH + 2
+	MAX_RX_MSG_LENGTH = TX_MSG_LENGTH + 3
+};
+
+enum { 
+	MAX_MSG_STORED = 24,
+    DISPLAY_MSG_COUNT = 6
 };
 //const uint8_t TX_MSG_LENGTH = 30;
 //const uint8_t MAX_RX_MSG_LENGTH = TX_MSG_LENGTH + 2;
@@ -26,9 +31,13 @@ enum {
 extern KeyboardType keyboardType;
 extern uint16_t gErrorsDuringMSG;
 extern char cMessage[TX_MSG_LENGTH];
-extern char rxMessage[4][MAX_RX_MSG_LENGTH + 2];
+extern char rxMessage[MAX_MSG_STORED][MAX_RX_MSG_LENGTH + 3];
 extern uint8_t hasNewMessage;
 extern uint8_t keyTickCounter;
+extern uint8_t currDisplayMsgID;
+extern uint8_t totalMsgsReceived;
+extern bool canScrollUp;
+extern bool canScrollDown;
 
 void MSG_EnableRX(const bool enable);
 void MSG_StorePacket(const uint16_t interrupt_bits);

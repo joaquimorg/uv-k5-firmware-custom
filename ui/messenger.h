@@ -4,6 +4,7 @@
 
 #ifdef ENABLE_MESSENGER
 	void UI_DisplayMSG(void);
+
 #endif
 
 #endif

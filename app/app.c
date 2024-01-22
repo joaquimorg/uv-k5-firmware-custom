@@ -1290,23 +1290,29 @@ void APP_TimeSlice500ms(void)
 {
 	gNextTimeslice_500ms = false;
 	bool exit_menu = false;
-#ifdef ENABLE_MESSENGER_NOTIFICATION
+#ifdef ENABLE_MESSENGER_NOTIFICATION   // Messenger Incoming Ring Settings
 	if (gPlayMSGRing) {
-		gPlayMSGRingCount = 5;
+		gPlayMSGRingCount = 2;
 		gPlayMSGRing = false;
 	}
 	if (gPlayMSGRingCount > 0) {
-		AUDIO_PlayBeep(BEEP_880HZ_200MS);
-		gPlayMSGRingCount--;
+        AUDIO_PlayBeep(BEEP_440HZ_40MS_OPTIONAL);
+        AUDIO_PlayBeep(BEEP_880HZ_40MS_OPTIONAL);
+        gPlayMSGRingCount--;
 	}
+
 #endif
 
 #ifdef ENABLE_MESSENGER
 	if (hasNewMessage > 0) {
 		if (hasNewMessage == 1) {
 			hasNewMessage = 2;
+            BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
+            BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, false);
 		} else if (hasNewMessage == 2) {
 			hasNewMessage = 1;
+            BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
+            BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);
 		}
 	}
 #endif
