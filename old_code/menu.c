@@ -756,7 +756,7 @@ void UI_DisplayMenu(void) {
     }
 
 	UI_displayUpdate();
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 }
 #else
 

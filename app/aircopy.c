@@ -81,7 +81,7 @@ void AIRCOPY_StorePacket(void)
 	}
 
 	gFSKWriteIndex = 0;
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 	uint16_t Status = BK4819_ReadRegister(BK4819_REG_0B);
 	BK4819_PrepareFSKReceive();
 

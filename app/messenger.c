@@ -77,7 +77,7 @@ void MSG_FSKSendData() {
 
 	// set the FM deviation level
 	const uint16_t dev_val = BK4819_ReadRegister(BK4819_REG_40);
-	//UART_printf("\n BANDWIDTH : 0x%.4X", dev_val);
+	//LogUartf("\n BANDWIDTH : 0x%.4X", dev_val);
 	{
 		uint16_t deviation = 850;
 		switch (gEeprom.VfoInfo[gEeprom.TX_VFO].CHANNEL_BANDWIDTH)
@@ -620,7 +620,7 @@ void MSG_StorePacket(const uint16_t interrupt_bits) {
 	const bool rx_fifo_almost_full = (interrupt_bits & BK4819_REG_02_FSK_FIFO_ALMOST_FULL) ? true : false;
 	const bool rx_finished         = (interrupt_bits & BK4819_REG_02_FSK_RX_FINISHED) ? true : false;
 
-	//UART_printf("\nMSG : S%i, F%i, E%i | %i", rx_sync, rx_fifo_almost_full, rx_finished, interrupt_bits);
+	//LogUartf("\nMSG : S%i, F%i, E%i | %i", rx_sync, rx_fifo_almost_full, rx_finished, interrupt_bits);
 
 	if (rx_sync) {
 		gFSKWriteIndex = 0;
@@ -661,7 +661,7 @@ void MSG_StorePacket(const uint16_t interrupt_bits) {
 					UART_printf("SVC<RCPT\r\n");
 					rxMessage[3][strlen(rxMessage[3])] = '+';
 					gUpdateStatus = true;
-					gUpdateDisplay = true;
+					//gUpdateDisplay = true;
 				}
 			#endif
 			} else {
@@ -681,13 +681,13 @@ void MSG_StorePacket(const uint16_t interrupt_bits) {
 				if ( gScreenToDisplay != DISPLAY_MSG ) {
 					hasNewMessage = 1;
 					gUpdateStatus = true;
-					gUpdateDisplay = true;
+					//gUpdateDisplay = true;
 			#ifdef ENABLE_MESSENGER_NOTIFICATION
 					gPlayMSGRing = true;
 			#endif
 				}
 				else {
-					gUpdateDisplay = true;
+					//gUpdateDisplay = true;
 				}
 			}
 		}

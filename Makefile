@@ -58,7 +58,10 @@ ENABLE_MESSENGER_UART					?= 0
 
 #### Display and Keypad remote Control ####
 # https://home.joaquim.org/display-explorer/
-ENABLE_REMOTE_CONTROL			  		?= 1
+ENABLE_REMOTE_CONTROL			  		?= 0
+
+
+ENABLE_UART_DEBUG			  			?= 1
 
 #------------------------------------------------------------------------------
 AUTHOR_STRING ?= JOAQUIM
@@ -267,6 +270,10 @@ IPATH += \
 
 CFLAGS += -DPRINTF_INCLUDE_CONFIG_H
 CFLAGS += -DAUTHOR_STRING=\"$(AUTHOR_STRING)\" -DVERSION_STRING=\"$(VERSION_STRING)\"
+
+ifeq ($(ENABLE_UART_DEBUG),1)
+	CFLAGS += -DENABLE_UART_DEBUG
+endif
 
 ifeq ($(ENABLE_REMOTE_CONTROL),1)
 	CFLAGS += -DENABLE_REMOTE_CONTROL

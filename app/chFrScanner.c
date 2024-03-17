@@ -151,7 +151,7 @@ void CHFRSCANNER_Stop(void)
 	}
 
 	RADIO_SetupRegisters(true);
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 }
 
 static void NextFreqChannel(void)
@@ -258,7 +258,7 @@ static void NextMemChannel(void)
 		RADIO_ConfigureChannel(gEeprom.RX_VFO, VFO_CONFIGURE_RELOAD);
 		RADIO_SetupRegisters(true);
 
-		gUpdateDisplay = true;
+		//gUpdateDisplay = true;
 	}
 
 #ifdef ENABLE_FASTER_CHANNEL_SCAN

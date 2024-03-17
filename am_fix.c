@@ -274,7 +274,7 @@ void AM_fix_10ms(const unsigned vfo)
 	if (counter > 0) {
 		if (++counter >= display_update_rate) {	// trigger a display update
 			counter        = 0;
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 		}
 	}
 #endif
@@ -302,7 +302,7 @@ void AM_fix_10ms(const unsigned vfo)
 
 			if (counter == 0) {
 				counter        = 1;
-				gUpdateDisplay = true; // trigger a display update
+				//gUpdateDisplay = true; // trigger a display update
 			}
 		}
 	}
@@ -370,7 +370,7 @@ void AM_fix_10ms(const unsigned vfo)
 #ifdef ENABLE_AM_FIX_SHOW_DATA
 	if (counter == 0) {
 		counter        = 1;
-		gUpdateDisplay = true;
+		//gUpdateDisplay = true;
 	}
 #endif
 }

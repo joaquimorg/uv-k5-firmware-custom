@@ -488,10 +488,10 @@ void SCANNER_TimeSlice500ms(void)
 			gUpdateStatus = true;
 		}
 #endif
-		gUpdateDisplay = true;
+		//gUpdateDisplay = true;
 	}
 	else if(gCssBackgroundScan) {
-		gUpdateDisplay = true;
+		//gUpdateDisplay = true;
 	}
 }
 

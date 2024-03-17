@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>     // NULL
+#include "debugging.h"
 
 #include "ARMCM0.h"
 #include "FreeRTOS.h"
@@ -44,9 +45,9 @@ void vAssertCalled( unsigned long ulLine, const char * const pcFileName ) {
 
     taskENTER_CRITICAL();
     {
-        #ifdef ENABLE_UART
-			UART_printf("[ASSERT ERROR] %s %s: line=%lu\r\n", __func__, pcFileName, ulLine);
-		#endif
+        
+		LogUartf("[ASSERT ERROR] %s %s: line=%lu\r\n", __func__, pcFileName, ulLine);
+		
     }
     taskEXIT_CRITICAL();
 }
@@ -56,9 +57,9 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName ) {
 
 	taskENTER_CRITICAL();
     {
-        #ifdef ENABLE_UART
+        #ifdef ENABLE_UART_DEBUG
 			unsigned int stackWm = uxTaskGetStackHighWaterMark(pxTask);
-			UART_printf("[STACK ERROR] %s task=%s : %i\r\n", __func__, pcTaskName, stackWm);
+			LogUartf("[STACK ERROR] %s task=%s : %i\r\n", __func__, pcTaskName, stackWm);
 		#endif
     }
     taskEXIT_CRITICAL();

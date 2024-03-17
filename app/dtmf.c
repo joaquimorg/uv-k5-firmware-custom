@@ -345,7 +345,7 @@ void DTMF_HandleRequest(void)
 			{
 				gDTMF_State = DTMF_STATE_TX_SUCC;
 				DTMF_clear_RX();
-				gUpdateDisplay = true;
+				//gUpdateDisplay = true;
 				return;
 			}
 		}
@@ -364,7 +364,7 @@ void DTMF_HandleRequest(void)
 		{	// we got a response
 			gDTMF_State    = DTMF_STATE_CALL_OUT_RSP;
 			DTMF_clear_RX();
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 		}
 	}
 
@@ -394,7 +394,7 @@ void DTMF_HandleRequest(void)
 
 			DTMF_clear_RX();
 
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 
 			switch (gEeprom.DTMF_DECODE_RESPONSE)
 			{

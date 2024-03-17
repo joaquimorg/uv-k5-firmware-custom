@@ -354,6 +354,10 @@ bool settingsShowSubMenu;
 bool settingsSubMenuActive;
 bool needToSave = false;
 
+uint8_t getMenuID(void) {
+	return MenuList[settingsCurrentMenu].menu_id;
+}
+
 void SettingsMenu_showList() {
     uint8_t yPos = 15;
 	const uint8_t offset = Clamp(settingsCurrentMenu - 2, 0, MENU_VFO_SIZE - 5);
@@ -412,11 +416,11 @@ void SettingsMenu_showSubListValue(void) {
     for (uint8_t i = 0; i < listCount; i++) {
 		bool isFill = settingsCurrentSubMenu == i + offset ? true : false;
 
-		if ( (i + offset == 0) && (MenuList[settingsCurrentMenu].menu_id != MENU_STEP) ) {
+		if ( (i + offset == 0) && (getMenuID() != MENU_STEP) ) {
 			UI_printf(&font_10, TEXT_ALIGN_CENTER, SUB_MENU_X, 125, yPos, !isFill, isFill, "OFF" );
 		} else {
 
-			switch (MenuList[settingsCurrentMenu].menu_id)
+			switch (getMenuID())
 			{
 				case MENU_STEP: {
 					uint16_t step = gStepFrequencyTable[FREQUENCY_GetStepIdxFromSortedIdx(i + offset)];
@@ -475,12 +479,12 @@ void SettingsMenu_loadSubList() {
 	}
     UI_drawRoundRect(SUB_MENU_X - 1, 12, 59, 46, 4, true);
 
-	SettingsMenu_GetLimits(MenuList[settingsCurrentMenu].menu_id, &settingsSubmenuMin, &settingsSubmenuSize);
+	SettingsMenu_GetLimits(getMenuID(), &settingsSubmenuMin, &settingsSubmenuSize);
 	
 	bool showNumber = false;
 	bool showValue = false;
 
-	switch (MenuList[settingsCurrentMenu].menu_id)
+	switch (getMenuID())
     {
 
 		case MENU_ABR:
@@ -663,7 +667,7 @@ void SettingsMenu_loadSubListValues() {
 
 	settingsSubmenuMin = 0;
 
-	switch (MenuList[settingsCurrentMenu].menu_id)
+	switch (getMenuID())
 	{
 		case MENU_SQL:
 			settingsCurrentSubMenu = gEeprom.SQUELCH_LEVEL;
@@ -692,11 +696,11 @@ void SettingsMenu_loadSubListValues() {
 				gScanUseCssResult = false;
 				type = gScanCssResultType;
 				code = gScanCssResultCode;
-			}
-			if((menuid==MENU_R_CTCS) ^ (type==CODE_TYPE_CONTINUOUS_TONE)) { //not the same type
+			}*/
+			if((getMenuID() == MENU_R_CTCS) ^ (type==CODE_TYPE_CONTINUOUS_TONE)) { //not the same type
 				settingsCurrentSubMenu = 0;
 				break;
-			}*/
+			}
 
 			switch (type) {
 				case CODE_TYPE_CONTINUOUS_TONE:
@@ -1234,7 +1238,7 @@ void compareValuesInt(uint32_t value1) {
 void MenuVFO_saveSetting(void) {
 	FREQ_Config_t *pConfig = &gTxVfo->freq_config_RX;
 
-	switch (MenuList[settingsCurrentMenu].menu_id)
+	switch (getMenuID())
 	{
 		default:
 			return;

@@ -46,7 +46,7 @@ void VFO_Up_Down(uint8_t Direction) {
         //gRequestSaveChannel = 1;
         main_push_message(RADIO_SAVE_CHANNEL);
         main_push_message(RADIO_VFO_CONFIGURE);        
-        //UART_printf("freq up/down. %u \r\n",  gTxVfo->freq_config_RX.Frequency);
+        //LogUartf("freq up/down. %u \r\n",  gTxVfo->freq_config_RX.Frequency);
         return;
     }
 

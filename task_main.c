@@ -18,6 +18,8 @@
 #include <string.h>
 #include <stdio.h>     // NULL
 
+#include "debugging.h"
+
 #ifdef ENABLE_MESSENGER
 	#include "app/messenger.h"
 #endif
@@ -148,7 +150,7 @@ void init_radio(void) {
 
 
 void HandlerGPIOB1(void) {
-	UART_printf("HandlerGPIOB IRQ %b \r\n", GPIO_CheckBit(&GPIOB->DATA, GPIOB_PIN_SWD_CLK));
+	LogUartf("HandlerGPIOB IRQ %b \r\n", GPIO_CheckBit(&GPIOB->DATA, GPIOB_PIN_SWD_CLK));
 }
 
 void hw_timer_callback(TimerHandle_t xTimer) {
@@ -164,8 +166,7 @@ void hw_timer_callback(TimerHandle_t xTimer) {
 	if (GPIO_CheckBit(&GPIOB->DATA, GPIOB_PIN_SWD_CLK)) {
 		CheckRadioInterrupts();
 	}
-	SystickHandlerA();
-	APP_TimeSlice10ms();
+	//SystickHandlerA();
 
     xTimerStart(xTimer, 0);
 }
@@ -175,10 +176,10 @@ void hw_timer_callback(TimerHandle_t xTimer) {
 void hw_timer_callback_500(TimerHandle_t xTimer) {
 
 	//BK4819_ToggleGpioOut(2, flippp);
-	//UART_printf("GPIOB->DATA %b \r\n", GPIO_CheckBit(&GPIOB->DATA, GPIOB_PIN_SWD_CLK));
+	//LogUartf("GPIOB->DATA %b \r\n", GPIO_CheckBit(&GPIOB->DATA, GPIOB_PIN_SWD_CLK));
 	//flippp = !flippp;
 
-	//UART_printf("500ms \r\n");
+	//LogUartf("500ms \r\n");
 
 	//APP_TimeSlice500ms();
     xTimerStart(xTimer, 0);
@@ -210,13 +211,15 @@ void main_task(void* arg) {
 
 	//xTimerStart(hwStatusTimer500, 0);
 	xTimerStart(hwStatusTimer, 0);
-	//UART_printf("Ready... \r\n");
+	
+	LogUartf("Main Task Ready... \r\n");
+
 	while (true) {
 		MAIN_Messages_t msg;
-    	if (xQueueReceive(mainTasksMsgQueue, &msg, 20)) {
+    	if (xQueueReceive(mainTasksMsgQueue, &msg, 10)) {
 			switch(msg.message) {
 				case MAIN_MSG_INIT:
-					//UART_printf("MSG INIT \r\n");
+					//LogUartf("MSG INIT \r\n");
 					break;
 				case MAIN_MSG_IDLE:
 					break;
@@ -251,15 +254,38 @@ void main_task(void* arg) {
 
 				case RADIO_SQUELCH_LOST:
 					gCurrentFunction = FUNCTION_INCOMING;
-                    app_push_message(APP_MSG_RX);
-					APP_Function(gCurrentFunction);
+					//APP_Function(gCurrentFunction);
+					if (gCurrentCodeType == CODE_TYPE_OFF) {
+						APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
+					}
+					app_push_message(APP_MSG_RX);
+					//LogUartf("SQUELCH_LOST\r\n");
                     break;
 
 				case RADIO_SQUELCH_FOUND:
 					gCurrentFunction = FUNCTION_RECEIVE;
-                    app_push_message(APP_MSG_IDLE);
 					APP_Function(gCurrentFunction);
+					app_push_message(APP_MSG_IDLE);
+					//LogUartf("SQUELCH_FOUND\r\n");
                     break;
+
+				case RADIO_CTCSS_LOST:
+					//LogUartf("CTCSS_LOST (%b) CT = (%i)\r\n", g_CTCSS_Lost, gCurrentCodeType);
+					APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
+					break;
+
+				case RADIO_CTCSS_FOUND:
+					//LogUartf("CTCSS_FOUND (%b) CT = (%i)\r\n", g_CTCSS_Lost, gCurrentCodeType);
+					break;
+
+				case RADIO_CDCSS_LOST:
+					//LogUartf("CDCSS_LOST (%b) CD = (%i)\r\n", g_CDCSS_Lost, gCurrentCodeType);
+					APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
+					break;
+
+				case RADIO_CDCSS_FOUND:
+					//LogUartf("CDCSS_FOUND (%b) CD = (%i)\r\n", g_CDCSS_Lost, gCurrentCodeType);
+					break;
 
 				case RADIO_VFO_UP:
 					VFO_Up_Down(1);

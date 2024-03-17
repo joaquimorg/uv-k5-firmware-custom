@@ -38,4 +38,6 @@ void CheckRadioInterrupts(void);
 
 void APP_Function(FUNCTION_Type_t function);
 
+void HandleFunction(void);
+
 #endif

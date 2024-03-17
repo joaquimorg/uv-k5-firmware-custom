@@ -18,6 +18,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "debugging.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -118,9 +120,9 @@ static_assert(ARRAY_SIZE(ProcessKeysFunctions) == DISPLAY_N_ELEM);
 
 static void CheckForIncoming(void)
 {
-	if (!g_SquelchLost)
+	/*if (!g_SquelchLost)
 		return;          // squelch is closed
-
+*/
 	// squelch is open
 
 	if (gScanStateDir == SCAN_OFF)
@@ -183,19 +185,19 @@ static void CheckForIncoming(void)
 
 static void HandleIncoming(void)
 {
-	if (!g_SquelchLost) {	// squelch is closed
+	/*if (!g_SquelchLost) {	// squelch is closed
 #ifdef ENABLE_DTMF_CALLING
 		if (gDTMF_RX_index > 0)
 			DTMF_clear_RX();
 #endif
 		if (gCurrentFunction != FUNCTION_FOREGROUND) {
 			FUNCTION_Select(FUNCTION_FOREGROUND);
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 		}
 		return;
-	}
+	}*/
 
-	bool bFlag = (gScanStateDir == SCAN_OFF && gCurrentCodeType == CODE_TYPE_OFF);
+	/*bool bFlag = (gScanStateDir == SCAN_OFF && gCurrentCodeType == CODE_TYPE_OFF);
 
 	if (g_CTCSS_Lost && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE) {
 		bFlag       = true;
@@ -210,7 +212,8 @@ static void HandleIncoming(void)
 	else if (!bFlag)
 		return;
 
-#ifdef ENABLE_DTMF_CALLING
+	LogUartf("bFlag (%b)\r\n", bFlag);*/
+/*#ifdef ENABLE_DTMF_CALLING
 	if (gScanStateDir == SCAN_OFF && (gRxVfo->DTMF_DECODING_ENABLE || gSetting_KILLED)) {
 
 		// DTMF DCD is enabled
@@ -228,11 +231,11 @@ static void HandleIncoming(void)
 			gDualWatchActive = false;
 			gUpdateStatus    = true;
 
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 			return;
 		}
 	}
-#endif
+#endif*/
 
 	APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
 }
@@ -251,14 +254,14 @@ static void HandleReceive(void)
 		goto Skip;
 	}
 
-	if (gScanStateDir != SCAN_OFF && IS_FREQ_CHANNEL(gNextMrChannel))
+	/*if (gScanStateDir != SCAN_OFF && IS_FREQ_CHANNEL(gNextMrChannel))
 	{ // we are scanning in the frequency mode
 		if (g_SquelchLost)
 			return;
 
 		Mode = END_OF_RX_MODE_END;
 		goto Skip;
-	}
+	}*/
 
 	if (gCurrentCodeType != CODE_TYPE_OFF
 		&& ((gFoundCTCSS && gFoundCTCSSCountdown_10ms == 0)
@@ -352,7 +355,7 @@ Skip:
 		case END_OF_RX_MODE_END:
 			RADIO_SetupRegisters(true);
 
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 
 			if (gScanStateDir != SCAN_OFF)
 			{
@@ -407,7 +410,7 @@ static void (*HandleFunction_fn_table[])(void) = {
 
 static_assert(ARRAY_SIZE(HandleFunction_fn_table) == FUNCTION_N_ELEM);
 
-static void HandleFunction(void)
+void HandleFunction(void)
 {
 	HandleFunction_fn_table[gCurrentFunction]();
 }
@@ -479,7 +482,7 @@ void APP_StartListening(FUNCTION_Type_t function)
 			GUI_SelectNextDisplay(DISPLAY_MAIN);
 	}
 	else
-		gUpdateDisplay = true;
+		//gUpdateDisplay = true;
 
 	gUpdateStatus = true;
 }
@@ -520,10 +523,10 @@ static void DualwatchAlternate(void)
 
 void CheckRadioInterrupts(void)
 {
-	if (SCANNER_IsScanning())
-		return;
+	/*if (SCANNER_IsScanning())
+		return;*/
 
-	//UART_printf("BK4819_REG_0C %b \r\n", BK4819_ReadRegister(BK4819_REG_0C));
+	//LogUartf("BK4819_REG_0C %b \r\n", BK4819_ReadRegister(BK4819_REG_0C));
 
 	while (BK4819_ReadRegister(BK4819_REG_0C) & 1u) { // BK chip interrupt request
 		// clear interrupts
@@ -554,7 +557,7 @@ void CheckRadioInterrupts(void)
 
 		interrupts.__raw = BK4819_ReadRegister(BK4819_REG_02);
 
-		//UART_printf("interrupts %b \r\n", interrupts);
+		//LogUartf("interrupts %0.16b \r\n", interrupts);
 
 		// 0 = no phase shift
 		// 1 = 120deg phase shift
@@ -605,16 +608,23 @@ void CheckRadioInterrupts(void)
 		if (interrupts.cdcssLost) {
 			g_CDCSS_Lost = true;
 			gCDCSSCodeType = BK4819_GetCDCSSCodeType();
+			main_push_message(RADIO_CDCSS_LOST);
 		}
 
-		if (interrupts.cdcssFound)
+		if (interrupts.cdcssFound) {
 			g_CDCSS_Lost = false;
+			main_push_message(RADIO_CDCSS_FOUND);
+		}
 
-		if (interrupts.ctcssLost)
+		if (interrupts.ctcssLost) {
 			g_CTCSS_Lost = true;
+			main_push_message(RADIO_CTCSS_LOST);
+		}
 
-		if (interrupts.ctcssFound)
+		if (interrupts.ctcssFound) {
 			g_CTCSS_Lost = false;
+			main_push_message(RADIO_CTCSS_FOUND);
+		}
 
 #ifdef ENABLE_VOX
 		if (interrupts.voxLost) {
@@ -645,16 +655,16 @@ void CheckRadioInterrupts(void)
 #endif
 
 		if (interrupts.sqlLost) {
-			g_SquelchLost = true;
+			//g_SquelchLost = true;
 			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
-			//UART_printf("sqlLost \r\n");
+			//LogUartf("sqlLost \r\n");
 			main_push_message(RADIO_SQUELCH_LOST);
 		}
 
 		if (interrupts.sqlFound) {
-			g_SquelchLost = false;
+			//g_SquelchLost = false;
 			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
-			//UART_printf("sqlFound \r\n");
+			//LogUartf("sqlFound \r\n");
 			main_push_message(RADIO_SQUELCH_FOUND);
 		}
 
@@ -734,7 +744,7 @@ static void HandleVox(void)
 		if (gCurrentFunction == FUNCTION_TRANSMIT && !gPttIsPressed && !gVOX_NoiseDetected) {
 			APP_EndTransmission(false);
 			gUpdateStatus = true;
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 		}
 		return;
 	}
@@ -752,7 +762,7 @@ static void HandleVox(void)
 			gDTMF_ReplyState = DTMF_REPLY_NONE;
 #endif
 			RADIO_PrepareTX();
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 		}
 	}
 }
@@ -1147,7 +1157,7 @@ void APP_TimeSlice10ms(void)
 		if (gRTTECountdown > 0 && gRTTECountdown-- == 0) {
 			FUNCTION_Select(FUNCTION_FOREGROUND);
 			gUpdateStatus  = true;
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 		}
 	}
 
@@ -1228,7 +1238,7 @@ void APP_TimeSlice500ms(void)
 
 	if (gKeypadLocked > 0)
 		if (--gKeypadLocked == 0)
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 
 	if (gKeyInputCountdown > 0)
 	{
@@ -1334,7 +1344,7 @@ void APP_TimeSlice500ms(void)
 			gUpdateStatus = true;
 		#ifdef ENABLE_SHOW_CHARGE_LEVEL
 			if (gChargingWithTypeC)
-				gUpdateDisplay = true;
+				//gUpdateDisplay = true;
 		#endif
 	}
 
@@ -1446,7 +1456,7 @@ void APP_TimeSlice500ms(void)
 
 	if (gDTMF_IsTx && gDTMF_TxStopCountdown_500ms > 0 && --gDTMF_TxStopCountdown_500ms == 0) {
 		gDTMF_IsTx     = false;
-		gUpdateDisplay = true;
+		//gUpdateDisplay = true;
 	}
 #endif
 }
@@ -1580,7 +1590,7 @@ static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 		// close low battery popup
 		if(Key == KEY_EXIT && bKeyPressed && lowBatPopup) {
 			gLowBatteryConfirmed = true;
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 			AUDIO_PlayBeep(BEEP_1KHZ_60MS_OPTIONAL);
 			return;
 		}
@@ -1592,7 +1602,7 @@ static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 			if (!bKeyHeld) { // keypad is locked, tell the user
 				AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
 				gKeypadLocked  = 4;      // 2 seconds
-				gUpdateDisplay = true;
+				//gUpdateDisplay = true;
 				return;
 			}
 		}
@@ -1609,7 +1619,7 @@ static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 			// keypad is locked, tell the user
 			AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
 			gKeypadLocked  = 4;          // 2 seconds
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 			return;
 		}
 	}
@@ -1840,7 +1850,7 @@ Skip:
 	GUI_SelectNextDisplay(gRequestDisplayScreen);
 	gRequestDisplayScreen = DISPLAY_INVALID;
 
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 	
 }
 */

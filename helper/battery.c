@@ -118,15 +118,15 @@ void BATTERY_GetReadings(const bool bDisplayBatteryLevel)
 	}
 
 
-	if ((gScreenToDisplay == DISPLAY_MENU) /*&& UI_MENU_GetCurrentMenuId() == MENU_VOL*/)
-		gUpdateDisplay = true;
+//	if ((gScreenToDisplay == DISPLAY_MENU) /*&& UI_MENU_GetCurrentMenuId() == MENU_VOL*/)
+		//gUpdateDisplay = true;
 
 	if (gBatteryCurrent < 501)
 	{
 		if (gChargingWithTypeC)
 		{
 			gUpdateStatus  = true;
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 		}
 
 		gChargingWithTypeC = false;
@@ -136,7 +136,7 @@ void BATTERY_GetReadings(const bool bDisplayBatteryLevel)
 		if (!gChargingWithTypeC)
 		{
 			gUpdateStatus  = true;
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 			BACKLIGHT_TurnOn();
 		}
 
@@ -160,7 +160,7 @@ void BATTERY_GetReadings(const bool bDisplayBatteryLevel)
 		}
 
 		if(!gLowBatteryConfirmed)
-			gUpdateDisplay = true;
+			//gUpdateDisplay = true;
 
 		lowBatteryCountdown = 0;
 	}

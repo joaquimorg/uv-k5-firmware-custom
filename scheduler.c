@@ -42,16 +42,16 @@
 				flag = true;             \
 	} while (0)
 
-static volatile uint32_t gGlobalSysTickCounter;
+//static volatile uint32_t gGlobalSysTickCounter;
 
 //void SystickHandler(void);
 
 // we come here every 10ms
 void SystickHandlerA(void)
 {
-	gGlobalSysTickCounter++;
+	//gGlobalSysTickCounter++;
 	
-	gNextTimeslice = true;
+	/*gNextTimeslice = true;
 
 	if ((gGlobalSysTickCounter % 50) == 0) {
 		gNextTimeslice_500ms = true;
@@ -61,7 +61,7 @@ void SystickHandlerA(void)
 	}
 
 	if ((gGlobalSysTickCounter & 3) == 0)
-		gNextTimeslice40ms = true;
+		gNextTimeslice40ms = true;*/
 
 	DECREMENT(gFoundCDCSSCountdown_10ms);
 

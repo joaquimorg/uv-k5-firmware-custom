@@ -244,7 +244,7 @@ void MainVFO_showVFO(void) {
         if (state != VFO_STATE_NORMAL) {
             if (state < ARRAY_SIZE(VfoStateStr)) {
                 application_showPopup(APP_POPUP_INFO, true);
-                //UART_printf("VFO_STATE %i\r\n", state);
+                //LogUartf("VFO_STATE %i\r\n", state);
             }
         }
     }

@@ -52,7 +52,7 @@ void UI_DisplayLock(void)
 	KEY_Code_t  Key;
 	BEEP_Type_t Beep;
 
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 
 	memset(gInputBox, 10, sizeof(gInputBox));
 
@@ -116,14 +116,14 @@ void UI_DisplayLock(void)
 
 							AUDIO_PlayBeep(Beep);
 
-							gUpdateDisplay = true;
+							//gUpdateDisplay = true;
 							break;
 
 						case KEY_EXIT:
 							if (gInputBoxIndex > 0)
 							{
 								gInputBox[--gInputBoxIndex] = 10;
-								gUpdateDisplay = true;
+								//gUpdateDisplay = true;
 							}
 
 							AUDIO_PlayBeep(BEEP_1KHZ_60MS_OPTIONAL);

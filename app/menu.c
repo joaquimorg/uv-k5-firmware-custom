@@ -105,14 +105,14 @@ void MENU_CssScanFound(void)
 	MENU_ShowCurrentSetting();
 
 	gUpdateStatus = true;
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 }
 
 void MENU_StopCssScan(void)
 {
 	gCssBackgroundScan = false;
 
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 	gUpdateStatus = true;
 }
 
@@ -1340,7 +1340,7 @@ static void MENU_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
 
 	gBeepToPlay           = BEEP_1KHZ_60MS_OPTIONAL;
 	gRequestDisplayScreen = DISPLAY_MENU;
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 
 	if ( settingsSubMenuActive ) {
 		gFlagAcceptSetting = true;
@@ -1530,7 +1530,7 @@ static void MENU_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
 		settingsShowSubMenu = false;
 	}
 	gRequestDisplayScreen = DISPLAY_MENU;
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 
 	/*uint8_t VFO;
 	uint8_t Channel;

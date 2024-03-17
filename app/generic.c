@@ -219,5 +219,5 @@ done:
 			gRequestDisplayScreen = DISPLAY_MAIN;
 	#endif
 	gUpdateStatus  = true;
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 }

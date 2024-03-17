@@ -1,13 +1,13 @@
 #ifndef DEBUGGING_H
 #define DEBUGGING_H
 
-#ifdef ENABLE_UART
+#if defined(ENABLE_UART) || defined(ENABLE_UART_DEBUG)
 
 #include "driver/uart.h"
 #include "driver/bk4819.h"
 #include "string.h"
 #include "external/printf/printf.h"
-#include "am_fix.h"
+//#include "am_fix.h"
 
 static inline void LogUart(const char *const str)
 {
@@ -43,6 +43,14 @@ static inline void LogPrint()
 	LogUart(buf);
 }
 
+#else
+
+#define LogUart(...)
+#define LogUartf(...)
+#define LogRegUart(...)
+#define LogPrint(...)
+
 #endif
+
 
 #endif

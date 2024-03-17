@@ -716,7 +716,7 @@ void RADIO_SetTxParameters(void)
 	}
 
 	// 
-	//UART_printf("freq. %u \r\n", gCurrentVfo->pTX->Frequency);
+	//LogUartf("freq. %u \r\n", gCurrentVfo->pTX->Frequency);
 	BK4819_SetFrequency(gCurrentVfo->pTX->Frequency);
 
 	// TX compressor
@@ -831,7 +831,7 @@ void RADIO_SetVfoState(VfoState_t State)
 	}
 
 	gVFOStateResumeCountdown_500ms = (State == VFO_STATE_NORMAL) ? 0 : vfo_state_resume_countdown_500ms;
-	gUpdateDisplay = true;
+	//gUpdateDisplay = true;
 }
 
 

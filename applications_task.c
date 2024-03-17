@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include "debugging.h"
 
 #include "settings.h"
 #include "applications_task.h"
@@ -80,7 +81,7 @@ static bool autoReturntoMain = true;
 void light_timer_callback(TimerHandle_t xTimer) {
     (void)xTimer;
     main_push_message(MAIN_MSG_BKLIGHT_OFF);
-    UART_printf("MAIN_MSG_BKLIGHT_OFF\r\n");
+    LogUartf("MAIN_MSG_BKLIGHT_OFF\r\n");
 }
 
 void idle_timer_callback(TimerHandle_t xTimer) {
@@ -98,7 +99,7 @@ void idle_timer_callback(TimerHandle_t xTimer) {
 
     app_push_message(APP_MSG_TIMEOUT);
     //xTimerStart(xTimer, 0);
-    //UART_printf("APP_MSG_TIMEOUT\r\n");
+    //LogUartf("APP_MSG_TIMEOUT\r\n");
 }
 
 void render_timer_callback(TimerHandle_t xTimer) {
@@ -145,7 +146,7 @@ void keyboard_callback(KEY_Code_t key, KEY_State_t state) {
             main_push_message(RADIO_RX); 
         }
         return;
-        //UART_printf("PTT : %i\r\n", state);   
+        //LogUartf("PTT : %i\r\n", state);   
 
     }
 
@@ -184,7 +185,8 @@ void app_task(void* arg) {
     xTimerStart(idleTimer, 0);
     xTimerStart(renderTimer, 0);
     xTimerStart(lightTimer, 0);
-    //UART_printf("APPs Ready\r\n");
+    
+    LogUartf("Task APPs Ready\r\n");
     
     while(true) {
 
