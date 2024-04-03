@@ -54,7 +54,7 @@ ENABLE_LTO                    ?= 1
 
 # --- joaquim.org
 ENABLE_MESSENGER              			?= 1
-ENABLE_MESSENGER_DELIVERY_NOTIFICATION	?= 0
+ENABLE_MESSENGER_DELIVERY_NOTIFICATION	?= 1
 ENABLE_MESSENGER_NOTIFICATION			?= 1
 ENABLE_MESSENGER_UART					?= 1
 
@@ -67,8 +67,8 @@ ENABLE_SCREEN_DUMP			  ?= 0
 
 #------------------------------------------------------------------------------
 AUTHOR_STRING ?= JOAQUIM
-VERSION_STRING ?= V0.3.5
-PROJECT_NAME := cfw_joaquimorg_oefw_V0.3.5
+VERSION_STRING ?= V0.3.6
+PROJECT_NAME := cfw_joaquimorg_oefw_V0.3.6
 
 BUILD := _build
 BIN := firmware
