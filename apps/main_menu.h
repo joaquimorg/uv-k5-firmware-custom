@@ -28,10 +28,10 @@ typedef struct {
 
 const main_menu_item_t mainMenuList[] =
 {
-    { "Radio Settings" },
-    { "VFO Settings" },
+    { "Main Settings" },
     { "Spectrum" },
     { "Messenger" },
+    { "VFO Settings" },
     { "About" },
 };
 
@@ -70,6 +70,26 @@ void MenuAPP_renderFunction() {
     MainMenu_showList();
 }
 
+void MenuAPP_LoadSelection() {
+    switch ( mainMenuCurrentMenu ) {
+        case 0:
+            load_application(APP_MAIN_SETTINGS);
+            break;
+        case 1:
+            load_application(APP_EMPTY);
+            break;
+        case 2:
+            load_application(APP_EMPTY);
+            break;
+        case 3:
+            load_application(APP_VFO_SETTINGS);
+            break;
+        case 4:
+            load_application(APP_WELCOME);
+            break;
+    }
+}
+
 void MenuAPP_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
     
     if ( state == KEY_PRESSED ) {
@@ -89,6 +109,9 @@ void MenuAPP_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
                 } else {
                     mainMenuCurrentMenu = 0;
                 }
+                break;
+            case KEY_MENU:
+                MenuAPP_LoadSelection();
                 break;
 
             case KEY_EXIT:

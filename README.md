@@ -12,6 +12,13 @@
 - Using FreeRTOS
 - and others....
 
+## Key functions
+
+In VFO
+
+- M = Current VFO settings
+- F + M = Main Menu  
+
 ## Open implementation of the Quansheng UV-K5/K6/5R firmware
 
 Based on *egzumer* repository and the work of DualTachyon's open firmware found [here](https://github.com/DualTachyon/uv-k5-firmware) ... a cool achievement !
@@ -23,6 +30,8 @@ Based on *egzumer* repository and the work of DualTachyon's open firmware found 
 > *After some unfortunate incidents by users I'm going to put this warning and disclaimer up. DO NOT attempt to transmit without the proper precautions in place. Transmitting 5W of RF energy centimetres away from a PC can LITERALLY destroy it, it's almost like an EMP at that distance. Get your antenna away from the PC.*
 
 Anyway, have fun.
+
+
 
 
 ## Credits

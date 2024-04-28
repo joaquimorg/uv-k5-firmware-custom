@@ -207,7 +207,7 @@ const menu_item_t MenuList[] =
 //#ifdef ENABLE_VOX
 //	{"VOX",    		MENU_VOX           },
 //#endif
-	{"Bat Vol", 	MENU_VOL           }, // was "VOL"
+	//{"Bat Vol", 	MENU_VOL           }, // was "VOL"
 	{"Rx Mode", 	MENU_TDR           },
 	{"SQL",    		MENU_SQL           },
 
@@ -229,7 +229,7 @@ const menu_item_t MenuList[] =
 //	{"",       0xff               }  // end of list - DO NOT delete or move this this
 };
 
-#define MENU_VFO_SIZE 17
+#define MENU_VFO_SIZE 16
 
 const char* const gSubMenu_OFF_ON[] =
 {
@@ -1767,7 +1767,7 @@ void MenuVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
 }
 
 
-app_t APPMenuVFO = {
+app_t APPVFOSettings = {
     .showStatusLine = true,
     .init = MenuVFO_initFunction,
     .render = MenuVFO_renderFunction,

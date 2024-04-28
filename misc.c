@@ -236,6 +236,8 @@ uint8_t           gIsLocked = 0xFF;
 bool              gMainDisplayPopUp = false;
 uint8_t           gMainPopUpType = 0;
 
+char              gMainAppStatus[21];
+
 
 const char* const gSubMenu_TXP[] =
 {
@@ -287,6 +289,14 @@ const char* const gSubMenu_SFT_D[] =
 
 inline void FUNCTION_NOP() { ; }
 
+void clearMainAppStatus(void) {
+	memset(gMainAppStatus, 0, 21);
+}
+
+void setMainAppStatus(const char* status) {
+	clearMainAppStatus();
+	memcpy(gMainAppStatus, status, 20);
+}
 
 int32_t NUMBER_AddWithWraparound(int32_t Base, int32_t Add, int32_t LowerLimit, int32_t UpperLimit)
 {

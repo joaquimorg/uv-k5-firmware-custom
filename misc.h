@@ -321,6 +321,12 @@ extern volatile uint8_t      boot_counter_10ms;
 extern bool              	gMainDisplayPopUp;
 extern uint8_t           	gMainPopUpType;
 
+//
+extern char              	gMainAppStatus[21];
+
+void setMainAppStatus(const char* status);
+
+void clearMainAppStatus(void);
 
 int32_t NUMBER_AddWithWraparound(int32_t Base, int32_t Add, int32_t LowerLimit, int32_t UpperLimit);
 unsigned long StrToUL(const char * str);

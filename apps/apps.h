@@ -24,7 +24,8 @@ enum APPS_e {
     APP_EMPTY,
     APP_MAIN_VFO,
     APP_MENU,
-    APP_MENU_VFO,
+    APP_VFO_SETTINGS,
+    APP_MAIN_SETTINGS,
 };
 typedef enum APPS_e APPS_t;
 
@@ -41,6 +42,7 @@ typedef enum APPS_Popup_e APPS_Popup_t;
 
 typedef void (*InitFunction)();
 typedef void (*RenderFunction)();
+typedef void (*TimeoutFunction)();
 typedef void (*RenderFunctionPopup)(APPS_Popup_t popup);
 typedef void (*KeyHandlerFunction)(KEY_Code_t key, KEY_State_t state);
 typedef void (*KeyHandlerFunctionPopup)(KEY_Code_t key, KEY_State_t state, APPS_Popup_t popup);
@@ -49,6 +51,8 @@ typedef struct app_struct {
     bool showStatusLine;
     InitFunction init;
     RenderFunction render;
+    TimeoutFunction timeoutHandler;
+
     KeyHandlerFunction keyHandler;
 
     RenderFunctionPopup renderPopup;

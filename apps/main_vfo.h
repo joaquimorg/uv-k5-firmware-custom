@@ -25,6 +25,7 @@
 #include "app.h"
 
 #include "gui/gui.h"
+#include "ui.h"
 
 #ifdef ENABLE_UART
 	#include "driver/uart.h"
@@ -69,7 +70,7 @@ void MainVFO_showRSSI(void) {
 
     UI_printf(&font_10, TEXT_ALIGN_LEFT, xPosVFO + 8, 0, yPosVFO + 3, true, false, "S");
     UI_printf(&font_small, TEXT_ALIGN_LEFT, xPosVFO + 16, 0, yPosVFO, true, false, "1?3?5?7?9?20?60?90");
-	
+
     uint8_t bar[19];
     memset(bar, '&', sizeof(bar));
     bar[18] = 0x00;
@@ -78,7 +79,7 @@ void MainVFO_showRSSI(void) {
 
         const int16_t s0_dBm   = -gEeprom.S0_LEVEL;                  // S0 .. base level
 	    const int16_t rssi_dBm = BK4819_GetRSSI_dBm() + dBmCorrTable[gRxVfo->Band];
-    
+
         int s0_9 = gEeprom.S0_LEVEL - gEeprom.S9_LEVEL;
         const uint8_t s_level = MIN(MAX((int32_t)(rssi_dBm - s0_dBm)*100 / (s0_9*100/9), 0), 9); // S0 - S9
         uint8_t overS9dBm = MIN(MAX(rssi_dBm + gEeprom.S9_LEVEL, 0), 99);
@@ -88,7 +89,7 @@ void MainVFO_showRSSI(void) {
 
         if(overS9Bars != 0) {
             UI_printf(&font_small, TEXT_ALIGN_LEFT, xPosVFO + 89, 0, yPosVFO + 4, true, false, "S9+%2d", overS9dBm);
-        }        
+        }
     }
 
     UI_printf(&font_small, TEXT_ALIGN_LEFT, xPosVFO + 16, 0, yPosVFO + 6, true, false, "%s", bar);
@@ -125,7 +126,7 @@ void MainVFO_showMICBar(void) {
 
     UI_printf(&font_10, TEXT_ALIGN_LEFT, xPosVFO + 8, 0, yPosVFO + 3, true, false, "M");
     UI_printf(&font_small, TEXT_ALIGN_LEFT, xPosVFO + 16, 0, yPosVFO, true, false, "1?3?5?7?9?10");
-	
+
     uint8_t bar[13];
     memset(bar, '&', sizeof(bar));
     bar[12] = 0x00;
@@ -144,7 +145,7 @@ void MainVFO_showMICBar(void) {
 }
 
 void MainVFO_showCTCSS(const char *tx_rx, uint8_t code_type, uint8_t code_value, uint8_t ypos) {
-    
+
     if ( code_type == CODE_TYPE_CONTINUOUS_TONE ) {
         UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + 3, 0, ypos, false, true, "%s CT %u.%uHz", tx_rx, CTCSS_Options[code_value] / 10, CTCSS_Options[code_value] % 10);
     } else if (code_type == CODE_TYPE_REVERSE_DIGITAL) {
@@ -196,7 +197,7 @@ void MainVFO_showVFO(void) {
     }*/
 
     // Frequency A
-    frequency = vfoInfoA->pRX->Frequency;    
+    frequency = vfoInfoA->pRX->Frequency;
 
     if ( frequency >= _1GHz_in_KHz ) {
         UI_printf(&font_n_20, TEXT_ALIGN_RIGHT, 15, 100, yPosVFO + 10, true, false, "%1u.%03u.%03u", (frequency / 100000000), (frequency / 100000) % 1000, (frequency % 100000) / 100);
@@ -239,7 +240,7 @@ void MainVFO_showVFO(void) {
         }
     }
 
-    if ( application_getPopup() != APP_POPUP_INFO ) {    
+    if ( application_getPopup() != APP_POPUP_INFO ) {
         enum VfoState_t state = VfoState[vfoNumA];
         if (state != VFO_STATE_NORMAL) {
             if (state < ARRAY_SIZE(VfoStateStr)) {
@@ -250,13 +251,31 @@ void MainVFO_showVFO(void) {
     }
 }
 
+
+// ToDo : make functions to control the status messages
+char StatusString[3][40] = { 0 };
+uint8_t StatusLine = 0;
+
 void MainVFO_initFunction() {
+    strcpy(StatusString[0], "1/3 | VFO A 144.500.00 MHz");
+    strcpy(StatusString[1], "2/3 | MSG from PMR362 > Hello World !");
+    strcpy(StatusString[2], "3/3 | Status line for Radio...");
+}
+
+void MainVFO_timeoutHandlerFunction() {
+    if (StatusLine < 2) {
+        StatusLine++;
+    } else {
+        StatusLine = 0;
+    }
 }
 
 void MainVFO_renderFunction() {
 
     UI_displayClear();
     MainVFO_showVFO();    
+    
+    UI_printf(&font_small, TEXT_ALIGN_LEFT, 1, 126, 61, true, false, "%s", StatusString[StatusLine]);    
 
     if (GUI_inputNotEmpty()) {
         if (IS_MR_CHANNEL(gEeprom.ScreenChannel[gEeprom.TX_VFO])) {
@@ -328,7 +347,7 @@ void MainVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
                 break;
 
             case KEY_MENU:
-                if ( state == KEY_LONG_PRESSED ) {
+                if ( state == KEY_PRESSED_WITH_F || state == KEY_LONG_PRESSED ) {
                     load_application(APP_MENU);
                 }
                 break;
@@ -372,7 +391,7 @@ void MainVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
                         }
                     }
                 } else {
-                    load_application(APP_MENU_VFO);
+                    load_application(APP_VFO_SETTINGS);
                 }
                 break;
             case KEY_EXIT:
@@ -500,6 +519,7 @@ app_t APPMainVFO = {
     .showStatusLine = true,
     .init = MainVFO_initFunction,
     .render = MainVFO_renderFunction,
+    .timeoutHandler = MainVFO_timeoutHandlerFunction,
     .keyHandler = MainVFO_keyHandlerFunction,
     .renderPopup = MainVFO_renderPopupFunction,
     .keyHandlerPopup = MainVFO_keyHandlerPopupFunction,

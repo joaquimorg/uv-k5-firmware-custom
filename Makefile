@@ -58,7 +58,7 @@ ENABLE_MESSENGER_UART					?= 0
 
 #### Display and Keypad remote Control ####
 # https://home.joaquim.org/display-explorer/
-ENABLE_REMOTE_CONTROL			  		?= 0
+ENABLE_REMOTE_CONTROL			  		?= 1
 
 
 ENABLE_UART_DEBUG			  			?= 1
@@ -96,7 +96,7 @@ ifeq ($(OS), Windows_NT) # windows
 	FixPath = $(subst /,\,$1)
 	WHERE = where
 	DEL = del /q
-	K5PROG = utils/k5prog/k5prog.exe -D -F -YYYYY -p /dev/com3 -b
+	K5PROG = utils/k5prog/k5prog.exe -D -F -YYYYY -p /dev/com6 -b
 else
 	MKDIR = mkdir -p $(1)
 	RM = rm -rf

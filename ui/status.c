@@ -149,6 +149,8 @@ void UI_DisplayStatus()
 	}
 #endif
 
+	// Show App Status / Name
+	UI_printf(&font_small, TEXT_ALIGN_RIGHT, 64, 128, 4, true, false, "%s", gMainAppStatus);
 	// **************
 
 	UI_statusUpdate();

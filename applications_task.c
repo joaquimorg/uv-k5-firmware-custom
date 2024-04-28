@@ -43,8 +43,9 @@
 #include "apps/apps.h"
 #include "apps/welcome.h"
 #include "apps/main_vfo.h"
-#include "apps/menu_vfo.h"
+#include "apps/settings_vfo.h"
 #include "apps/main_menu.h"
+#include "apps/main_settings.h"
 #include "apps/empty_app.h"
 
 #define QUEUE_LENGTH    10
@@ -205,6 +206,10 @@ void app_task(void* arg) {
                             popupAutoClose = false;
                             currentAppPopup = APP_POPUP_NONE;
                             xTimerReset( idleTimer, 0 );
+                        } else if( currentAppPopup == APP_POPUP_NONE) {
+                             if (currentApplication->timeoutHandler) {
+                                currentApplication->timeoutHandler();
+                            }
                         }
                     }
                     break;
@@ -271,35 +276,44 @@ void change_application(app_t *application) {
         currentApplication = application;        
         xTimerStop(renderTimer, 0);
         currentApplication->init();
+        if (currentApplication->showStatusLine) {
+            UI_DisplayStatus();
+        }
         UI_displayUpdate();
         xTimerStart(renderTimer, 0);
     }    
 }
 
 void load_application(APPS_t application) {
+    clearMainAppStatus();
     switch (application) {
         case APP_WELCOME:
             change_application(&APPWelcome);
             break;
-        case APP_MAIN_VFO:
-            //strcpy(global_status.statusMessage, "VFO\0");
+
+        case APP_MAIN_VFO:            
             change_application(&APPMainVFO);
             break;
 
         case APP_EMPTY:
-            //strcpy(global_status.statusMessage, "MENU\0");
+            setMainAppStatus("Demo APP...");
             change_application(&APPEmptyAPP);
             break;
 
         case APP_MENU:
-            //strcpy(global_status.statusMessage, "MENU\0");
+            setMainAppStatus("Main Menu");
             change_application(&APPMenuAPP);
             break;            
 
-        case APP_MENU_VFO:
-            //strcpy(global_status.statusMessage, "MENU\0");
-            change_application(&APPMenuVFO);
+        case APP_VFO_SETTINGS:
+            setMainAppStatus("VFO Settings");
+            change_application(&APPVFOSettings);
             break;
+
+        case APP_MAIN_SETTINGS:
+            setMainAppStatus("Main Settings");
+            change_application(&APPMainSettings);
+            break;            
 
         default:
             break;

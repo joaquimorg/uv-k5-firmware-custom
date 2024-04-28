@@ -41,6 +41,8 @@ void UI_drawString(const GFXfont * font, TEXT_Align_t tAlign, uint8_t xstart, ui
 void UI_drawStringBox(const GFXfont * font, TEXT_Align_t tAlign, uint8_t xstart, uint8_t xend, uint8_t y, const char *str, bool isBlack);
 void UI_printf(const GFXfont * font, TEXT_Align_t tAlign, uint8_t xstart, uint8_t xend, uint8_t y, bool isBlack, bool isFill, const char *str, ...);
 
+void getStringFontSize(const char *str, uint8_t * size, const GFXfont * font);
+
 void UI_drawFastVLine(uint8_t x, uint8_t y, uint8_t h, bool isBlack);
 void UI_drawFastHLine(uint8_t x, uint8_t y, uint8_t w, bool isBlack);
 void UI_drawDottedLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, bool black, int dotSpacing);
