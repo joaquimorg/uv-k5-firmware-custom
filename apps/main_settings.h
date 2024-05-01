@@ -1645,7 +1645,7 @@ void MainSettings_renderFunction() {
     } else {
         if (xTaskGetTickCount() - mainSettingsSubMenuTime > pdMS_TO_TICKS(SETTINGS_TIMESHOW_SUB)) {
 			if( GUI_inputGetSize() == 1 ) {
-				const uint8_t inputValue = GUI_inputGetNumber();
+				const uint8_t inputValue = GUI_inputGetNumberClear();
 				if ( inputValue > 0) {
 					mainSettingsCurrentMenu = inputValue - 1;
 					mainSettingsShowSubMenu = false;
@@ -1680,7 +1680,7 @@ void MainSettings_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
 				if ( !mainSettingsSubMenuActive ) {
 					GUI_inputAppendKey(key, 2, false);
 					if( GUI_inputGetSize() == 2 ) {
-						const uint8_t inputValue = GUI_inputGetNumber();
+						const uint8_t inputValue = GUI_inputGetNumberClear();
 						if ( inputValue > 0 && inputValue < MENU_SETTINGS_SIZE ) {
 							mainSettingsCurrentMenu = inputValue - 1;
 						}

@@ -128,9 +128,14 @@ uint32_t string_to_uint32(const char *str) {
 }
 
 uint32_t GUI_inputGetNumber() {
+	return (uint32_t)string_to_uint32(inputKeys);	
+}
+
+uint32_t GUI_inputGetNumberClear() {
 	inputKeysIndex = -1;
 	return (uint32_t)string_to_uint32(inputKeys);	
 }
+
 
 void GUI_inputShowFreq(const char *title) {
 	const uint8_t popupW = 80;

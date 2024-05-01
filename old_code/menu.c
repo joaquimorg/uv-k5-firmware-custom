@@ -740,7 +740,7 @@ void UI_DisplayMenu(void) {
     } else {
         if (xTaskGetTickCount() - settingsSubMenuTime > pdMS_TO_TICKS(SETTINGS_TIMESHOW_SUB)) {
 			/*if( GUI_inputGetSize() == 1 ) {
-				const uint8_t inputValue = GUI_inputGetNumber();
+				const uint8_t inputValue = GUI_inputGetNumberClear();
 				if ( inputValue > 0) {
 					settingsCurrentMenu = inputValue - 1;
 					settingsShowSubMenu = false;

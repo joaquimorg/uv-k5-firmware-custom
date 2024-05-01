@@ -196,8 +196,13 @@ void MainVFO_showVFO(void) {
         UI_printf(&font_10, TEXT_ALIGN_LEFT, 2, 0, yPosVFO + 7, true, false, "VFO");
     }*/
 
-    // Frequency A
-    frequency = vfoInfoA->pRX->Frequency;
+    // Frequency A    
+
+    if (gCurrentFunction == FUNCTION_TRANSMIT){
+        frequency = vfoInfoA->pTX->Frequency;
+    } else {
+        frequency = vfoInfoA->pRX->Frequency;
+    }
 
     if ( frequency >= _1GHz_in_KHz ) {
         UI_printf(&font_n_20, TEXT_ALIGN_RIGHT, 15, 100, yPosVFO + 10, true, false, "%1u.%03u.%03u", (frequency / 100000000), (frequency / 100000) % 1000, (frequency % 100000) / 100);
@@ -380,11 +385,11 @@ void MainVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
             case KEY_MENU:
                 if (GUI_inputGetSize() > 0) {
                     if (IS_MR_CHANNEL(gEeprom.ScreenChannel[gEeprom.TX_VFO])) {
-                        const uint16_t selChannel = (uint16_t)GUI_inputGetNumber() - 1;
+                        const uint16_t selChannel = (uint16_t)GUI_inputGetNumberClear() - 1;
                         main_push_message_value(RADIO_SET_CHANNEL, selChannel);
                     } else {
                         if (GUI_inputGetSize() > 6) {
-                            const uint32_t selFreq = GUI_inputGetNumber();
+                            const uint32_t selFreq = GUI_inputGetNumberClear();
                             main_push_message_value(RADIO_SET_FREQ, selFreq);
                         } else {
                             main_push_message_value(MAIN_MSG_PLAY_BEEP, BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);

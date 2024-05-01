@@ -344,9 +344,9 @@ const char* const gSubMenu_PTT_ID[] =
 
 uint8_t settingsCurrentMenu = 0;
 
-uint16_t settingsCurrentSubMenu = 0;
+uint32_t settingsCurrentSubMenu = 0;
 uint16_t settingsSubmenuMin = 0;
-uint16_t settingsSubmenuSize = 0;
+uint32_t settingsSubmenuSize = 0;
 
 #define SETTINGS_TIMESHOW_SUB 1000
 TickType_t settingsSubMenuTime;
@@ -469,7 +469,19 @@ void SettingsMenu_showSubListNumber() {
     }
 }
 
-int SettingsMenu_GetLimits(uint8_t menu_id, uint16_t *pMin, uint16_t *pMax);
+void SettingsMenu_showInputValue(void) {
+	uint8_t yPos = 30;
+	
+	if ( settingsCurrentSubMenu >= _1GHz_in_KHz ) {
+		UI_printf(&font_10, TEXT_ALIGN_CENTER, SUB_MENU_X, 125, yPos, true, false, "%1u.%03u.%03u.%02u", (settingsCurrentSubMenu / 100000000), (settingsCurrentSubMenu / 100000) % 1000, (settingsCurrentSubMenu % 100000) / 100, (settingsCurrentSubMenu % 100));	
+	} else {
+		UI_printf(&font_10, TEXT_ALIGN_CENTER, SUB_MENU_X, 125, yPos, true, false, "%03u.%03u.%02u", (settingsCurrentSubMenu / 100000) % 1000, (settingsCurrentSubMenu % 100000) / 100, (settingsCurrentSubMenu % 100));	
+	}
+
+	UI_printf(&font_10, TEXT_ALIGN_CENTER, SUB_MENU_X, 125, yPos + 16, true, false, "MHz");
+}
+
+int SettingsMenu_GetLimits(uint8_t menu_id, uint16_t *pMin, uint32_t *pMax);
 
 void SettingsMenu_loadSubList() {
 
@@ -488,14 +500,10 @@ void SettingsMenu_loadSubList() {
     {
 
 		case MENU_ABR:
-			//gSubMenu_BACKLIGHT
-			
             SettingsMenu_showSubList(gSubMenu_BACKLIGHT);
 			break;
 
 		case MENU_SCR:
-			//gSubMenu_SCRAMBLER
-			
             SettingsMenu_showSubList(gSubMenu_SCRAMBLER);
 			break;
 
@@ -509,31 +517,22 @@ void SettingsMenu_loadSubList() {
 			break;
 
 		case MENU_F_LOCK:
-			//gSubMenu_F_LOCK
-			
             SettingsMenu_showSubList(gSubMenu_F_LOCK);
 			break;
 
 		case MENU_PTT_ID:
-			
             SettingsMenu_showSubList(gSubMenu_PTT_ID);
 			break;
 
 		case MENU_SFT_D:
-			//gSubMenu_SFT_D
-			
             SettingsMenu_showSubList(gSubMenu_SFT_D);
 			break;
 
 		case MENU_TDR:
-			//gSubMenu_RXMode
-			
             SettingsMenu_showSubList(gSubMenu_RXMode);
 			break;
 
 		case MENU_ROGER:
-			//gSubMenu_ROGER
-			
             SettingsMenu_showSubList(gSubMenu_ROGER);
 			break;
 
@@ -547,15 +546,11 @@ void SettingsMenu_loadSubList() {
 			break;
 
 		case MENU_RESET:
-			//gSubMenu_RESET
-			
             SettingsMenu_showSubList(gSubMenu_RESET);
 			break;
 
 		case MENU_COMPAND:
 		case MENU_ABR_ON_TX_RX:
-			//gSubMenu_RX_TX
-			
             SettingsMenu_showSubList(gSubMenu_RX_TX);
 			break;
 
@@ -578,43 +573,33 @@ void SettingsMenu_loadSubList() {
 		case MENU_BEEP:
 		case MENU_AUTOLK:
 		case MENU_STE:
-			//gSubMenu_OFF_ON
-			
         	SettingsMenu_showSubList(gSubMenu_OFF_ON);
 			break;
 
 		case MENU_TOT:
-			//gSubMenu_TOT
-			
             SettingsMenu_showSubList(gSubMenu_TOT);
 			break;
 
 		case MENU_SAVE:
-			//gSubMenu_SAVE
-			
             SettingsMenu_showSubList(gSubMenu_SAVE);
 			break;
 
 		case MENU_BAT_TXT:
-			//gSubMenu_BAT_TXT
-			
             SettingsMenu_showSubList(gSubMenu_BAT_TXT);
 			break;
 
 		case MENU_PONMSG:
-			
             SettingsMenu_showSubList(gSubMenu_PONMSG);
 			break;
 
 		case MENU_SC_REV:
-			
             SettingsMenu_showSubList(gSubMenu_SC_REV);
 			break;
 
 
 		case MENU_OFFSET:
 			//TODO:
-			//SettingsMenu_showSubValue();
+			SettingsMenu_showInputValue();
 			break;
 
 		case MENU_S_LIST:
@@ -645,9 +630,6 @@ void SettingsMenu_loadSubList() {
 		}
 
 		case MENU_BATTYP:
-			// 0 .. 1;
-			//gSubMenu_BATTYP
-			
             SettingsMenu_showSubList(gSubMenu_BATTYP);
 			break;
 
@@ -1007,7 +989,7 @@ void SettingsMenu_loadSubListValues() {
 }
 
 
-int SettingsMenu_GetLimits(uint8_t menu_id, uint16_t *pMin, uint16_t *pMax)
+int SettingsMenu_GetLimits(uint8_t menu_id, uint16_t *pMin, uint32_t *pMax)
 {
 	*pMin = 0;
 	switch (menu_id)
@@ -1214,6 +1196,10 @@ int SettingsMenu_GetLimits(uint8_t menu_id, uint16_t *pMin, uint16_t *pMax)
 		case MENU_BATTYP:
 			*pMax = 1;
 			break;
+
+		case MENU_OFFSET:
+			*pMax = 1000000;
+			break;			
 
 		case MENU_F1SHRT:
 		case MENU_F1LONG:
@@ -1652,7 +1638,7 @@ void MenuVFO_renderFunction() {
     } else {
         if (xTaskGetTickCount() - settingsSubMenuTime > pdMS_TO_TICKS(SETTINGS_TIMESHOW_SUB)) {
 			if( GUI_inputGetSize() == 1 ) {
-				const uint8_t inputValue = GUI_inputGetNumber();
+				const uint8_t inputValue = GUI_inputGetNumberClear();
 				if ( inputValue > 0) {
 					settingsCurrentMenu = inputValue - 1;
 					settingsShowSubMenu = false;
@@ -1687,13 +1673,20 @@ void MenuVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
 				if ( !settingsSubMenuActive ) {
 					GUI_inputAppendKey(key, 2, false);
 					if( GUI_inputGetSize() == 2 ) {
-						const uint8_t inputValue = GUI_inputGetNumber();
+						const uint8_t inputValue = GUI_inputGetNumberClear();
 						if ( inputValue > 0 && inputValue < MENU_VFO_SIZE ) {
 							settingsCurrentMenu = inputValue - 1;
 						}
 					}
 					settingsSubMenuTime = xTaskGetTickCount();
 					settingsShowSubMenu = false;
+				} else {
+					if (getMenuID() == MENU_OFFSET) {
+						GUI_inputAppendKey(key, 9, true);
+						if (GUI_inputGetSize() > 0) {
+							settingsCurrentSubMenu = GUI_inputGetNumber();
+						}
+					}
 				}
 			}
 			break;
@@ -1701,7 +1694,11 @@ void MenuVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
 			if ( state == KEY_PRESSED || state == KEY_LONG_PRESSED_CONT ) {
 				if ( settingsSubMenuActive ) {
 					if ( settingsCurrentSubMenu > settingsSubmenuMin ) {
-						settingsCurrentSubMenu--;
+						if (getMenuID() == MENU_OFFSET) {
+							settingsCurrentSubMenu -= gTxVfo->STEP_SETTING;
+						} else {
+							settingsCurrentSubMenu--;
+						}
 					} else {
 						settingsCurrentSubMenu = settingsSubmenuSize;
 					}
@@ -1719,8 +1716,12 @@ void MenuVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
 		case KEY_DOWN:
 			if ( state == KEY_PRESSED || state == KEY_LONG_PRESSED_CONT ) {
 				if ( settingsSubMenuActive ) {
-					if ( settingsCurrentSubMenu < settingsSubmenuSize ) {
-						settingsCurrentSubMenu++;
+					if ( settingsCurrentSubMenu < settingsSubmenuSize ) {						
+						if (getMenuID() == MENU_OFFSET) {
+							settingsCurrentSubMenu += gTxVfo->STEP_SETTING;
+						} else {
+							settingsCurrentSubMenu++;
+						}
 					} else {
 						settingsCurrentSubMenu = settingsSubmenuMin;
 					}

@@ -30,6 +30,7 @@ bool        GUI_inputNotEmpty();
 void        GUI_inputReset();
 void        GUI_inputShowFreq(const char *title);
 void        GUI_inputShow(const char *title, const char *prefix);
+uint32_t    GUI_inputGetNumberClear();
 uint32_t    GUI_inputGetNumber();
 
 void        GUI_showPopup(uint8_t popupW, uint8_t popupH, uint8_t *startX, uint8_t *startY);
