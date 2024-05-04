@@ -4,7 +4,10 @@
 
 > [!WARNING]  
 > To test this version you must bear in mind that it can corrupt the data in the eeprom, so you must make a backup before using this version.
+> 
 > **In this version, many of the core components are being rewritten, not all features will be available and may never be.**
+>
+> **If you want to have a more stable FW and even with more features, I advise you to look at other options.**
 
 ## Major changes in this version
 
@@ -38,7 +41,8 @@ Based on _egzumer_ repository and the work of DualTachyon's open firmware found 
 > [!WARNING]  
 > _Use this firmware at your own risk (entirely). There is absolutely no guarantee that it will work in any way shape or form on your radio(s), it may even brick your radio(s), in which case, you'd need to buy another radio._
 
-> [!WARNING] > _After some unfortunate incidents by users I'm going to put this warning and disclaimer up. DO NOT attempt to transmit without the proper precautions in place. Transmitting 5W of RF energy centimetres away from a PC can LITERALLY destroy it, it's almost like an EMP at that distance. Get your antenna away from the PC._
+> [!WARNING]
+> _After some unfortunate incidents by users I'm going to put this warning and disclaimer up. DO NOT attempt to transmit without the proper precautions in place. Transmitting 5W of RF energy centimetres away from a PC can LITERALLY destroy it, it's almost like an EMP at that distance. Get your antenna away from the PC._
 
 Anyway, have fun.
 
