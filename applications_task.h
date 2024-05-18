@@ -24,6 +24,7 @@
 void applications_task_init(void);
 
 void app_push_message_value(APP_MSG_t msg, uint32_t value);
+void app_push_message_key(KEY_Code_t key, KEY_State_t state);
 void app_push_message(APP_MSG_t msg);
 
 void load_application(APPS_t application);

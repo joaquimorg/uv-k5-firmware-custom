@@ -34,7 +34,7 @@
 #include "settings.h"
 #include "ui/inputbox.h"
 #include "ui/ui.h"
-
+/*
 void GENERIC_Key_F(bool bKeyPressed, bool bKeyHeld)
 {
 	if (gInputBoxIndex > 0)
@@ -70,9 +70,9 @@ void GENERIC_Key_F(bool bKeyPressed, bool bKeyHeld)
 			gWasFKeyPressed = !gWasFKeyPressed; // toggle F function
 
 			if (gWasFKeyPressed)
-				gKeyInputCountdown = key_input_timeout_500ms;
+				gKeyInputCountdown = //key_input_timeout_500ms;
 
-			gUpdateStatus = true;
+			//gUpdateStatus = true;
 		}
 	}
 	else // short pressed
@@ -218,6 +218,8 @@ done:
 		if (gScreenToDisplay != DISPLAY_MENU)     // 1of11 .. don't close the menu
 			gRequestDisplayScreen = DISPLAY_MAIN;
 	#endif
-	gUpdateStatus  = true;
+	//gUpdateStatus  = true;
 	//gUpdateDisplay = true;
 }
+
+*/

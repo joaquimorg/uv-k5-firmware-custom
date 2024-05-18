@@ -63,11 +63,7 @@ extern bool       gWasFKeyPressed;
 
 KEY_Code_t KEYBOARD_Poll(void);
 
-// Define the callback function type
-typedef void (*key_callback_t)(KEY_Code_t key, KEY_State_t state);
-
-void keyboard_init(key_callback_t cb);
-void keyboard_task();
+void keyboard_init();
 
 
 #endif

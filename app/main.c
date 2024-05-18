@@ -100,7 +100,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 		case KEY_1:
 			if (!IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE)) {
 				gWasFKeyPressed = false;
-				gUpdateStatus   = true;
+				//gUpdateStatus   = true;
 				gBeepToPlay     = BEEP_1KHZ_60MS_OPTIONAL;
 
 #ifdef ENABLE_COPY_CHAN_TO_VFO
@@ -192,7 +192,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 
 			/*gBackup_CROSS_BAND_RX_TX  = gEeprom.CROSS_BAND_RX_TX;
 			gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
-			gUpdateStatus            = true;
+			//gUpdateStatus            = true;
 			if (beep)
 				gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
 
@@ -249,7 +249,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 			break;
 
 		default:
-			gUpdateStatus   = true;
+			//gUpdateStatus   = true;
 			gWasFKeyPressed = false;
 
 			if (beep)
@@ -269,7 +269,7 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 				}
 
 				gWasFKeyPressed = false;
-				gUpdateStatus   = true;
+				//gUpdateStatus   = true;
 
 				processFKeyFunction(Key, false);
 			}
@@ -285,7 +285,7 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 
 	if (!gWasFKeyPressed) { // F-key wasn't pressed
 		const uint8_t Vfo = gEeprom.TX_VFO;
-		gKeyInputCountdown = key_input_timeout_500ms;
+		gKeyInputCountdown = //key_input_timeout_500ms;
 		INPUTBOX_Append(Key);
 		gRequestDisplayScreen = DISPLAY_MAIN;
 
@@ -369,7 +369,7 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 	}
 
 	gWasFKeyPressed = false;
-	gUpdateStatus   = true;
+	//gUpdateStatus   = true;
 
 	processFKeyFunction(Key, true);
 }
@@ -397,7 +397,7 @@ static void MAIN_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 					return;
 				gInputBox[--gInputBoxIndex] = 10;
 
-				gKeyInputCountdown = key_input_timeout_500ms;
+				gKeyInputCountdown = //key_input_timeout_500ms;
 
 			}
 			else {
@@ -446,7 +446,7 @@ static void MAIN_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
 				}
 
 				gWasFKeyPressed = false;
-				gUpdateStatus   = true;
+				//gUpdateStatus   = true;
 
 				ACTION_Handle(KEY_MENU, bKeyPressed, bKeyHeld);
 			}
@@ -524,7 +524,7 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 			gDTMF_InputBox_Index  = 0;
 			gDTMF_InputMode       = true;
 
-			gKeyInputCountdown    = key_input_timeout_500ms;
+			gKeyInputCountdown    = //key_input_timeout_500ms;
 
 			gRequestDisplayScreen = DISPLAY_MAIN;
 		}
@@ -542,7 +542,7 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 	}
 
 	gPttWasReleased = true;
-	gUpdateStatus   = true;
+	//gUpdateStatus   = true;
 }
 
 static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
@@ -622,7 +622,7 @@ void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 		if (Character != 0xFF)
 		{	// add key to DTMF string
 			DTMF_Append(Character);
-			gKeyInputCountdown    = key_input_timeout_500ms;
+			gKeyInputCountdown    = //key_input_timeout_500ms;
 			gRequestDisplayScreen = DISPLAY_MAIN;
 			gPttWasReleased       = true;
 			gBeepToPlay           = BEEP_1KHZ_60MS_OPTIONAL;

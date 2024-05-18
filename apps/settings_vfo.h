@@ -1504,7 +1504,7 @@ void MenuVFO_saveSetting(void) {
 			if (!gSetting_live_DTMF_decoder)
 				BK4819_DisableDTMF();
 			gFlagReconfigureVfos     = true;
-			gUpdateStatus            = true;*/
+			//gUpdateStatus            = true;*/
 			break;
 
 #ifdef ENABLE_DTMF_CALLING

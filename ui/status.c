@@ -43,7 +43,7 @@
 
 void UI_DisplayStatus()
 {
-	gUpdateStatus = false;
+	//gUpdateStatus = false;
 	memset(gFrameBuffer[0], 0, sizeof(gFrameBuffer[0]));
 
 	GUI_drawBattery();
@@ -109,7 +109,7 @@ void UI_DisplayStatus()
 	else
 #endif
 	{ // SCAN indicator
-		if (gScanStateDir != SCAN_OFF || SCANNER_IsScanning()) {
+		/*if (gScanStateDir != SCAN_OFF || SCANNER_IsScanning()) {
 			char * s = "";
 			if (IS_MR_CHANNEL(gNextMrChannel) && !SCANNER_IsScanning()) { // channel mode
 				switch(gEeprom.SCAN_LIST_DEFAULT) {
@@ -122,7 +122,7 @@ void UI_DisplayStatus()
 				s = "S";
 			}
 			UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, 4, true, false, "%c", s);
-		}
+		}*/
 	}
 
 	if(!SCANNER_IsScanning()) {

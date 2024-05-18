@@ -75,6 +75,8 @@
 #include "task_messages.h"
 #include "applications_task.h"
 
+#include "frequencies.h"
+
 StackType_t main_task_stack[configMINIMAL_STACK_SIZE + 100];
 StaticTask_t main_task_buffer;
 
@@ -93,6 +95,284 @@ uint8_t mainQueueStorageArea[ QUEUE_LENGTH * ITEM_SIZE ];
 extern void SystickHandlerA(void);
 
 void main_push_message(MAIN_MSG_t msg);
+
+/* --------------------------------------------------------------------------------------------------------- */
+
+//
+// this code needs a new home....
+// and a big clean up...
+//
+
+uint32_t APP_SetFreqByStepAndLimits(VFO_Info_t *pInfo, int8_t direction, uint32_t lower, uint32_t upper)
+{
+	uint32_t Frequency = FREQUENCY_RoundToStep(pInfo->freq_config_RX.Frequency + (direction * pInfo->StepFrequency), pInfo->StepFrequency);
+
+	if (Frequency >= upper)
+		Frequency =  lower;
+	else if (Frequency < lower)
+		Frequency = FREQUENCY_RoundToStep(upper - pInfo->StepFrequency, pInfo->StepFrequency);
+
+	return Frequency;
+}
+
+uint32_t APP_SetFrequencyByStep(VFO_Info_t *pInfo, int8_t direction)
+{
+	return APP_SetFreqByStepAndLimits(pInfo, direction, frequencyBandTable[pInfo->Band].lower, frequencyBandTable[pInfo->Band].upper);
+}
+
+
+void CheckRadioInterrupts(void)
+{
+	/*if (SCANNER_IsScanning())
+		return;*/
+
+	//LogUartf("BK4819_REG_0C %b \r\n", BK4819_ReadRegister(BK4819_REG_0C));
+
+	while (BK4819_ReadRegister(BK4819_REG_0C) & 1u) { // BK chip interrupt request
+		// clear interrupts
+		BK4819_WriteRegister(BK4819_REG_02, 0);
+		// fetch interrupt status bits
+
+		union {
+			struct {
+				uint16_t __UNUSED : 1;
+				uint16_t fskRxSync : 1;
+				uint16_t sqlLost : 1;
+				uint16_t sqlFound : 1;
+				uint16_t voxLost : 1;
+				uint16_t voxFound : 1;
+				uint16_t ctcssLost : 1;
+				uint16_t ctcssFound : 1;
+				uint16_t cdcssLost : 1;
+				uint16_t cdcssFound : 1;
+				uint16_t cssTailFound : 1;
+				uint16_t dtmf5ToneFound : 1;
+				uint16_t fskFifoAlmostFull : 1;
+				uint16_t fskRxFinied : 1;
+				uint16_t fskFifoAlmostEmpty : 1;
+				uint16_t fskTxFinied : 1;
+			};
+			uint16_t __raw;
+		} interrupts;		
+
+		interrupts.__raw = BK4819_ReadRegister(BK4819_REG_02);
+
+		//LogUartf("interrupts %0.16b \r\n", interrupts);
+
+		// 0 = no phase shift
+		// 1 = 120deg phase shift
+		// 2 = 180deg phase shift
+		// 3 = 240deg phase shift
+//		const uint8_t ctcss_shift = BK4819_GetCTCShift();
+//		if (ctcss_shift > 0)
+//			g_CTCSS_Lost = true;
+/*
+		if (interrupts.dtmf5ToneFound) {	
+			const char c = DTMF_GetCharacter(BK4819_GetDTMF_5TONE_Code()); // save the RX'ed DTMF character
+			if (c != 0xff) {
+				if (gCurrentFunction != FUNCTION_TRANSMIT) {
+					if (gSetting_live_DTMF_decoder) {
+						size_t len = strlen(gDTMF_RX_live);
+						if (len >= sizeof(gDTMF_RX_live) - 1) { // make room
+							memmove(&gDTMF_RX_live[0], &gDTMF_RX_live[1], sizeof(gDTMF_RX_live) - 1);
+							len--;
+						}
+						gDTMF_RX_live[len++]  = c;
+						gDTMF_RX_live[len]    = 0;
+						gDTMF_RX_live_timeout = DTMF_RX_live_timeout_500ms;  // time till we delete it
+						gUpdateDisplay        = true;
+					}
+
+#ifdef ENABLE_DTMF_CALLING
+					if (gRxVfo->DTMF_DECODING_ENABLE || gSetting_KILLED) {
+						if (gDTMF_RX_index >= sizeof(gDTMF_RX) - 1) { // make room
+							memmove(&gDTMF_RX[0], &gDTMF_RX[1], sizeof(gDTMF_RX) - 1);
+							gDTMF_RX_index--;
+						}
+						gDTMF_RX[gDTMF_RX_index++] = c;
+						gDTMF_RX[gDTMF_RX_index]   = 0;
+						gDTMF_RX_timeout           = DTMF_RX_timeout_500ms;  // time till we delete it
+						gDTMF_RX_pending           = true;
+						
+						SYSTEM_DelayMs(3);//fix DTMF not reply@Yurisu
+						DTMF_HandleRequest();
+					}
+#endif
+				}
+			}
+		}
+*/		
+
+		if (interrupts.cssTailFound)
+			g_CxCSS_TAIL_Found = true;
+
+		if (interrupts.cdcssLost) {
+			g_CDCSS_Lost = true;
+			gCDCSSCodeType = BK4819_GetCDCSSCodeType();
+			main_push_message(RADIO_CDCSS_LOST);
+		}
+
+		if (interrupts.cdcssFound) {
+			g_CDCSS_Lost = false;
+			main_push_message(RADIO_CDCSS_FOUND);
+		}
+
+		if (interrupts.ctcssLost) {
+			g_CTCSS_Lost = true;
+			main_push_message(RADIO_CTCSS_LOST);
+		}
+
+		if (interrupts.ctcssFound) {
+			g_CTCSS_Lost = false;
+			main_push_message(RADIO_CTCSS_FOUND);
+		}
+/*
+#ifdef ENABLE_VOX
+		if (interrupts.voxLost) {
+			g_VOX_Lost         = true;
+			gVoxPauseCountdown = 10;
+
+			if (gEeprom.VOX_SWITCH) {
+				if (gCurrentFunction == FUNCTION_POWER_SAVE && !gRxIdleMode) {
+					gPowerSave_10ms            = power_save2_10ms;
+					gPowerSaveCountdownExpired = 0;
+				}
+
+				if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF && (gScheduleDualWatch || gDualWatchCountdown_10ms < dual_watch_count_after_vox_10ms)) {
+					gDualWatchCountdown_10ms = dual_watch_count_after_vox_10ms;
+					gScheduleDualWatch = false;
+
+					// let the user see DW is not active
+					gDualWatchActive = false;
+					//gUpdateStatus    = true;
+				}
+			}
+		}
+
+		if (interrupts.voxFound) {
+			g_VOX_Lost         = false;
+			gVoxPauseCountdown = 0;
+		}
+#endif
+*/
+		if (interrupts.sqlLost) {
+			//g_SquelchLost = true;
+			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
+			//LogUartf("sqlLost \r\n");
+			main_push_message(RADIO_SQUELCH_LOST);
+		}
+
+		if (interrupts.sqlFound) {
+			//g_SquelchLost = false;
+			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
+			//LogUartf("sqlFound \r\n");
+			main_push_message(RADIO_SQUELCH_FOUND);
+		}
+/*
+#ifdef ENABLE_AIRCOPY
+		if (interrupts.fskFifoAlmostFull &&
+			gScreenToDisplay == DISPLAY_AIRCOPY &&
+			gAircopyState == AIRCOPY_TRANSFER &&
+			gAirCopyIsSendMode == 0)
+		{
+			for (unsigned int i = 0; i < 4; i++) {
+				g_FSK_Buffer[gFSKWriteIndex++] = BK4819_ReadRegister(BK4819_REG_5F);
+			}
+
+			AIRCOPY_StorePacket();
+		}
+#endif
+
+#ifdef ENABLE_MESSENGER
+		MSG_StorePacket(interrupts.__raw);
+#endif
+*/
+	}
+}
+
+void APP_EndTransmission(bool inmediately)
+{
+	RADIO_SendEndOfTransmission();
+
+	if (gMonitor) {
+		 //turn the monitor back on
+		gFlagReconfigureVfos = true;
+	}
+
+	if (inmediately || gEeprom.REPEATER_TAIL_TONE_ELIMINATION == 0) {
+		FUNCTION_Select(FUNCTION_FOREGROUND);
+	} else {
+		gRTTECountdown = gEeprom.REPEATER_TAIL_TONE_ELIMINATION * 10;
+	}
+}
+
+void APP_StartListening(FUNCTION_Type_t function)
+{
+	const unsigned int vfo = gEeprom.RX_VFO;
+
+#ifdef ENABLE_DTMF_CALLING
+	if (gSetting_KILLED)
+		return;
+#endif
+
+#ifdef ENABLE_FMRADIO
+	if (gFmRadioMode)
+		BK1080_Init0();
+#endif
+
+	// clear the other vfo's rssi level (to hide the antenna symbol)
+	gVFO_RSSI_bar_level[!vfo] = 0;
+
+	AUDIO_AudioPathOn();
+	gEnableSpeaker = true;
+
+	if (gSetting_backlight_on_tx_rx & BACKLIGHT_ON_TR_RX) {
+		BACKLIGHT_TurnOn();
+	}
+
+	/*if (gScanStateDir != SCAN_OFF)
+		CHFRSCANNER_Found();
+
+	if (gScanStateDir == SCAN_OFF &&
+	    gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
+	{	// not scanning, dual watch is enabled
+
+		gDualWatchCountdown_10ms = dual_watch_count_after_2_10ms;
+		gScheduleDualWatch       = false;
+
+		// when crossband is active only the main VFO should be used for TX
+		if(gEeprom.CROSS_BAND_RX_TX == CROSS_BAND_OFF)
+			gRxVfoIsActive = true;
+
+		// let the user see DW is not active
+		gDualWatchActive = false;
+		//gUpdateStatus    = true;
+	}*/
+
+	BK4819_WriteRegister(BK4819_REG_48,
+		(11u << 12)                |     // ??? .. 0 to 15, doesn't seem to make any difference
+		( 0u << 10)                |     // AF Rx Gain-1
+		(gEeprom.VOLUME_GAIN << 4) |     // AF Rx Gain-2
+		(gEeprom.DAC_GAIN    << 0));     // AF DAC Gain (after Gain-1 and Gain-2)
+
+		RADIO_SetModulation(gRxVfo->Modulation);  // no need, set it now
+
+	FUNCTION_Select(function);
+
+#ifdef ENABLE_FMRADIO
+	if (function == FUNCTION_MONITOR || gFmRadioMode)
+#else
+	if (function == FUNCTION_MONITOR)
+#endif
+	{	// squelch is disabled
+		if (gScreenToDisplay != DISPLAY_MENU)     // 1of11 .. don't close the menu
+			GUI_SelectNextDisplay(DISPLAY_MAIN);
+	}
+	//else
+		//gUpdateDisplay = true;
+
+	//gUpdateStatus = true;
+}
 
 /* --------------------------------------------------------------------------------------------------------- */
 
@@ -130,21 +410,297 @@ void init_radio(void) {
 #endif
 
 
-	/*// count the number of menu items
-	gMenuListCount = 0;
-	while (MenuList[gMenuListCount].name[0] != '\0') {
-		if(!gF_LOCK && MenuList[gMenuListCount].menu_id == FIRST_HIDDEN_MENU_ITEM)
-			break;
-
-		gMenuListCount++;
-	}*/
-
 	GPIO_ClearBit(&GPIOA->DATA, GPIOA_PIN_VOICE_0);
 
-	gUpdateStatus = true;
+	//gUpdateStatus = true;
 
 }
 
+static void CheckForIncoming(void)
+{
+	/*if (!g_SquelchLost)
+		return;          // squelch is closed
+*/
+	// squelch is open
+
+	//if (gScanStateDir == SCAN_OFF)
+	{	// not RF scanning
+		if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF)
+		{	// dual watch is disabled
+
+			if (gCurrentFunction != FUNCTION_INCOMING)
+			{
+				FUNCTION_Select(FUNCTION_INCOMING);
+				//gUpdateDisplay = true;
+			}
+
+			return;
+		}
+
+		// dual watch is enabled and we're RX'ing a signal
+
+		if (gRxReceptionMode != RX_MODE_NONE)
+		{
+			if (gCurrentFunction != FUNCTION_INCOMING)
+			{
+				FUNCTION_Select(FUNCTION_INCOMING);
+				//gUpdateDisplay = true;
+			}
+			return;
+		}
+
+		gDualWatchCountdown_10ms = dual_watch_count_after_rx_10ms;
+		gScheduleDualWatch       = false;
+
+		// let the user see DW is not active
+		gDualWatchActive = false;
+		//gUpdateStatus    = true;
+	}
+	/*else
+	{	// RF scanning
+		if (gRxReceptionMode != RX_MODE_NONE)
+		{
+			if (gCurrentFunction != FUNCTION_INCOMING)
+			{
+				FUNCTION_Select(FUNCTION_INCOMING);
+				//gUpdateDisplay = true;
+			}
+			return;
+		}
+
+		gScanPauseDelayIn_10ms = scan_pause_delay_in_3_10ms;
+		gScheduleScanListen    = false;
+	}*/
+
+	gRxReceptionMode = RX_MODE_DETECTED;
+
+	if (gCurrentFunction != FUNCTION_INCOMING)
+	{
+		FUNCTION_Select(FUNCTION_INCOMING);
+		//gUpdateDisplay = true;
+	}
+}
+
+static void HandlePowerSave()
+{
+	if (!gRxIdleMode) {
+		CheckForIncoming();
+	}
+}
+
+
+static void HandleReceive(void)
+{
+	#define END_OF_RX_MODE_SKIP 0
+	#define END_OF_RX_MODE_END  1
+	#define END_OF_RX_MODE_TTE  2
+
+	uint8_t Mode = END_OF_RX_MODE_SKIP;
+
+	if (gFlagTailNoteEliminationComplete)
+	{
+		Mode = END_OF_RX_MODE_END;
+		goto Skip;
+	}
+
+	/*if (gScanStateDir != SCAN_OFF && IS_FREQ_CHANNEL(gNextMrChannel))
+	{ // we are scanning in the frequency mode
+		if (g_SquelchLost)
+			return;
+
+		Mode = END_OF_RX_MODE_END;
+		goto Skip;
+	}*/
+
+	if (gCurrentCodeType != CODE_TYPE_OFF
+		&& ((gFoundCTCSS && gFoundCTCSSCountdown_10ms == 0)
+			|| (gFoundCDCSS && gFoundCDCSSCountdown_10ms == 0))
+	){
+		gFoundCTCSS = false;
+		gFoundCDCSS = false;
+		Mode        = END_OF_RX_MODE_END;
+		goto Skip;
+	}
+
+	if (g_SquelchLost)
+	{
+		if (!gEndOfRxDetectedMaybe) {
+			switch (gCurrentCodeType)
+			{
+				case CODE_TYPE_OFF:
+					if (gEeprom.SQUELCH_LEVEL)
+					{
+						if (g_CxCSS_TAIL_Found)
+						{
+							Mode               = END_OF_RX_MODE_TTE;
+							g_CxCSS_TAIL_Found = false;
+						}
+					}
+					break;
+
+				case CODE_TYPE_CONTINUOUS_TONE:
+					if (g_CTCSS_Lost)
+					{
+						gFoundCTCSS = false;
+					}
+					else
+					if (!gFoundCTCSS)
+					{
+						gFoundCTCSS               = true;
+						gFoundCTCSSCountdown_10ms = 100;   // 1 sec
+					}
+
+					if (g_CxCSS_TAIL_Found)
+					{
+						Mode               = END_OF_RX_MODE_TTE;
+						g_CxCSS_TAIL_Found = false;
+					}
+					break;
+
+				case CODE_TYPE_DIGITAL:
+				case CODE_TYPE_REVERSE_DIGITAL:
+					if (g_CDCSS_Lost && gCDCSSCodeType == CDCSS_POSITIVE_CODE)
+					{
+						gFoundCDCSS = false;
+					}
+					else
+					if (!gFoundCDCSS)
+					{
+						gFoundCDCSS               = true;
+						gFoundCDCSSCountdown_10ms = 100;   // 1 sec
+					}
+
+					if (g_CxCSS_TAIL_Found)
+					{
+						if (BK4819_GetCTCType() == 1)
+							Mode = END_OF_RX_MODE_TTE;
+
+						g_CxCSS_TAIL_Found = false;
+					}
+
+					break;
+			}
+		}
+	}
+	else
+		Mode = END_OF_RX_MODE_END;
+
+	if (!gEndOfRxDetectedMaybe         &&
+	     Mode == END_OF_RX_MODE_SKIP   &&
+	     gNextTimeslice40ms            &&
+	     gEeprom.TAIL_TONE_ELIMINATION &&
+	    (gCurrentCodeType == CODE_TYPE_DIGITAL || gCurrentCodeType == CODE_TYPE_REVERSE_DIGITAL) &&
+	     BK4819_GetCTCType() == 1)
+		Mode = END_OF_RX_MODE_TTE;
+	else
+		gNextTimeslice40ms = false;
+
+Skip:
+	switch (Mode)
+	{
+		case END_OF_RX_MODE_SKIP:
+			break;
+
+		case END_OF_RX_MODE_END:
+			RADIO_SetupRegisters(true);
+
+			//gUpdateDisplay = true;
+
+			/*if (gScanStateDir != SCAN_OFF)
+			{
+				switch (gEeprom.SCAN_RESUME_MODE)
+				{
+					case SCAN_RESUME_TO:
+						break;
+
+					case SCAN_RESUME_CO:
+						gScanPauseDelayIn_10ms = scan_pause_delay_in_7_10ms;
+						gScheduleScanListen    = false;
+						break;
+
+					case SCAN_RESUME_SE:
+						CHFRSCANNER_Stop();
+						break;
+				}
+			}*/
+
+			break;
+
+		case END_OF_RX_MODE_TTE:
+			if (gEeprom.TAIL_TONE_ELIMINATION)
+			{
+				AUDIO_AudioPathOff();
+
+				gTailNoteEliminationCountdown_10ms = 20;
+				gFlagTailNoteEliminationComplete   = false;
+				gEndOfRxDetectedMaybe = true;
+				gEnableSpeaker        = false;
+			}
+			break;
+	}
+}
+
+static void HandleIncoming(void)
+{
+	APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
+}
+
+static void (*HandleFunction_fn_table[])(void) = {
+	[FUNCTION_FOREGROUND] = &CheckForIncoming,
+	[FUNCTION_TRANSMIT] = &FUNCTION_NOP,
+	[FUNCTION_MONITOR] = &FUNCTION_NOP,
+	[FUNCTION_INCOMING] = &HandleIncoming,
+	[FUNCTION_RECEIVE] = &HandleReceive,
+	[FUNCTION_POWER_SAVE] = &HandlePowerSave,
+	[FUNCTION_BAND_SCOPE] = &FUNCTION_NOP,
+};
+
+void APP_Function(FUNCTION_Type_t function) {	
+	HandleFunction_fn_table[function]();
+}
+
+
+void COMMON_SwitchVFOMode()
+{
+
+    if (gEeprom.VFO_OPEN) {
+        if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE))
+        {	// swap to frequency mode
+            gEeprom.ScreenChannel[gEeprom.TX_VFO] = gEeprom.FreqChannel[gEeprom.TX_VFO];
+            //gRequestSaveVFO            = true;
+            //gVfoConfigureMode          = VFO_CONFIGURE_RELOAD;
+            return;
+        }
+
+        uint8_t Channel = RADIO_FindNextChannel(gEeprom.MrChannel[gEeprom.TX_VFO], 1, false, 0);
+        if (Channel != 0xFF)
+        {	// swap to channel mode
+            gEeprom.ScreenChannel[gEeprom.TX_VFO] = Channel;
+            //gRequestSaveVFO     = true;
+            //gVfoConfigureMode   = VFO_CONFIGURE_RELOAD;
+            return;
+        }
+    }
+}
+
+void COMMON_SwitchVFOs()
+{
+/*#ifdef ENABLE_SCAN_RANGES    
+    gScanRangeStart = 0;
+#endif*/
+    gEeprom.TX_VFO ^= 1;
+
+    if (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF)
+        gEeprom.CROSS_BAND_RX_TX = gEeprom.TX_VFO + 1;
+    if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
+        gEeprom.DUAL_WATCH = gEeprom.TX_VFO + 1;
+
+    //gRequestSaveSettings  = 1;
+    //gFlagReconfigureVfos  = true;
+    //gScheduleDualWatch = true;
+
+    //gRequestDisplayScreen = DISPLAY_MAIN;
+}
 
 /* --------------------------------------------------------------------------------------------------------- */
 
@@ -214,7 +770,7 @@ void main_task(void* arg) {
 	
 	LogUartf("Main Task Ready... \r\n");
 
-	while (true) {
+	for (;;) {
 		MAIN_Messages_t msg;
     	if (xQueueReceive(mainTasksMsgQueue, &msg, 10)) {
 			switch(msg.message) {
@@ -400,8 +956,7 @@ void main_task(void* arg) {
 
 void main_push_message_value(MAIN_MSG_t msg, uint32_t value) {
 	MAIN_Messages_t mainMSG = { msg, value };
-    BaseType_t xHigherPriorityTaskWoken;
-    xHigherPriorityTaskWoken = pdFALSE;
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xQueueSendToBackFromISR(mainTasksMsgQueue, (void *)&mainMSG, &xHigherPriorityTaskWoken);
 }
 

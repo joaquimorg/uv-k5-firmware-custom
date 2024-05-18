@@ -87,7 +87,7 @@ uint8_t gUnlockAllTxConfCnt;
 void MENU_StartCssScan(void)
 {
 	SCANNER_Start(true);
-	gUpdateStatus = true;
+	//gUpdateStatus = true;
 	gCssBackgroundScan = true;
 
 	gRequestDisplayScreen = DISPLAY_MENU;
@@ -104,7 +104,7 @@ void MENU_CssScanFound(void)
 
 	MENU_ShowCurrentSetting();
 
-	gUpdateStatus = true;
+	//gUpdateStatus = true;
 	//gUpdateDisplay = true;
 }
 
@@ -113,7 +113,7 @@ void MENU_StopCssScan(void)
 	gCssBackgroundScan = false;
 
 	//gUpdateDisplay = true;
-	gUpdateStatus = true;
+	//gUpdateStatus = true;
 }
 
 int MENU_GetLimits(uint8_t menu_id, uint16_t *pMin, uint16_t *pMax)
@@ -484,7 +484,7 @@ void MENU_AcceptSetting(void)
 					gEeprom.VOX_LEVEL = settingsCurrentSubMenu - 1;
 				SETTINGS_LoadCalibration();
 				gFlagReconfigureVfos = true;
-				gUpdateStatus        = true;
+				//gUpdateStatus        = true;
 				break;
 		#endif
 
@@ -516,7 +516,7 @@ void MENU_AcceptSetting(void)
 			gEeprom.CROSS_BAND_RX_TX = (gEeprom.TX_VFO + 1) * ((settingsCurrentSubMenu & 2) > 0);
 
 			gFlagReconfigureVfos = true;
-			gUpdateStatus        = true;
+			//gUpdateStatus        = true;
 			break;
 
 		case MENU_BEEP:
@@ -632,12 +632,12 @@ void MENU_AcceptSetting(void)
 
 		case MENU_D_LIVE_DEC:
 			gSetting_live_DTMF_decoder = settingsCurrentSubMenu;
-			gDTMF_RX_live_timeout = 0;
-			memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
+			//gDTMF_RX_live_timeout = 0;
+			//memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
 			if (!gSetting_live_DTMF_decoder)
 				BK4819_DisableDTMF();
 			gFlagReconfigureVfos     = true;
-			gUpdateStatus            = true;
+			//gUpdateStatus            = true;
 			break;
 
 #ifdef ENABLE_DTMF_CALLING

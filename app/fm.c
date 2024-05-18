@@ -110,7 +110,7 @@ void FM_TurnOff(void)
 
 	BK1080_Init0();
 
-	gUpdateStatus  = true;
+	//gUpdateStatus  = true;
 }
 
 void FM_EraseChannels(void)
@@ -317,7 +317,7 @@ static void Key_FUNC(KEY_Code_t Key, uint8_t state)
 
 		gBeepToPlay           = BEEP_1KHZ_60MS_OPTIONAL;
 		gWasFKeyPressed       = false;
-		gUpdateStatus         = true;
+		//gUpdateStatus         = true;
 		gRequestDisplayScreen = DISPLAY_FM;
 
 		switch (Key) {
@@ -584,7 +584,7 @@ void FM_Start(void)
 	AUDIO_AudioPathOn();
 
 	gEnableSpeaker       = true;
-	gUpdateStatus        = true;
+	//gUpdateStatus        = true;
 }
 
 #endif

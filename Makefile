@@ -145,6 +145,14 @@ IPATH += \
 	ui/main.c \
 	ui/menu.c \
 	app/menu.c \
+	\
+	app/action.c \
+	app/app.c \
+	app/chFrScanner.c \
+	app/common.c \
+	app/dtmf.c \
+	app/generic.c \
+	app/main.c \
 
 C_SRC += \
 	external/printf/printf.c \
@@ -160,13 +168,6 @@ C_SRC += \
 	driver/st7565.c \
 	driver/system.c \
 	driver/systick.c \
-	app/action.c \
-	app/app.c \
-	app/chFrScanner.c \
-	app/common.c \
-	app/dtmf.c \
-	app/generic.c \
-	app/main.c \
 	app/scanner.c \
 	audio.c \
 	board.c \
@@ -515,7 +516,7 @@ $(BUILD)/$(PROJECT_NAME).out: $(OBJECTS)
 	@echo Create $(notdir $@)
 	@$(OBJCOPY) -O binary $(BUILD)/$(PROJECT_NAME).out $(BIN)/$(PROJECT_NAME).bin
 	@echo Create $(PROJECT_NAME).packed.bin
-	@-$(MY_PYTHON) fw-pack.py $(BIN)/$(PROJECT_NAME).bin $(AUTHOR_STRING) $(VERSION_STRING) $(BIN)/$(PROJECT_NAME).packed.bin
+	@-$(MY_PYTHON) utils/fw-pack.py $(BIN)/$(PROJECT_NAME).bin $(AUTHOR_STRING) $(VERSION_STRING) $(BIN)/$(PROJECT_NAME).packed.bin
 
 
 prog: all

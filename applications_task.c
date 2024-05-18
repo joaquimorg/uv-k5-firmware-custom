@@ -49,14 +49,14 @@
 #include "apps/empty_app.h"
 
 #define QUEUE_LENGTH    10
-#define ITEM_SIZE       sizeof( APP_Messages_t )
+#define APP_ITEM_SIZE   sizeof( APP_Messages_t )
 
 StackType_t app_task_stack[configMINIMAL_STACK_SIZE + 150];
 StaticTask_t app_task_buffer;
 
 static StaticQueue_t appTasksQueue;
 QueueHandle_t appTasksMsgQueue;
-uint8_t appQueueStorageArea[ QUEUE_LENGTH * ITEM_SIZE ];
+uint8_t appQueueStorageArea[ QUEUE_LENGTH * APP_ITEM_SIZE ];
 
 /*-----------------------------------------------------------*/
 
@@ -173,9 +173,7 @@ void app_task(void* arg) {
 
     currentAppPopup = APP_POPUP_NONE;
 
-    appTasksMsgQueue = xQueueCreateStatic(QUEUE_LENGTH, ITEM_SIZE, appQueueStorageArea, &appTasksQueue);
-
-    keyboard_init(keyboard_callback);    
+    appTasksMsgQueue = xQueueCreateStatic(QUEUE_LENGTH, APP_ITEM_SIZE, appQueueStorageArea, &appTasksQueue);    
 
     renderTimer = xTimerCreateStatic("render", pdMS_TO_TICKS(50), pdFALSE, NULL, render_timer_callback, &renderTimerBuffer);
     idleTimer = xTimerCreateStatic("idle", pdMS_TO_TICKS(5000), pdTRUE, NULL, idle_timer_callback, &idleTimerBuffer);
@@ -188,13 +186,20 @@ void app_task(void* arg) {
     xTimerStart(lightTimer, 0);
     
     LogUartf("Task APPs Ready\r\n");
+
+    keyboard_init();
     
-    while(true) {
+    for (;;) {
 
         APP_Messages_t msg;
+
     	if (xQueueReceive(appTasksMsgQueue, &msg, 20)) {
 
 			switch(msg.message) {
+                case APP_MSG_KEY:
+                    keyboard_callback(msg.key_code, msg.key_state);
+                    break;
+
                 case APP_MSG_TIMEOUT:
                     if ( currentApp != APP_MAIN_VFO && autoReturntoMain ) {
                         load_application(APP_MAIN_VFO);
@@ -252,16 +257,19 @@ void app_task(void* arg) {
 
         }
 
-        keyboard_task();
-
     }
 }
 
 
 void app_push_message_value(APP_MSG_t msg, uint32_t value) {
-    APP_Messages_t appMSG = { msg, value };
-    BaseType_t xHigherPriorityTaskWoken;
-    xHigherPriorityTaskWoken = pdFALSE;
+    APP_Messages_t appMSG = { msg, value, 0, 0 };
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xQueueSendToBackFromISR(appTasksMsgQueue, (void *)&appMSG, &xHigherPriorityTaskWoken);
+}
+
+void app_push_message_key(KEY_Code_t key, KEY_State_t state) {
+    APP_Messages_t appMSG = { APP_MSG_KEY, 0, key, state };
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xQueueSendToBackFromISR(appTasksMsgQueue, (void *)&appMSG, &xHigherPriorityTaskWoken);
 }
 
@@ -345,12 +353,12 @@ APPS_Popup_t application_getPopup(void) {
 
 void applications_task_init(void) {
 
-    xTaskCreateStatic(
+     xTaskCreateStatic(
 		app_task,
 		"APP",
 		ARRAY_SIZE(app_task_stack),
 		NULL,
-		2 + tskIDLE_PRIORITY,
+		3 + tskIDLE_PRIORITY,
 		app_task_stack,
 		&app_task_buffer
 	);

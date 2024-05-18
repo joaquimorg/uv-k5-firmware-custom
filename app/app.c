@@ -95,7 +95,7 @@ static bool flagSaveChannel;
 
 static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld);
 */
-
+/*
 void (*ProcessKeysFunctions[])(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld) = {
 	//[DISPLAY_MAIN] = &MAIN_ProcessKeys,
 	//[DISPLAY_MENU] = &MENU_ProcessKeys,
@@ -115,7 +115,7 @@ void (*ProcessKeysFunctions[])(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld) 
 };
 
 static_assert(ARRAY_SIZE(ProcessKeysFunctions) == DISPLAY_N_ELEM);
-
+*/
 
 
 static void CheckForIncoming(void)
@@ -156,7 +156,7 @@ static void CheckForIncoming(void)
 
 		// let the user see DW is not active
 		gDualWatchActive = false;
-		gUpdateStatus    = true;
+		//gUpdateStatus    = true;
 	}
 	else
 	{	// RF scanning
@@ -229,7 +229,7 @@ static void HandleIncoming(void)
 
 			// let the user see DW is not active
 			gDualWatchActive = false;
-			gUpdateStatus    = true;
+			//gUpdateStatus    = true;
 
 			//gUpdateDisplay = true;
 			return;
@@ -459,7 +459,7 @@ void APP_StartListening(FUNCTION_Type_t function)
 
 		// let the user see DW is not active
 		gDualWatchActive = false;
-		gUpdateStatus    = true;
+		//gUpdateStatus    = true;
 	}
 
 	BK4819_WriteRegister(BK4819_REG_48,
@@ -481,10 +481,10 @@ void APP_StartListening(FUNCTION_Type_t function)
 		if (gScreenToDisplay != DISPLAY_MENU)     // 1of11 .. don't close the menu
 			GUI_SelectNextDisplay(DISPLAY_MAIN);
 	}
-	else
+	//else
 		//gUpdateDisplay = true;
 
-	gUpdateStatus = true;
+	//gUpdateStatus = true;
 }
 
 uint32_t APP_SetFreqByStepAndLimits(VFO_Info_t *pInfo, int8_t direction, uint32_t lower, uint32_t upper)
@@ -513,7 +513,7 @@ static void DualwatchAlternate(void)
 	if (!gDualWatchActive)
 	{	// let the user see DW is active
 		gDualWatchActive = true;
-		gUpdateStatus    = true;
+		//gUpdateStatus    = true;
 	}
 
 	RADIO_SetupRegisters(false);
@@ -643,7 +643,7 @@ void CheckRadioInterrupts(void)
 
 					// let the user see DW is not active
 					gDualWatchActive = false;
-					gUpdateStatus    = true;
+					//gUpdateStatus    = true;
 				}
 			}
 		}
@@ -743,7 +743,7 @@ static void HandleVox(void)
 
 		if (gCurrentFunction == FUNCTION_TRANSMIT && !gPttIsPressed && !gVOX_NoiseDetected) {
 			APP_EndTransmission(false);
-			gUpdateStatus = true;
+			//gUpdateStatus = true;
 			//gUpdateDisplay = true;
 		}
 		return;
@@ -1077,7 +1077,7 @@ void APP_TimeSlice10ms(void)
 		GUI_DisplayScreen();
 	}
 
-	if (gUpdateStatus)
+	if (//gUpdateStatus)
 		UI_DisplayStatus();*/
 
 	// Skipping authentic device checks
@@ -1156,7 +1156,7 @@ void APP_TimeSlice10ms(void)
 		// repeater tail tone elimination
 		if (gRTTECountdown > 0 && gRTTECountdown-- == 0) {
 			FUNCTION_Select(FUNCTION_FOREGROUND);
-			gUpdateStatus  = true;
+			//gUpdateStatus  = true;
 			//gUpdateDisplay = true;
 		}
 	}
@@ -1203,7 +1203,7 @@ void cancelUserInputModes(void)
 		gInputBoxIndex      = 0;
 		gKeyInputCountdown  = 0;
 		gBeepToPlay         = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
-		gUpdateStatus       = true;
+		//gUpdateStatus       = true;
 		gUpdateDisplay      = true;
 	}
 }
@@ -1338,15 +1338,15 @@ void APP_TimeSlice500ms(void)
 	}
 
 	// regular display updates (once every 2 sec) - if need be
-	if ((gBatteryCheckCounter & 3) == 0)
+	/*if ((gBatteryCheckCounter & 3) == 0)
 	{
 		if (gChargingWithTypeC || gSetting_battery_text > 0)
-			gUpdateStatus = true;
+			//gUpdateStatus = true;
 		#ifdef ENABLE_SHOW_CHARGE_LEVEL
 			if (gChargingWithTypeC)
 				//gUpdateDisplay = true;
 		#endif
-	}
+	}*/
 
 	if (!gCssBackgroundScan && gScanStateDir == SCAN_OFF && !SCANNER_IsScanning()
 #ifdef ENABLE_FMRADIO
@@ -1360,7 +1360,7 @@ void APP_TimeSlice500ms(void)
 			&& gScreenToDisplay != DISPLAY_MENU && --gKeyLockCountdown == 0)
 		{
 			gEeprom.KEY_LOCK = true;     // lock the keyboard
-			gUpdateStatus = true;            // lock symbol needs showing
+			//gUpdateStatus = true;            // lock symbol needs showing
 		}
 
 		if (exit_menu) {
@@ -1391,7 +1391,7 @@ void APP_TimeSlice500ms(void)
 			gAskToSave       = false;
 			gAskToDelete     = false;
 
-			gUpdateStatus    = true;
+			//gUpdateStatus    = true;
 			gUpdateDisplay   = true;
 
 			GUI_DisplayType_t disp = DISPLAY_INVALID;
@@ -1654,7 +1654,7 @@ static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 	if (gWasFKeyPressed && (Key == KEY_PTT || Key == KEY_EXIT || Key == KEY_SIDE1 || Key == KEY_SIDE2)) { 
 		// cancel the F-key
 		gWasFKeyPressed = false;
-		gUpdateStatus   = true;
+		//gUpdateStatus   = true;
 	}
 
 	if (bFlag) {
@@ -1757,7 +1757,7 @@ Skip:
 		else
 			flagSaveSettings = 1;
 		gRequestSaveSettings = false;
-		gUpdateStatus        = true;
+		//gUpdateStatus        = true;
 	}
 
 #ifdef ENABLE_FMRADIO

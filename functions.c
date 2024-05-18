@@ -78,15 +78,15 @@ void FUNCTION_Init(void)
 	DTMF_clear_RX();
 #endif
 
-	gUpdateStatus = true;
+	//gUpdateStatus = true;
 }
 
 void FUNCTION_Foreground(const FUNCTION_Type_t PreviousFunction)
 {
-#ifdef ENABLE_DTMF_CALLING
+/*#ifdef ENABLE_DTMF_CALLING
 	if (gDTMF_ReplyState != DTMF_REPLY_NONE)
 		RADIO_PrepareCssTX();
-#endif
+#endif*/
 
 	if (PreviousFunction == FUNCTION_TRANSMIT) {
 		ST7565_FixInterfGlitch();
@@ -109,7 +109,7 @@ void FUNCTION_Foreground(const FUNCTION_Type_t PreviousFunction)
 		gDTMF_auto_reset_time_500ms = gEeprom.DTMF_auto_reset_time * 2;
 	}
 #endif
-	gUpdateStatus = true;
+	//gUpdateStatus = true;
 }
 
 void FUNCTION_PowerSave() {
@@ -125,7 +125,7 @@ void FUNCTION_PowerSave() {
 
 	BK4819_ToggleGpioOut(BK4819_GPIO0_PIN28_RX_ENABLE, false);
 
-	gUpdateStatus = true;
+	//gUpdateStatus = true;
 
 	if (gScreenToDisplay != DISPLAY_MENU)     // 1of11 .. don't close the menu
 		GUI_SelectNextDisplay(DISPLAY_MAIN);
@@ -146,8 +146,8 @@ void FUNCTION_Transmit()
 #endif
 
 	// clear the DTMF RX live decoder buffer
-	gDTMF_RX_live_timeout = 0;
-	memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
+	//gDTMF_RX_live_timeout = 0;
+	//memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
 
 #if defined(ENABLE_FMRADIO)
 	if (gFmRadioMode)
@@ -186,7 +186,7 @@ void FUNCTION_Transmit()
 	// turn the RED LED on
 	BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);
 
-	DTMF_Reply();
+	//DTMF_Reply();
 
 	if (gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_APOLLO)
 		BK4819_PlaySingleTone(2525, 250, 0, gEeprom.DTMF_SIDE_TONE);

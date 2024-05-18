@@ -20,6 +20,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "keyboard.h"
 
 enum MAIN_MSG_e
 {
@@ -71,6 +72,7 @@ enum APP_MSG_e
 	APP_MSG_TIMEOUT = 0,
 	APP_MSG_TIMEOUT_RETURN_MAIN,
 	APP_MSG_TIMEOUT_NO_RETURN_MAIN,
+	APP_MSG_KEY,
 	APP_MSG_IDLE,
 	APP_MSG_BACKLIGHT,
 	APP_MSG_WAKEUP,
@@ -83,6 +85,8 @@ typedef enum APP_MSG_e APP_MSG_t;
 typedef struct {
 	APP_MSG_t message;
 	uint32_t payload;
+	KEY_Code_t key_code;
+    KEY_State_t key_state;
 } APP_Messages_t;
 
 #endif

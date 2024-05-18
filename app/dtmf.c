@@ -300,7 +300,7 @@ void DTMF_HandleRequest(void)
 			gDTMF_CallState = DTMF_CALL_STATE_NONE;
 
 			gUpdateDisplay  = true;
-			gUpdateStatus   = true;
+			//gUpdateStatus   = true;
 			return;
 		}
 	}
@@ -325,7 +325,7 @@ void DTMF_HandleRequest(void)
 			gDTMF_CallState  = DTMF_CALL_STATE_NONE;
 
 			gUpdateDisplay   = true;
-			gUpdateStatus    = true;
+			//gUpdateStatus    = true;
 			return;
 		}
 	}

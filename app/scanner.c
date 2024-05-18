@@ -155,7 +155,7 @@ static void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 
 			gRequestDisplayScreen = DISPLAY_SCANNER;
 			
-			gUpdateStatus = true;
+			//gUpdateStatus = true;
 			break;
 
 		case SCAN_SAVE_CHAN_SEL:
@@ -310,7 +310,7 @@ void SCANNER_Start(bool singleFreq)
 		BK4819_PickRXFilterPathBasedOnFrequency(gScanFrequency);
 		BK4819_SetScanFrequency(gScanFrequency);
 
-		gUpdateStatus = true;
+		//gUpdateStatus = true;
 	}
 	else {
 		gScanCssState  = SCAN_CSS_STATE_OFF;
@@ -319,7 +319,7 @@ void SCANNER_Start(bool singleFreq)
 		BK4819_PickRXFilterPathBasedOnFrequency(gScanFrequency);
 		BK4819_EnableFrequencyScan();
 
-		gUpdateStatus = true;
+		//gUpdateStatus = true;
 	}
 
 #ifdef ENABLE_DTMF_CALLING
@@ -349,7 +349,7 @@ void SCANNER_Stop(void)
 		gEeprom.CROSS_BAND_RX_TX = gBackup_CROSS_BAND_RX_TX;
 		gVfoConfigureMode        = VFO_CONFIGURE_RELOAD;
 		gFlagResetVfos           = true;
-		gUpdateStatus            = true;
+		//gUpdateStatus            = true;
 		gCssBackgroundScan 			 = false;
 		gScanUseCssResult = false;
 
@@ -405,7 +405,7 @@ void SCANNER_TimeSlice10ms(void)
 				if(!gCssBackgroundScan)
 					GUI_SelectNextDisplay(DISPLAY_SCANNER);
 
-				gUpdateStatus          = true;
+				//gUpdateStatus          = true;
 			}
 
 			gScanDelay_10ms = scan_delay_10ms;
@@ -429,7 +429,7 @@ void SCANNER_TimeSlice10ms(void)
 					gScanCssResultType = CODE_TYPE_DIGITAL;
 					gScanCssState      = SCAN_CSS_STATE_FOUND;
 					gScanUseCssResult  = true;
-					gUpdateStatus      = true;
+					//gUpdateStatus      = true;
 				}
 			}
 			else if (scanResult == BK4819_CSS_RESULT_CTCSS) {
@@ -439,7 +439,7 @@ void SCANNER_TimeSlice10ms(void)
 						if (++scanHitCount >= 2) {
 							gScanCssState     = SCAN_CSS_STATE_FOUND;
 							gScanUseCssResult = true;
-							gUpdateStatus     = true;
+							//gUpdateStatus     = true;
 						}
 					}
 					else
@@ -485,7 +485,7 @@ void SCANNER_TimeSlice500ms(void)
 			else
 				gScanCssState = SCAN_CSS_STATE_FAILED;
 
-			gUpdateStatus = true;
+			//gUpdateStatus = true;
 		}
 #endif
 		//gUpdateDisplay = true;

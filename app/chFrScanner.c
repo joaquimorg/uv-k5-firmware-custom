@@ -138,7 +138,7 @@ void CHFRSCANNER_Stop(void)
 
 		if(channelChanged) {
 			SETTINGS_SaveVfoIndices();
-			gUpdateStatus = true;
+			//gUpdateStatus = true;
 		}
 	}
 	else {

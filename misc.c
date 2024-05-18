@@ -36,11 +36,11 @@ const uint8_t     DTMF_decode_ring_countdown_500ms = 15000 / 500;  // 15 seconds
 const uint8_t     DTMF_txstop_countdown_500ms      =  3000 / 500;  // 6 seconds
 #endif
 
-const uint8_t     key_input_timeout_500ms          =  8000 / 500;  // 8 seconds
+//const uint8_t     key_input_timeout_500ms          =  8000 / 500;  // 8 seconds
 
-const uint16_t    key_repeat_delay_10ms            =   400 / 10;   // 400ms
-const uint16_t    key_repeat_10ms                  =    80 / 10;   // 80ms .. MUST be less than 'key_repeat_delay'
-const uint16_t    key_debounce_10ms                =    20 / 10;   // 20ms
+//const uint16_t    key_repeat_delay_10ms            =   400 / 10;   // 400ms
+//const uint16_t    key_repeat_10ms                  =    80 / 10;   // 80ms .. MUST be less than 'key_repeat_delay'
+//const uint16_t    key_debounce_10ms                =    20 / 10;   // 20ms
 
 const uint8_t     scan_delay_10ms                  =   210 / 10;   // 210ms
 
@@ -141,7 +141,7 @@ uint8_t           gKeyInputCountdown = 0;
 uint8_t           gKeyLockCountdown;
 uint8_t           gRTTECountdown;
 bool              bIsInLockScreen;
-uint8_t           gUpdateStatus;
+//uint8_t           gUpdateStatus;
 uint8_t           gFoundCTCSS;
 uint8_t           gFoundCDCSS;
 bool              gEndOfRxDetectedMaybe;

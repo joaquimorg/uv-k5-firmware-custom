@@ -166,8 +166,8 @@ void ACTION_Scan(bool bRestart)
 #ifdef ENABLE_DTMF_CALLING
 	DTMF_clear_RX();
 #endif
-	gDTMF_RX_live_timeout = 0;
-	memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
+	//gDTMF_RX_live_timeout = 0;
+	//memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
 
 	RADIO_SelectVfos();
 
@@ -199,7 +199,7 @@ void ACTION_Scan(bool bRestart)
 		gDualWatchActive = false;
 	}
 
-	gUpdateStatus = true;
+	//gUpdateStatus = true;
 }
 
 
@@ -392,7 +392,7 @@ void ACTION_Vox(void)
 	gEeprom.VOX_SWITCH   = !gEeprom.VOX_SWITCH;
 	gRequestSaveSettings = true;
 	gFlagReconfigureVfos = true;
-	gUpdateStatus        = true;
+	//gUpdateStatus        = true;
 }
 #endif
 

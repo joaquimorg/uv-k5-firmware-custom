@@ -280,7 +280,7 @@ void MainVFO_renderFunction() {
     UI_displayClear();
     MainVFO_showVFO();    
     
-    UI_printf(&font_small, TEXT_ALIGN_LEFT, 1, 126, 61, true, false, "%s", StatusString[StatusLine]);    
+    //UI_printf(&font_small, TEXT_ALIGN_LEFT, 1, 126, 61, true, false, "%s", StatusString[StatusLine]);    
 
     if (GUI_inputNotEmpty()) {
         if (IS_MR_CHANNEL(gEeprom.ScreenChannel[gEeprom.TX_VFO])) {

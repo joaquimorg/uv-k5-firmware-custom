@@ -100,11 +100,11 @@ extern const uint8_t         DTMF_decode_ring_countdown_500ms;
 extern const uint8_t         DTMF_txstop_countdown_500ms;
 #endif
 
-extern const uint8_t         key_input_timeout_500ms;
+//extern const uint8_t         key_input_timeout_500ms;
 
-extern const uint16_t        key_repeat_delay_10ms;
-extern const uint16_t        key_repeat_10ms;
-extern const uint16_t        key_debounce_10ms;
+//extern const uint16_t        key_repeat_delay_10ms;
+//extern const uint16_t        key_repeat_10ms;
+//extern const uint16_t        key_debounce_10ms;
 
 extern const uint8_t         scan_delay_10ms;
 
@@ -216,7 +216,7 @@ extern uint8_t               gKeyInputCountdown;
 extern uint8_t               gKeyLockCountdown;
 extern uint8_t               gRTTECountdown;
 extern bool                  bIsInLockScreen;
-extern uint8_t               gUpdateStatus;
+//extern uint8_t               gUpdateStatus;
 extern uint8_t               gFoundCTCSS;
 extern uint8_t               gFoundCDCSS;
 extern bool                  gEndOfRxDetectedMaybe;

@@ -77,7 +77,8 @@ void GUI_DisplayScreen(void)
 
 void GUI_SelectNextDisplay(GUI_DisplayType_t Display)
 {
-	if (Display == DISPLAY_INVALID)
+	(void)Display;
+	/*if (Display == DISPLAY_INVALID)
 		return;
 
 	if (gScreenToDisplay != Display)
@@ -96,11 +97,11 @@ void GUI_SelectNextDisplay(GUI_DisplayType_t Display)
 		gAskToDelete         = false;
 		gWasFKeyPressed      = false;
 
-		gUpdateStatus        = true;
+		//gUpdateStatus        = true;
 	}
 
 	gScreenToDisplay = Display;
-	gUpdateDisplay   = true;
+	gUpdateDisplay   = true;*/
 }
 
 

@@ -660,7 +660,7 @@ void MSG_StorePacket(const uint16_t interrupt_bits) {
 				if (msgFSKBuffer[5] == 'R' && msgFSKBuffer[6] == 'C' && msgFSKBuffer[7] == 'V' && msgFSKBuffer[8] == 'D') {
 					UART_printf("SVC<RCPT\r\n");
 					rxMessage[3][strlen(rxMessage[3])] = '+';
-					gUpdateStatus = true;
+					//gUpdateStatus = true;
 					//gUpdateDisplay = true;
 				}
 			#endif
@@ -680,7 +680,7 @@ void MSG_StorePacket(const uint16_t interrupt_bits) {
 
 				if ( gScreenToDisplay != DISPLAY_MSG ) {
 					hasNewMessage = 1;
-					gUpdateStatus = true;
+					//gUpdateStatus = true;
 					//gUpdateDisplay = true;
 			#ifdef ENABLE_MESSENGER_NOTIFICATION
 					gPlayMSGRing = true;

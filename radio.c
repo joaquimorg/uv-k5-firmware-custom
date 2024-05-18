@@ -854,7 +854,7 @@ void RADIO_PrepareTX(void)
 
 		// let the user see that DW is not active
 		gDualWatchActive = false;
-		gUpdateStatus    = true;
+		//gUpdateStatus    = true;
 	}*/
 
 	RADIO_SelectCurrentVfo();
@@ -959,7 +959,7 @@ void RADIO_EnableCxCSS(void)
 void RADIO_SendEndOfTransmission(void)
 {
 	BK4819_PlayRoger();
-	DTMF_SendEndOfTransmission();
+	//DTMF_SendEndOfTransmission();
 
 	// send the CTCSS/DCS tail tone - allows the receivers to mute the usual FM squelch tail/crash
 	RADIO_EnableCxCSS();
