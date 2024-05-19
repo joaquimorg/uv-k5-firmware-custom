@@ -53,19 +53,10 @@
 	#include "ARMCM0.h"
 #endif
 
-#include "helper/battery.h"
-#include "helper/boot.h"
-
 #include "ui/status.h"
-#include "ui/ui.h"
-
-#include "ui/lock.h"
-#include "ui/welcome.h"
-#include "ui/menu.h"
 
 #include "task_main.h"
 #include "vfo.h"
-#include "common.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -91,8 +82,6 @@ StaticTimer_t hwStatusTimerBuffer500;
 static StaticQueue_t mainTasksQueue;
 QueueHandle_t mainTasksMsgQueue;
 uint8_t mainQueueStorageArea[ QUEUE_LENGTH * ITEM_SIZE ];
-
-extern void SystickHandlerA(void);
 
 void main_push_message(MAIN_MSG_t msg);
 
@@ -203,27 +192,29 @@ void CheckRadioInterrupts(void)
 		}
 */		
 
-		if (interrupts.cssTailFound)
+		if (interrupts.cssTailFound) {
 			g_CxCSS_TAIL_Found = true;
+			main_push_message(RADIO_CSS_TAIL_FOUND);
+		}
 
 		if (interrupts.cdcssLost) {
-			g_CDCSS_Lost = true;
+			//g_CDCSS_Lost = true;
 			gCDCSSCodeType = BK4819_GetCDCSSCodeType();
 			main_push_message(RADIO_CDCSS_LOST);
 		}
 
 		if (interrupts.cdcssFound) {
-			g_CDCSS_Lost = false;
+			//g_CDCSS_Lost = false;
 			main_push_message(RADIO_CDCSS_FOUND);
 		}
 
 		if (interrupts.ctcssLost) {
-			g_CTCSS_Lost = true;
+			//g_CTCSS_Lost = true;
 			main_push_message(RADIO_CTCSS_LOST);
 		}
 
 		if (interrupts.ctcssFound) {
-			g_CTCSS_Lost = false;
+			//g_CTCSS_Lost = false;
 			main_push_message(RADIO_CTCSS_FOUND);
 		}
 /*
@@ -359,6 +350,7 @@ void APP_StartListening(FUNCTION_Type_t function)
 
 	FUNCTION_Select(function);
 
+/*
 #ifdef ENABLE_FMRADIO
 	if (function == FUNCTION_MONITOR || gFmRadioMode)
 #else
@@ -372,6 +364,7 @@ void APP_StartListening(FUNCTION_Type_t function)
 		//gUpdateDisplay = true;
 
 	//gUpdateStatus = true;
+*/
 }
 
 /* --------------------------------------------------------------------------------------------------------- */
@@ -722,7 +715,6 @@ void hw_timer_callback(TimerHandle_t xTimer) {
 	if (GPIO_CheckBit(&GPIOB->DATA, GPIOB_PIN_SWD_CLK)) {
 		CheckRadioInterrupts();
 	}
-	//SystickHandlerA();
 
     xTimerStart(xTimer, 0);
 }
@@ -824,6 +816,9 @@ void main_task(void* arg) {
 					app_push_message(APP_MSG_IDLE);
 					//LogUartf("SQUELCH_FOUND\r\n");
                     break;
+
+				case RADIO_CSS_TAIL_FOUND:
+					break;
 
 				case RADIO_CTCSS_LOST:
 					//LogUartf("CTCSS_LOST (%b) CT = (%i)\r\n", g_CTCSS_Lost, gCurrentCodeType);

@@ -129,16 +129,11 @@ void SETTINGS_InitEEPROM(void)
 
 	// 0EA0..0EA7
 	EEPROM_ReadBuffer(0x0EA0, Data, 8);
-	#ifdef ENABLE_RSSI_BAR
-		if((Data[1] < 200 && Data[1] > 90) && (Data[2] < Data[1]-9 && Data[1] < 160  && Data[2] > 50)) {
-			gEeprom.S0_LEVEL = Data[1];
-			gEeprom.S9_LEVEL = Data[2];
-		}
-		else {
-			gEeprom.S0_LEVEL = 130;
-			gEeprom.S9_LEVEL = 76;
-		}
-	#endif
+
+	if((Data[1] < 200 && Data[1] > 90) && (Data[2] < Data[1]-9 && Data[1] < 160  && Data[2] > 50)) {
+		gEeprom.S0_LEVEL = Data[1];
+		gEeprom.S9_LEVEL = Data[2];
+	}
 
 	// 0EA8..0EAF
 	EEPROM_ReadBuffer(0x0EA8, Data, 8);
@@ -519,10 +514,10 @@ void SETTINGS_SaveSettings(void)
 	EEPROM_WriteBuffer(0x0E98, Password);
 
 	memset(State, 0xFF, sizeof(State));
-#ifdef ENABLE_RSSI_BAR
+
 	State[1] = gEeprom.S0_LEVEL;
 	State[2] = gEeprom.S9_LEVEL;
-#endif
+
 	EEPROM_WriteBuffer(0x0EA0, State);
 
 

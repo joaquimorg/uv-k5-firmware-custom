@@ -16,26 +16,27 @@
 
 #include <string.h>
 
-#include "app/chFrScanner.h"
+//#include "app/chFrScanner.h"
 #ifdef ENABLE_FMRADIO
 	#include "app/fm.h"
 #endif
 #ifdef ENABLE_MESSENGER
 	#include "app/messenger.h"
 #endif
-#include "app/scanner.h"
-#include "bitmaps.h"
+//#include "app/scanner.h"
+//#include "bitmaps.h"
 #include "driver/keyboard.h"
 #include "driver/st7565.h"
-#include "external/printf/printf.h"
+//#include "external/printf/printf.h"
 #include "functions.h"
 #include "helper/battery.h"
 #include "misc.h"
 #include "settings.h"
-#include "ui/battery.h"
-#include "ui/helper.h"
-#include "ui/ui.h"
+//#include "ui/battery.h"
+//#include "ui/helper.h"
+//#include "ui/ui.h"
 #include "ui/status.h"
+#include "gui/ui.h"
 #include "gui/gui.h"
 
 
@@ -125,7 +126,7 @@ void UI_DisplayStatus()
 		}*/
 	}
 
-	if(!SCANNER_IsScanning()) {
+	//if(!SCANNER_IsScanning()) {
 		uint8_t dw = (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) + (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) * 2;
 		if(dw == 1 || dw == 3) { // DWR - dual watch + respond
 			if(gDualWatchActive) {
@@ -140,7 +141,7 @@ void UI_DisplayStatus()
 			UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, 4, true, false, "XB");
 			//memcpy(line + x + 2, BITMAP_XB, sizeof(BITMAP_XB));
 		}
-	}
+	//}
 
 #ifdef ENABLE_VOX
 	// VOX indicator

@@ -40,8 +40,8 @@
 #include "misc.h"
 #include "radio.h"
 #include "settings.h"
-#include "ui/status.h"
-#include "ui/ui.h"
+//#include "ui/status.h"
+//#include "ui/ui.h"
 
 FUNCTION_Type_t gCurrentFunction;
 
@@ -127,8 +127,8 @@ void FUNCTION_PowerSave() {
 
 	//gUpdateStatus = true;
 
-	if (gScreenToDisplay != DISPLAY_MENU)     // 1of11 .. don't close the menu
-		GUI_SelectNextDisplay(DISPLAY_MAIN);
+	/*if (gScreenToDisplay != DISPLAY_MENU)     // 1of11 .. don't close the menu
+		GUI_SelectNextDisplay(DISPLAY_MAIN);*/
 }
 
 void FUNCTION_Transmit()
@@ -235,7 +235,7 @@ void FUNCTION_Select(FUNCTION_Type_t Function)
 	if (bWasPowerSave && Function != FUNCTION_POWER_SAVE) {
 		BK4819_Conditional_RX_TurnOn_and_GPIO6_Enable();
 		gRxIdleMode = false;
-		UI_DisplayStatus();
+		//UI_DisplayStatus();
 	}
 
 	switch (Function) {

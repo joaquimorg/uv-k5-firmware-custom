@@ -22,9 +22,9 @@
 #include "functions.h"
 #include "misc.h"
 #include "settings.h"
-#include "ui/battery.h"
-#include "ui/menu.h"
-#include "ui/ui.h"
+//#include "ui/battery.h"
+//#include "ui/menu.h"
+//#include "ui/ui.h"
 
 uint16_t          gBatteryCalibration[6];
 uint16_t          gBatteryCurrentVoltage;
