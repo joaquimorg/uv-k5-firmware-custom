@@ -31,7 +31,7 @@ ENABLE_SWD                    ?= 0
 ENABLE_MESSENGER              			?= 0
 ENABLE_MESSENGER_UART					?= 0
 
-ENABLE_REMOTE_CONTROL			  		?= 0
+ENABLE_REMOTE_CONTROL			  		?= 1
 
 ENABLE_UART_DEBUG			  			?= 1
 
