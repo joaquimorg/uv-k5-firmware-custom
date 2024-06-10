@@ -19,9 +19,6 @@
 
 #include "app/chFrScanner.h"
 #include "app/dtmf.h"
-#ifdef ENABLE_AM_FIX
-	#include "am_fix.h"
-#endif
 #include "bitmaps.h"
 #include "board.h"
 #include "driver/bk4819.h"
@@ -111,9 +108,6 @@ void MainVFO_showRSSI(void) {
     const int16_t s0_dBm   = -gEeprom.S0_LEVEL;                  // S0 .. base level
 	const int16_t rssi_dBm =
 		BK4819_GetRSSI_dBm()
-#ifdef ENABLE_AM_FIX
-		+ ((gSetting_AM_fix && gRxVfo->Modulation == MODULATION_AM) ? AM_fix_get_gain_diff() : 0)
-#endif
 		+ dBmCorrTable[gRxVfo->Band];
 
     int s0_9 = gEeprom.S0_LEVEL - gEeprom.S9_LEVEL;

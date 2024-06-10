@@ -95,9 +95,6 @@ enum MENU_Option_e {
 	MENU_VOL,
 	MENU_BAT_TXT,
 	MENU_AM,
-#ifdef ENABLE_AM_FIX
-	MENU_AM_FIX,
-#endif
 	MENU_RESET,
 	MENU_F_LOCK,
 	MENU_200TX,
@@ -199,9 +196,6 @@ const menu_item_t MenuList[] =
 //	{"DTMF List", 	MENU_D_LIST        },
 //#endif
 	{"DTMF Live", 	MENU_D_LIVE_DEC    }, // live DTMF decoder
-//#ifdef ENABLE_AM_FIX
-//	{"AM Fix", 		MENU_AM_FIX        },
-//#endif
 //#ifdef ENABLE_VOX
 //	{"VOX",    		MENU_VOX           },
 //#endif
@@ -565,8 +559,6 @@ void SettingsMenu_loadSubList() {
 		case MENU_D_ST:
 		case MENU_S_ADD1:
 		case MENU_S_ADD2:
-		case MENU_AM_FIX:
-		case MENU_MIC_BAR:
 		case MENU_BCL:
 		case MENU_BEEP:
 		case MENU_AUTOLK:
@@ -904,12 +896,6 @@ void SettingsMenu_loadSubListValues() {
 			settingsCurrentSubMenu = gTxVfo->Modulation;
 			break;*/
 
-#ifdef ENABLE_AM_FIX
-		case MENU_AM_FIX:
-			settingsCurrentSubMenu = gSetting_AM_fix;
-			break;
-#endif
-
 		/*case MENU_DEL_CH:
 			#if 0
 				settingsCurrentSubMenu = RADIO_FindNextChannel(gEeprom.MrChannel[0], 1, false, 1);
@@ -1080,9 +1066,6 @@ int SettingsMenu_GetLimits(uint8_t menu_id, uint16_t *pMin, uint32_t *pMax)
 		case MENU_ABR_ON_TX_RX:
 			*pMax = ARRAY_SIZE(gSubMenu_RX_TX) - 1;
 			break;
-		#ifdef ENABLE_AM_FIX
-			case MENU_AM_FIX:
-		#endif
 		#ifdef ENABLE_AUDIO_BAR
 			case MENU_MIC_BAR:
 		#endif
@@ -1230,6 +1213,7 @@ void MenuVFO_saveSetting(void) {
 		case MENU_SQL:
 			gEeprom.SQUELCH_LEVEL = settingsCurrentSubMenu;
 			//gVfoConfigureMode     = VFO_CONFIGURE;
+			main_push_message(RADIO_VFO_CONFIGURE);
 			break;
 
 		case MENU_STEP:
@@ -1237,6 +1221,7 @@ void MenuVFO_saveSetting(void) {
 			if (IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE))
 			{
 				//gRequestSaveChannel = 1;
+				main_push_message(RADIO_SAVE_CHANNEL);
 				return;
 			}
 			return;
@@ -1269,6 +1254,7 @@ void MenuVFO_saveSetting(void) {
 			}
 
 			//gRequestSaveChannel = 1;
+			main_push_message(RADIO_SAVE_CHANNEL);
 			return;
 		}
 		case MENU_T_CTCS:
@@ -1288,31 +1274,37 @@ void MenuVFO_saveSetting(void) {
 			}
 
 			//gRequestSaveChannel = 1;
+			main_push_message(RADIO_SAVE_CHANNEL);
 			return;
 		}
 		case MENU_SFT_D:
 			gTxVfo->TX_OFFSET_FREQUENCY_DIRECTION = settingsCurrentSubMenu;
 			//gRequestSaveChannel                   = 1;
+			main_push_message(RADIO_SAVE_CHANNEL);
 			return;
 
 		case MENU_OFFSET:
 			gTxVfo->TX_OFFSET_FREQUENCY = settingsCurrentSubMenu;
 			//gRequestSaveChannel         = 1;
+			main_push_message(RADIO_SAVE_CHANNEL);
 			return;
 
 		case MENU_W_N:
 			gTxVfo->CHANNEL_BANDWIDTH = settingsCurrentSubMenu;
 			//gRequestSaveChannel       = 1;
+			main_push_message(RADIO_SAVE_CHANNEL);
 			return;
 
 		case MENU_SCR:
 			gTxVfo->SCRAMBLING_TYPE = settingsCurrentSubMenu;
 			//gRequestSaveChannel     = 1;
+			main_push_message(RADIO_SAVE_CHANNEL);
 			return;
 
 		case MENU_BCL:
 			gTxVfo->BUSY_CHANNEL_LOCK = settingsCurrentSubMenu;
 			//gRequestSaveChannel       = 1;
+			main_push_message(RADIO_SAVE_CHANNEL);
 			return;
 
 		case MENU_MEM_CH:
@@ -1481,6 +1473,7 @@ void MenuVFO_saveSetting(void) {
 		case MENU_PTT_ID:
 			gTxVfo->DTMF_PTT_ID_TX_MODE = settingsCurrentSubMenu;
 			//gRequestSaveChannel         = 1;
+			main_push_message(RADIO_SAVE_CHANNEL);
 			return;
 
 		case MENU_BAT_TXT:
@@ -1529,15 +1522,8 @@ void MenuVFO_saveSetting(void) {
 		case MENU_AM:
 			gTxVfo->Modulation     = settingsCurrentSubMenu;
 			//gRequestSaveChannel = 1;
+			main_push_message(RADIO_SAVE_CHANNEL);
 			return;
-
-		#ifdef ENABLE_AM_FIX
-			case MENU_AM_FIX:
-				gSetting_AM_fix = settingsCurrentSubMenu;
-				//gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
-				//gFlagResetVfos    = true;
-				break;
-		#endif
 
 		case MENU_DEL_CH:
 			/*SETTINGS_UpdateChannel(settingsCurrentSubMenu, NULL, false);
@@ -1626,8 +1612,7 @@ void MenuVFO_initFunction() {
 
 void MenuVFO_renderFunction() {
 
-    UI_displayClear();
-    UI_drawFastVLine(2, 9, 53, true);
+    UI_drawFastVLine(2, 9, 54, true);
 
     SettingsMenu_showList();
 

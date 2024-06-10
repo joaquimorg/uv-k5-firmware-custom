@@ -46,6 +46,14 @@ Based on _egzumer_ repository and the work of DualTachyon's open firmware found 
 
 Anyway, have fun.
 
+## Build in windows
+
+- Create GPIO bsp headers : python.exe .\utils\convert-def.py --headers -i .\hardware\dp32g030\gpio.def -o bsp
+
+make clean
+make
+make prog COMPORT=com4
+
 ## Credits
 
 Many thanks to various people:
@@ -55,6 +63,7 @@ Many thanks to various people:
 - [Mikhail](https://github.com/fagci)
 - [@Matoz](https://github.com/spm81)
 - [OneOfEleven](https://github.com/OneOfEleven)
+- [fagci](https://github.com/fagci)
 
 ## Other sources of information
 

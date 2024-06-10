@@ -85,14 +85,14 @@ void DTMF_SendEndOfTransmission(void)
 	}
 
 	if ((gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_TX_DOWN || gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_BOTH)
-#ifdef ENABLE_DTMF_CALLING
+/*#ifdef ENABLE_DTMF_CALLING
 		&& gDTMF_CallState == DTMF_CALL_STATE_NONE
-#endif
+#endif*/
 	) {	// end-of-tx
 		if (gEeprom.DTMF_SIDE_TONE)
 		{
 			AUDIO_AudioPathOn();
-			gEnableSpeaker = true;
+			//gEnableSpeaker = true;
 			SYSTEM_DelayMs(60);
 		}
 
@@ -107,7 +107,7 @@ void DTMF_SendEndOfTransmission(void)
 				gEeprom.DTMF_CODE_INTERVAL_TIME);
 
 		AUDIO_AudioPathOff();
-		gEnableSpeaker = false;
+		//gEnableSpeaker = false;
 	}
 
 	BK4819_ExitDTMF_TX(true);

@@ -29,13 +29,14 @@ typedef struct {
 const main_menu_item_t mainMenuList[] =
 {
     { "Main Settings" },
+    { "VFO Settings" },
     { "Spectrum" },
     { "Messenger" },
-    { "VFO Settings" },
+    { "FM Radio" },
     { "About" },
 };
 
-#define MAIN_MENU_SIZE 5
+#define MAIN_MENU_SIZE 6
 
 void MainMenu_showList() {
     uint8_t yPos = 15;
@@ -54,7 +55,7 @@ void MainMenu_showList() {
     }
 
     yPos = 10;
-    yPos += ((( (100 * mainMenuCurrentMenu) / MAIN_MENU_SIZE ) / 100.0) * 54);
+    yPos += ((( (100 * mainMenuCurrentMenu) / MAIN_MENU_SIZE ) / 100.0) * 57);
 
     UI_drawFastVLine(1, yPos - 1, 3, true);
     UI_drawFastVLine(3, yPos - 1, 3, true);
@@ -65,8 +66,7 @@ void MenuAPP_initFunction() {
 }
 
 void MenuAPP_renderFunction() {
-    UI_displayClear();
-    UI_drawFastVLine(2, 9, 53, true);
+    UI_drawFastVLine(2, 9, 54, true);
     MainMenu_showList();
 }
 
@@ -76,15 +76,18 @@ void MenuAPP_LoadSelection() {
             load_application(APP_MAIN_SETTINGS);
             break;
         case 1:
-            load_application(APP_EMPTY);
+            load_application(APP_VFO_SETTINGS);
             break;
         case 2:
             load_application(APP_EMPTY);
             break;
         case 3:
-            load_application(APP_VFO_SETTINGS);
+            load_application(APP_EMPTY);
             break;
         case 4:
+            load_application(APP_EMPTY);
+            break;
+        case 5:
             load_application(APP_WELCOME);
             break;
     }

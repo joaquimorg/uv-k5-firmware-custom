@@ -35,6 +35,8 @@ typedef enum FUNCTION_Type_t FUNCTION_Type_t;
 
 extern FUNCTION_Type_t       gCurrentFunction;
 
+extern bool gIsReceiving;
+
 void FUNCTION_Init(void);
 void FUNCTION_Select(FUNCTION_Type_t Function);
 bool FUNCTION_IsRx();

@@ -156,10 +156,6 @@ extern bool                  gSetting_ScrambleEnable;
 
 extern enum BacklightOnRxTx_t gSetting_backlight_on_tx_rx;
 
-#ifdef ENABLE_AM_FIX
-	extern bool              gSetting_AM_fix;
-#endif
-
 #ifdef ENABLE_AUDIO_BAR
 	extern bool              gSetting_mic_bar;
 #endif

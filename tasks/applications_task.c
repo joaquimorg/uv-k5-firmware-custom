@@ -82,7 +82,7 @@ static bool autoReturntoMain = true;
 void light_timer_callback(TimerHandle_t xTimer) {
     (void)xTimer;
     main_push_message(MAIN_MSG_BKLIGHT_OFF);
-    LogUartf("MAIN_MSG_BKLIGHT_OFF\r\n");
+    //LogUartf("MAIN_MSG_BKLIGHT_OFF\r\n");
 }
 
 void idle_timer_callback(TimerHandle_t xTimer) {
@@ -104,6 +104,9 @@ void idle_timer_callback(TimerHandle_t xTimer) {
 }
 
 void render_timer_callback(TimerHandle_t xTimer) {
+
+    UI_displayClear();
+    
     if(GUI_inputNotEmpty()) {
         GUI_updateCursor();
     }
@@ -177,15 +180,15 @@ void app_task(void* arg) {
 
     renderTimer = xTimerCreateStatic("render", pdMS_TO_TICKS(50), pdFALSE, NULL, render_timer_callback, &renderTimerBuffer);
     idleTimer = xTimerCreateStatic("idle", pdMS_TO_TICKS(5000), pdTRUE, NULL, idle_timer_callback, &idleTimerBuffer);
-    lightTimer = xTimerCreateStatic("light", pdMS_TO_TICKS(BACKLIGHT_getTime()), pdFALSE, NULL, light_timer_callback, &lightTimerBuffer);
-
-    load_application(APP_WELCOME);
+    lightTimer = xTimerCreateStatic("light", pdMS_TO_TICKS(BACKLIGHT_getTime()), pdFALSE, NULL, light_timer_callback, &lightTimerBuffer);    
     
     xTimerStart(idleTimer, 0);
     xTimerStart(renderTimer, 0);
     xTimerStart(lightTimer, 0);
+
+    load_application(APP_WELCOME);
     
-    LogUartf("Task APPs Ready\r\n");
+    //LogUartf("Task APPs Ready\r\n");
 
     keyboard_init();
     
@@ -228,7 +231,9 @@ void app_task(void* arg) {
 
 				case APP_MSG_WAKEUP:
                     xTimerReset(lightTimer, 0);
-					main_push_message(MAIN_MSG_BKLIGHT_ON);                    
+                    if ( !BACKLIGHT_IsOn() ) {
+					    main_push_message(MAIN_MSG_BKLIGHT_ON);                    
+                    }
 					break;
 
                 case APP_MSG_BACKLIGHT:
@@ -241,12 +246,8 @@ void app_task(void* arg) {
 
                 case APP_MSG_RX:
                     //global_status.isRX = true;
-                    xTimerReset( idleTimer, 0 );
-					if ( !BACKLIGHT_IsOn() ) {
-                        //xTimerReset(lightTimer, 0);
-						//main_push_message(MAIN_MSG_BKLIGHT_ON);
-                        app_push_message(APP_MSG_WAKEUP);
-					}
+                    app_push_message(APP_MSG_WAKEUP);
+                    xTimerReset( idleTimer, 0 );					
                     break;
 
                 case APP_MSG_TX:
@@ -281,13 +282,11 @@ void app_push_message(APP_MSG_t msg) {
 
 void change_application(app_t *application) {
     if ( currentApplication != application ) {
-        currentApplication = application;        
         xTimerStop(renderTimer, 0);
-        currentApplication->init();
-        if (currentApplication->showStatusLine) {
-            UI_DisplayStatus();
+        currentApplication = application;        
+        if (currentApplication->init) {
+            currentApplication->init();
         }
-        UI_displayUpdate();
         xTimerStart(renderTimer, 0);
     }    
 }

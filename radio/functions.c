@@ -45,11 +45,10 @@
 
 FUNCTION_Type_t gCurrentFunction;
 
-bool FUNCTION_IsRx()
-{
-	return gCurrentFunction == FUNCTION_MONITOR ||
-		   gCurrentFunction == FUNCTION_INCOMING ||
-		   gCurrentFunction == FUNCTION_RECEIVE;
+bool gIsReceiving = false;
+
+bool FUNCTION_IsRx() {
+	return gIsReceiving;
 }
 
 void FUNCTION_Init(void)
@@ -61,24 +60,11 @@ void FUNCTION_Init(void)
 	g_SquelchLost      = false;
 
 	gFlagTailNoteEliminationComplete   = false;
-	gTailNoteEliminationCountdown_10ms = 0;
 	gFoundCTCSS                        = false;
 	gFoundCDCSS                        = false;
-	gFoundCTCSSCountdown_10ms          = 0;
-	gFoundCDCSSCountdown_10ms          = 0;
-	gEndOfRxDetectedMaybe              = false;
 
 	gCurrentCodeType = (gRxVfo->Modulation != MODULATION_FM) ? CODE_TYPE_OFF : gRxVfo->pRX->CodeType;
 
-#ifdef ENABLE_VOX
-	g_VOX_Lost     = false;
-#endif
-
-#ifdef ENABLE_DTMF_CALLING
-	DTMF_clear_RX();
-#endif
-
-	//gUpdateStatus = true;
 }
 
 void FUNCTION_Foreground(const FUNCTION_Type_t PreviousFunction)
@@ -96,7 +82,7 @@ void FUNCTION_Foreground(const FUNCTION_Type_t PreviousFunction)
 		return;
 	}
 
-#if defined(ENABLE_FMRADIO)
+/*#if defined(ENABLE_FMRADIO)
 	if (gFmRadioMode)
 		gFM_RestoreCountdown_10ms = fm_restore_countdown_10ms;
 #endif
@@ -108,17 +94,17 @@ void FUNCTION_Foreground(const FUNCTION_Type_t PreviousFunction)
 	{
 		gDTMF_auto_reset_time_500ms = gEeprom.DTMF_auto_reset_time * 2;
 	}
-#endif
+#endif*/
 	//gUpdateStatus = true;
 }
 
 void FUNCTION_PowerSave() {
-	gPowerSave_10ms = gEeprom.BATTERY_SAVE * 10;
-	gPowerSaveCountdownExpired = false;
+	//gPowerSave_10ms = gEeprom.BATTERY_SAVE * 10;
+	//gPowerSaveCountdownExpired = false;
 
-	gRxIdleMode = true;
+	//gRxIdleMode = true;
 
-	gMonitor = false;
+	//gMonitor = false;
 
 	BK4819_DisableVox();
 	BK4819_Sleep();
@@ -134,21 +120,21 @@ void FUNCTION_PowerSave() {
 void FUNCTION_Transmit()
 {
 
-#ifdef ENABLE_MESSENGER
-	MSG_EnableRX(false);	
-#endif	
+//#ifdef ENABLE_MESSENGER
+//	MSG_EnableRX(false);	
+//#endif	
 	// if DTMF is enabled when TX'ing, it changes the TX audio filtering !! .. 1of11
 	BK4819_DisableDTMF();
 
-#ifdef ENABLE_DTMF_CALLING
+//#ifdef ENABLE_DTMF_CALLING
 	// clear the DTMF RX buffer
-	DTMF_clear_RX();
-#endif
+//	DTMF_clear_RX();
+//#endif
 
 	// clear the DTMF RX live decoder buffer
 	//gDTMF_RX_live_timeout = 0;
 	//memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
-
+/*
 #if defined(ENABLE_FMRADIO)
 	if (gFmRadioMode)
 		BK1080_Init0();
@@ -176,7 +162,7 @@ void FUNCTION_Transmit()
 		return;
 	}
 #endif
-
+*/
 	//gUpdateStatus = true;
 
 	//GUI_DisplayScreen();
@@ -186,11 +172,11 @@ void FUNCTION_Transmit()
 	// turn the RED LED on
 	BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);
 
-	//DTMF_Reply();
+	DTMF_Reply();
 
 	if (gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_APOLLO)
 		BK4819_PlaySingleTone(2525, 250, 0, gEeprom.DTMF_SIDE_TONE);
-
+/*
 #if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
 	if (gAlarmState != ALARM_STATE_OFF) {
 		#ifdef ENABLE_TX1750
@@ -212,7 +198,7 @@ void FUNCTION_Transmit()
 		return;
 	}
 #endif
-
+*/
 	if (gCurrentVfo->SCRAMBLING_TYPE > 0 && gSetting_ScrambleEnable)
 		BK4819_EnableScramble(gCurrentVfo->SCRAMBLING_TYPE - 1);
 	else
@@ -227,12 +213,12 @@ void FUNCTION_Transmit()
 
 void FUNCTION_Select(FUNCTION_Type_t Function)
 {
-	const FUNCTION_Type_t PreviousFunction = gCurrentFunction;
-	const bool bWasPowerSave = PreviousFunction == FUNCTION_POWER_SAVE;
+	//const FUNCTION_Type_t PreviousFunction = gCurrentFunction;
+	//const bool bWasPowerSave = PreviousFunction == FUNCTION_POWER_SAVE;
 
 	gCurrentFunction = Function;
 
-	if (bWasPowerSave && Function != FUNCTION_POWER_SAVE) {
+	/*if (bWasPowerSave && Function != FUNCTION_POWER_SAVE) {
 		BK4819_Conditional_RX_TurnOn_and_GPIO6_Enable();
 		gRxIdleMode = false;
 		//UI_DisplayStatus();
@@ -252,7 +238,7 @@ void FUNCTION_Select(FUNCTION_Type_t Function)
 			break;
 
 		case FUNCTION_MONITOR:
-			gMonitor = true;
+			//gMonitor = true;
 			break;
 
 		case FUNCTION_INCOMING:
@@ -260,8 +246,9 @@ void FUNCTION_Select(FUNCTION_Type_t Function)
 		case FUNCTION_BAND_SCOPE:
 		default:
 			break;
-	}
+	}*/
 
+/*
 	gBatterySaveCountdown_10ms = battery_save_count_10ms;
 	gSchedulePowerSave         = false;
 
@@ -269,4 +256,5 @@ void FUNCTION_Select(FUNCTION_Type_t Function)
 	if(Function != FUNCTION_INCOMING)
 		gFM_RestoreCountdown_10ms = 0;
 #endif
+*/
 }

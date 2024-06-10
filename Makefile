@@ -14,14 +14,12 @@ ENABLE_FLASHLIGHT             ?= 0
 # ---- CUSTOM MODS ----
 ENABLE_WIDE_RX                ?= 1
 ENABLE_CTCSS_TAIL_PHASE_SHIFT ?= 0
-ENABLE_AM_FIX                 ?= 1
 ENABLE_SQUELCH_MORE_SENSITIVE ?= 1
 ENABLE_FASTER_CHANNEL_SCAN    ?= 1
 ENABLE_SPECTRUM               ?= 0
 ENABLE_BLMIN_TMP_OFF          ?= 0
 
 # ---- DEBUGGING ----
-ENABLE_AM_FIX_SHOW_DATA       ?= 0
 ENABLE_AGC_SHOW_DATA          ?= 0
 ENABLE_UART_RW_BK_REGS        ?= 0
 
@@ -30,13 +28,10 @@ ENABLE_SWD                    ?= 0
 
 #############################################################
 
-# --- joaquim.org
 ENABLE_MESSENGER              			?= 0
 ENABLE_MESSENGER_UART					?= 0
 
-#### Display and Keypad remote Control ####
-# https://home.joaquim.org/display-explorer/
-ENABLE_REMOTE_CONTROL			  		?= 1
+ENABLE_REMOTE_CONTROL			  		?= 0
 
 ENABLE_UART_DEBUG			  			?= 1
 
@@ -73,21 +68,21 @@ ifeq ($(OS), Windows_NT) # windows
 	FixPath = $(subst /,\,$1)
 	WHERE = where
 	DEL = del /q
-	K5PROG = utils/k5prog/k5prog.exe -D -F -YYYYY -p /dev/com4 -b
+	K5PROG = utils/k5prog/k5prog.exe -D -F -YYYYY -p /dev/$(COMPORT) -b
 else
 	MKDIR = mkdir -p $(1)
 	RM = rm -rf
 	FixPath = $1
 	WHERE = which
 	DEL = del
-	K5PROG = utils/k5prog/k5prog -D -F -YYY -p /dev/ttyUSB3 -b
+	K5PROG = utils/k5prog/k5prog -D -F -YYY -p /dev/$(COMPORT) -b
 endif
 
 #------------------------------------------------------------------------------
 
-BSP_DEFINITIONS := $(wildcard hardware/*/*.def)
-BSP_HEADERS     := $(patsubst hardware/%,bsp/%,$(BSP_DEFINITIONS))
-BSP_HEADERS     := $(patsubst %.def,%.h,$(BSP_HEADERS))
+#BSP_DEFINITIONS := $(wildcard hardware/*/*.def)
+#BSP_HEADERS     := $(patsubst hardware/%,bsp/%,$(BSP_DEFINITIONS))
+#BSP_HEADERS     := $(patsubst %.def,%.h,$(BSP_HEADERS))
 
 # Source files common to all targets
 ASM_SRC += \
@@ -115,30 +110,6 @@ C_SRC += \
 IPATH += \
 	$(EXTERNAL_LIB)/FreeRTOS/include/. \
 	$(EXTERNAL_LIB)/FreeRTOS/portable/GCC/ARM_CM0/. \
-
-#OLD \
-	font.c \
-	bitmaps.c \
-	ui/main.c \
-	ui/menu.c \
-	app/menu.c \
-	\
-	app/action.c \
-	app/app.c \
-	app/chFrScanner.c \
-	app/common.c \
-	app/dtmf.c \
-	app/generic.c \
-	app/main.c \
-	app/scanner.c \
-	helper/boot.c \
-	scheduler.c \
-	ui/welcome.c \
-	ui/inputbox.c \
-	ui/battery.c \
-	ui/helper.c \
-	ui/scanner.c \
-	ui/ui.c \	
 
 C_SRC += \
 	external/printf/printf.c \
@@ -211,9 +182,6 @@ endif
 ifeq ($(ENABLE_MESSENGER),1)
 	C_SRC += app/messenger.c
 endif
-ifeq ($(ENABLE_AM_FIX), 1)
-	C_SRC += radio/am_fix.c
-endif
 ifeq ($(ENABLE_AIRCOPY),1)
 	C_SRC += ui/aircopy.c
 endif
@@ -273,12 +241,6 @@ ifeq ($(ENABLE_WIDE_RX),1)
 endif
 ifeq ($(ENABLE_CTCSS_TAIL_PHASE_SHIFT),1)
 	CFLAGS += -DENABLE_CTCSS_TAIL_PHASE_SHIFT
-endif
-ifeq ($(ENABLE_AM_FIX),1)
-	CFLAGS += -DENABLE_AM_FIX
-endif
-ifeq ($(ENABLE_AM_FIX_SHOW_DATA),1)
-	CFLAGS += -DENABLE_AM_FIX_SHOW_DATA
 endif
 ifeq ($(ENABLE_SQUELCH_MORE_SENSITIVE),1)
 	CFLAGS += -DENABLE_SQUELCH_MORE_SENSITIVE
@@ -390,8 +352,10 @@ clean-all:
 
 -include $(OBJECTS:.o=.d)
 
+#bsp/dp32g030/%.h: hardware/dp32g030/%.def
+
 # Create objects from C SRC files
-$(BUILD)/%.o: %.c
+$(BUILD)/%.o: %.c # | $(BSP_HEADERS)
 	@echo CC $<
 	@$(call MKDIR, $(@D))
 	@$(CC) $(CFLAGS) $(INC_PATHS) -c $< -o $@

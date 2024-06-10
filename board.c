@@ -63,6 +63,8 @@
 
 void BOARD_GPIO_Init(void)
 {
+
+
 	GPIOA->DIR |= 0
 		// A7 = UART1 TX default as OUTPUT from bootloader!
 		// A8 = UART1 RX default as INPUT from bootloader!
@@ -85,6 +87,15 @@ void BOARD_GPIO_Init(void)
 		// Key pad
 		| GPIO_DIR_6_MASK // INPUT
 		);
+	
+	// enable interrupt on pin 14
+	// not connected in version 1.6 of the board
+	/*GPIOB->INTEN |= 0 
+		| GPIO_INTEN_14_BITS_ENABLED;
+
+	GPIOB->INTRISEEN |= 0 
+		| GPIO_INTRISEEN_14_BITS_ACTIVE_HIGH;*/
+
 	GPIOB->DIR |= 0
 		// ST7565
 		| GPIO_DIR_9_BITS_OUTPUT
@@ -117,9 +128,9 @@ void BOARD_GPIO_Init(void)
 		| GPIO_DIR_5_MASK // INPUT
 		);
 
-	#if defined(ENABLE_FMRADIO)
+	/*#if defined(ENABLE_FMRADIO)
 		GPIO_SetBit(&GPIOB->DATA, GPIOB_PIN_BK1080);
-	#endif
+	#endif*/
 }
 
 void BOARD_PORTCON_Init(void)
@@ -468,7 +479,6 @@ void BOARD_PORTCON_Init(void)
 		| PORTCON_PORTC_OD_C5_BITS_ENABLE
 		;
 
-	NVIC_EnableIRQ((IRQn_Type)DP32_GPIOB1_IRQn);
 }
 
 void BOARD_ADC_Init(void)

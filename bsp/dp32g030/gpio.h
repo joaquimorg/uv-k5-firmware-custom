@@ -39,8 +39,15 @@
 /* -------- GPIO -------- */
 
 typedef struct {
-	uint32_t DATA;
-	uint32_t DIR;
+	uint32_t DATA;			// GPIO DATA register
+	uint32_t DIR;			// GPIO Pin direction
+	uint32_t INTLVLTRG;		// GPIO Pin interrupt sensitive conditions
+	uint32_t INTBE;			// GPIO Pin edge trigger mode
+	uint32_t INTRISEEN;		// GPIO Pin interrupt event mode
+	uint32_t INTEN;			// GPIO Pin interrupt enable
+	uint32_t INTRAWSTAUS;	// Indicates that the corresponding bit is detectedGPIO interrupt trigger
+	uint32_t INTSTAUS;		// Indicates that the corresponding bit is detectedGPIO pin generation int
+	uint32_t INTCLR;		// Clear the corresponding bit GPIOs Pin edge triggered interrupt flag
 } GPIO_Bank_t;
 
 #define GPIO_DIR_0_SHIFT          0
@@ -170,6 +177,43 @@ typedef struct {
 #define GPIO_DIR_15_BITS_INPUT    (GPIO_DIR_15_VALUE_INPUT << GPIO_DIR_15_SHIFT)
 #define GPIO_DIR_15_VALUE_OUTPUT  1U
 #define GPIO_DIR_15_BITS_OUTPUT   (GPIO_DIR_15_VALUE_OUTPUT << GPIO_DIR_15_SHIFT)
+
+#define GPIO_INTEN_14_SHIFT				14U
+#define GPIO_INTEN_14_WIDTH				1U
+#define GPIO_INTEN_14_MASK				(((1U << GPIO_INTEN_14_WIDTH) - 1U) << GPIO_INTEN_14_SHIFT)
+#define GPIO_INTEN_14_VALUE_DISABLED   	0U
+#define GPIO_INTEN_14_BITS_DISABLED    	(GPIO_INTEN_14_VALUE_DISABLED << GPIO_INTEN_14_SHIFT)
+#define GPIO_INTEN_14_VALUE_ENABLED  	1U
+#define GPIO_INTEN_14_BITS_ENABLED   	(GPIO_INTEN_14_VALUE_ENABLED << GPIO_INTEN_14_SHIFT)
+
+#define GPIO_INTRISEEN_14_SHIFT					14U
+#define GPIO_INTRISEEN_14_WIDTH					1U
+#define GPIO_INTRISEEN_14_MASK					(((1U << GPIO_INTRISEEN_14_WIDTH) - 1U) << GPIO_INTRISEEN_14_SHIFT)
+#define GPIO_INTRISEEN_14_VALUE_ACTIVE_LOW		0U
+#define GPIO_INTRISEEN_14_BITS_ACTIVE_LOW		(GPIO_INTRISEEN_14_VALUE_ACTIVE_LOW << GPIO_INTRISEEN_14_SHIFT)
+#define GPIO_INTRISEEN_14_VALUE_ACTIVE_HIGH		1U
+#define GPIO_INTRISEEN_14_BITS_ACTIVE_HIGH		(GPIO_INTRISEEN_14_VALUE_ACTIVE_HIGH << GPIO_INTRISEEN_14_SHIFT)
+
+#define GPIO_INTCLR_14_SHIFT					14U
+#define GPIO_INTCLR_14_WIDTH					1U
+#define GPIO_INTCLR_14_MASK						(((1U << GPIO_INTCLR_14_WIDTH) - 1U) << GPIO_INTCLR_14_SHIFT)
+#define GPIO_INTCLR_14_VALUE_NOTHING			0U
+#define GPIO_INTCLR_14_BITS_NOTHING				(GPIO_INTCLR_14_VALUE_NOTHING << GPIO_INTCLR_14_SHIFT)
+#define GPIO_INTCLR_14_VALUE_CLEAR_EDGE			1U
+#define GPIO_INTCLR_14_BITS_CLEAR_EDGE			(GPIO_INTCLR_14_VALUE_CLEAR_EDGE << GPIO_INTCLR_14_SHIFT)
+
+#define GPIO_INTSTAUS_14_SHIFT					14U
+#define GPIO_INTSTAUS_14_WIDTH					1U
+#define GPIO_INTSTAUS_14_MASK					(((1U << GPIO_INTSTAUS_14_WIDTH) - 1U) << GPIO_INTSTAUS_14_SHIFT)
+#define GPIO_INTSTAUS_14_VALUE_ASSERTED			1U
+#define GPIO_INTSTAUS_14_BITS_ASSERTED			(GPIO_INTSTAUS_14_VALUE_ASSERTED << GPIO_INTSTAUS_14_SHIFT)
+#define GPIO_INTSTAUS_14_VALUE_NOT_ASSERTED		0U
+#define GPIO_INTSTAUS_14_BITS_NOT_ASSERTED		(GPIO_INTSTAUS_14_BITS_NOT_ASSERTED << GPIO_INTSTAUS_14_SHIFT)
+
+#define GPIO_INTSTAUS_GET_14(v)                  (((v) & GPIO_INTSTAUS_14_MASK) >> GPIO_INTSTAUS_14_SHIFT)
+
+// Reads register 'r' and checks if bitfield 'b' is equal to 'e'.
+#define GPIOB_ENUM_EQUALS(r, b, e)        (GPIO_##r##_GET_##b(GPIOB->r) == GPIO_##r##_##b##_VALUE_##e)
 
 
 #endif

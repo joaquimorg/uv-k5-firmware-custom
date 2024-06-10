@@ -45,26 +45,18 @@ void AUDIO_PlayBeep(BEEP_Type_t Beep)
 	   !gEeprom.BEEP_CONTROL)
 		return;
 
-#ifdef ENABLE_AIRCOPY
-	if (gScreenToDisplay == DISPLAY_AIRCOPY)
-		return;
-#endif
-
-	if (gCurrentFunction == FUNCTION_RECEIVE)
+	/*if (gCurrentFunction == FUNCTION_RECEIVE)
 		return;
 
 	if (gCurrentFunction == FUNCTION_MONITOR)
-		return;
+		return;*/
 
-#ifdef ENABLE_FMRADIO
-	if (gFmRadioMode)
-		BK1080_Mute(true);
-#endif
+	
+	if (gIsReceiving) {
+    	return;
+  	}
 
 	AUDIO_AudioPathOff();
-
-	if (gCurrentFunction == FUNCTION_POWER_SAVE && gRxIdleMode)
-		BK4819_RX_TurnOn();
 
 	SYSTEM_DelayMs(20);
 
@@ -151,20 +143,5 @@ void AUDIO_PlayBeep(BEEP_Type_t Beep)
 	BK4819_TurnsOffTones_TurnsOnRX();
 	SYSTEM_DelayMs(5);
 	BK4819_WriteRegister(BK4819_REG_71, ToneConfig);
-
-	if (gEnableSpeaker)
-		AUDIO_AudioPathOn();
-
-#ifdef ENABLE_FMRADIO
-	if (gFmRadioMode)
-		BK1080_Mute(false);
-#endif
-
-	if (gCurrentFunction == FUNCTION_POWER_SAVE && gRxIdleMode)
-		BK4819_Sleep();
-
-#ifdef ENABLE_VOX
-	gVoxResumeCountdown = 80;
-#endif
 
 }

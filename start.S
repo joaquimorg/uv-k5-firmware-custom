@@ -35,8 +35,11 @@
 	.global HandlerPendSV
 	.weak HandlerPendSV	
 
-	.global HandlerGPIOB1
-	.weak HandlerGPIOB1
+	.global HandlerGPIOB
+	.weak HandlerGPIOB
+
+	.global HandlerUART1
+	.weak HandlerUART1
 
 	.section .text.isr
 
@@ -197,7 +200,7 @@ HandlerUART0:
 	b	.
 
 HandlerUART1:
-	b	.
+	bx	lr
 
 HandlerUART2:
 	b	.
@@ -233,7 +236,7 @@ HandlerGPIOB0:
 	b	.
 
 HandlerGPIOB1:
-	bx	lr
+	b	.
 
 HandlerGPIOC0:
 	b	.
@@ -245,7 +248,7 @@ HandlerGPIOA:
 	b	.
 
 HandlerGPIOB:
-	b	.
+	bx	lr
 
 HandlerGPIOC:
 	b	.

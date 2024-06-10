@@ -209,9 +209,6 @@ int MENU_GetLimits(uint8_t menu_id, uint16_t *pMin, uint16_t *pMax)
 		case MENU_ABR_ON_TX_RX:
 			*pMax = ARRAY_SIZE(gSubMenu_RX_TX);
 			break;
-		#ifdef ENABLE_AM_FIX
-			case MENU_AM_FIX:
-		#endif
 		#ifdef ENABLE_AUDIO_BAR
 			case MENU_MIC_BAR:
 		#endif
@@ -666,14 +663,6 @@ void MENU_AcceptSetting(void)
 			gRequestSaveChannel = 1;
 			return;
 
-		#ifdef ENABLE_AM_FIX
-			case MENU_AM_FIX:
-				gSetting_AM_fix = settingsCurrentSubMenu;
-				gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
-				gFlagResetVfos    = true;
-				break;
-		#endif
-
 		case MENU_DEL_CH:
 			SETTINGS_UpdateChannel(settingsCurrentSubMenu, NULL, false);
 			gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
@@ -1042,12 +1031,6 @@ void MENU_ShowCurrentSetting(void)
 		case MENU_AM:
 			settingsCurrentSubMenu = gTxVfo->Modulation;
 			break;
-
-#ifdef ENABLE_AM_FIX
-		case MENU_AM_FIX:
-			settingsCurrentSubMenu = gSetting_AM_fix;
-			break;
-#endif
 
 		case MENU_DEL_CH:
 			#if 0

@@ -23,7 +23,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "am_fix.h"
 #include "app/action.h"
 
 #ifdef ENABLE_AIRCOPY

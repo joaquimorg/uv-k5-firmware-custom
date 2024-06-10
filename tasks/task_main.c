@@ -20,14 +20,6 @@
 
 #include "debugging.h"
 
-#ifdef ENABLE_MESSENGER
-	#include "app/messenger.h"
-#endif
-
-#ifdef ENABLE_AM_FIX
-	#include "am_fix.h"
-#endif
-
 #include "audio.h"
 #include "board.h"
 #include "misc.h"
@@ -38,6 +30,7 @@
 
 #include "app/app.h"
 #include "app/dtmf.h"
+#include "bsp/dp32g030/irq.h"
 #include "bsp/dp32g030/gpio.h"
 #include "bsp/dp32g030/syscon.h"
 
@@ -48,7 +41,8 @@
 #include "driver/system.h"
 #include "driver/systick.h"
 #ifdef ENABLE_UART
-	#include "driver/uart.h"
+	#include "bsp/dp32g030/uart.h"
+	#include "driver/uart.h"	
 	#include "app/uart.h"
 	#include "ARMCM0.h"
 #endif
@@ -71,11 +65,8 @@
 StackType_t main_task_stack[configMINIMAL_STACK_SIZE + 100];
 StaticTask_t main_task_buffer;
 
-TimerHandle_t hwStatusTimer;
-StaticTimer_t hwStatusTimerBuffer;
-
-TimerHandle_t hwStatusTimer500;
-StaticTimer_t hwStatusTimerBuffer500;
+//TimerHandle_t radioStatusTimer;
+//StaticTimer_t radioStatusTimerBuffer;
 
 #define QUEUE_LENGTH    20
 #define ITEM_SIZE       sizeof( MAIN_Messages_t )
@@ -193,29 +184,31 @@ void CheckRadioInterrupts(void)
 */		
 
 		if (interrupts.cssTailFound) {
-			g_CxCSS_TAIL_Found = true;
-			main_push_message(RADIO_CSS_TAIL_FOUND);
+			//main_push_message(RADIO_CSS_TAIL_FOUND);
+			if (gEeprom.TAIL_TONE_ELIMINATION) {
+				AUDIO_AudioPathOff();
+			}
 		}
 
-		if (interrupts.cdcssLost) {
-			//g_CDCSS_Lost = true;
+		if (interrupts.cdcssLost) {			
 			gCDCSSCodeType = BK4819_GetCDCSSCodeType();
-			main_push_message(RADIO_CDCSS_LOST);
+			g_CDCSS_Lost = true;
+			//main_push_message(RADIO_CDCSS_LOST);		
 		}
 
 		if (interrupts.cdcssFound) {
-			//g_CDCSS_Lost = false;
-			main_push_message(RADIO_CDCSS_FOUND);
+			//main_push_message(RADIO_CDCSS_FOUND);
+			g_CDCSS_Lost = false;
 		}
 
 		if (interrupts.ctcssLost) {
-			//g_CTCSS_Lost = true;
-			main_push_message(RADIO_CTCSS_LOST);
+			g_CTCSS_Lost = true;
+			//main_push_message(RADIO_CTCSS_LOST);
 		}
 
 		if (interrupts.ctcssFound) {
-			//g_CTCSS_Lost = false;
-			main_push_message(RADIO_CTCSS_FOUND);
+			//main_push_message(RADIO_CTCSS_FOUND);
+			g_CTCSS_Lost = false;
 		}
 /*
 #ifdef ENABLE_VOX
@@ -247,16 +240,10 @@ void CheckRadioInterrupts(void)
 #endif
 */
 		if (interrupts.sqlLost) {
-			//g_SquelchLost = true;
-			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
-			//LogUartf("sqlLost \r\n");
 			main_push_message(RADIO_SQUELCH_LOST);
 		}
 
 		if (interrupts.sqlFound) {
-			//g_SquelchLost = false;
-			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
-			//LogUartf("sqlFound \r\n");
 			main_push_message(RADIO_SQUELCH_FOUND);
 		}
 /*
@@ -281,11 +268,11 @@ void CheckRadioInterrupts(void)
 	}
 }
 
-void APP_EndTransmission(bool inmediately)
+void RADIO_EndTransmission(/*bool inmediately*/)
 {
 	RADIO_SendEndOfTransmission();
 
-	if (gMonitor) {
+	/*if (gMonitor) {
 		 //turn the monitor back on
 		gFlagReconfigureVfos = true;
 	}
@@ -294,13 +281,13 @@ void APP_EndTransmission(bool inmediately)
 		FUNCTION_Select(FUNCTION_FOREGROUND);
 	} else {
 		gRTTECountdown = gEeprom.REPEATER_TAIL_TONE_ELIMINATION * 10;
-	}
+	}*/
 }
 
-void APP_StartListening(FUNCTION_Type_t function)
+void RADIO_StartListening(/*FUNCTION_Type_t function*/)
 {
 	const unsigned int vfo = gEeprom.RX_VFO;
-
+/*
 #ifdef ENABLE_DTMF_CALLING
 	if (gSetting_KILLED)
 		return;
@@ -310,16 +297,16 @@ void APP_StartListening(FUNCTION_Type_t function)
 	if (gFmRadioMode)
 		BK1080_Init0();
 #endif
-
+*/
 	// clear the other vfo's rssi level (to hide the antenna symbol)
 	gVFO_RSSI_bar_level[!vfo] = 0;
 
 	AUDIO_AudioPathOn();
-	gEnableSpeaker = true;
+	//gEnableSpeaker = true;
 
-	if (gSetting_backlight_on_tx_rx & BACKLIGHT_ON_TR_RX) {
+	//if (gSetting_backlight_on_tx_rx & BACKLIGHT_ON_TR_RX) {
 		BACKLIGHT_TurnOn();
-	}
+	//}
 
 	/*if (gScanStateDir != SCAN_OFF)
 		CHFRSCANNER_Found();
@@ -348,7 +335,7 @@ void APP_StartListening(FUNCTION_Type_t function)
 
 		RADIO_SetModulation(gRxVfo->Modulation);  // no need, set it now
 
-	FUNCTION_Select(function);
+	//FUNCTION_Select(function);
 
 /*
 #ifdef ENABLE_FMRADIO
@@ -394,245 +381,21 @@ void init_radio(void) {
 
 	BATTERY_GetReadings(false);
 
-#ifdef ENABLE_MESSENGER
-	MSG_Init();
-#endif
-
-#ifdef ENABLE_AM_FIX
-	AM_fix_init();
-#endif
-
-
 	GPIO_ClearBit(&GPIOA->DATA, GPIOA_PIN_VOICE_0);
 
 	//gUpdateStatus = true;
 
 }
 
-static void CheckForIncoming(void)
-{
-	/*if (!g_SquelchLost)
-		return;          // squelch is closed
-*/
-	// squelch is open
-
-	//if (gScanStateDir == SCAN_OFF)
-	{	// not RF scanning
-		if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF)
-		{	// dual watch is disabled
-
-			if (gCurrentFunction != FUNCTION_INCOMING)
-			{
-				FUNCTION_Select(FUNCTION_INCOMING);
-				//gUpdateDisplay = true;
-			}
-
-			return;
-		}
-
-		// dual watch is enabled and we're RX'ing a signal
-
-		if (gRxReceptionMode != RX_MODE_NONE)
-		{
-			if (gCurrentFunction != FUNCTION_INCOMING)
-			{
-				FUNCTION_Select(FUNCTION_INCOMING);
-				//gUpdateDisplay = true;
-			}
-			return;
-		}
-
-		gDualWatchCountdown_10ms = dual_watch_count_after_rx_10ms;
-		gScheduleDualWatch       = false;
-
-		// let the user see DW is not active
-		gDualWatchActive = false;
-		//gUpdateStatus    = true;
-	}
-	/*else
-	{	// RF scanning
-		if (gRxReceptionMode != RX_MODE_NONE)
-		{
-			if (gCurrentFunction != FUNCTION_INCOMING)
-			{
-				FUNCTION_Select(FUNCTION_INCOMING);
-				//gUpdateDisplay = true;
-			}
-			return;
-		}
-
-		gScanPauseDelayIn_10ms = scan_pause_delay_in_3_10ms;
-		gScheduleScanListen    = false;
-	}*/
-
-	gRxReceptionMode = RX_MODE_DETECTED;
-
-	if (gCurrentFunction != FUNCTION_INCOMING)
-	{
-		FUNCTION_Select(FUNCTION_INCOMING);
-		//gUpdateDisplay = true;
-	}
-}
-
-static void HandlePowerSave()
+/*static void HandlePowerSave()
 {
 	if (!gRxIdleMode) {
 		CheckForIncoming();
 	}
-}
+}*/
 
 
-static void HandleReceive(void)
-{
-	#define END_OF_RX_MODE_SKIP 0
-	#define END_OF_RX_MODE_END  1
-	#define END_OF_RX_MODE_TTE  2
-
-	uint8_t Mode = END_OF_RX_MODE_SKIP;
-
-	if (gFlagTailNoteEliminationComplete)
-	{
-		Mode = END_OF_RX_MODE_END;
-		goto Skip;
-	}
-
-	/*if (gScanStateDir != SCAN_OFF && IS_FREQ_CHANNEL(gNextMrChannel))
-	{ // we are scanning in the frequency mode
-		if (g_SquelchLost)
-			return;
-
-		Mode = END_OF_RX_MODE_END;
-		goto Skip;
-	}*/
-
-	if (gCurrentCodeType != CODE_TYPE_OFF
-		&& ((gFoundCTCSS && gFoundCTCSSCountdown_10ms == 0)
-			|| (gFoundCDCSS && gFoundCDCSSCountdown_10ms == 0))
-	){
-		gFoundCTCSS = false;
-		gFoundCDCSS = false;
-		Mode        = END_OF_RX_MODE_END;
-		goto Skip;
-	}
-
-	if (g_SquelchLost)
-	{
-		if (!gEndOfRxDetectedMaybe) {
-			switch (gCurrentCodeType)
-			{
-				case CODE_TYPE_OFF:
-					if (gEeprom.SQUELCH_LEVEL)
-					{
-						if (g_CxCSS_TAIL_Found)
-						{
-							Mode               = END_OF_RX_MODE_TTE;
-							g_CxCSS_TAIL_Found = false;
-						}
-					}
-					break;
-
-				case CODE_TYPE_CONTINUOUS_TONE:
-					if (g_CTCSS_Lost)
-					{
-						gFoundCTCSS = false;
-					}
-					else
-					if (!gFoundCTCSS)
-					{
-						gFoundCTCSS               = true;
-						gFoundCTCSSCountdown_10ms = 100;   // 1 sec
-					}
-
-					if (g_CxCSS_TAIL_Found)
-					{
-						Mode               = END_OF_RX_MODE_TTE;
-						g_CxCSS_TAIL_Found = false;
-					}
-					break;
-
-				case CODE_TYPE_DIGITAL:
-				case CODE_TYPE_REVERSE_DIGITAL:
-					if (g_CDCSS_Lost && gCDCSSCodeType == CDCSS_POSITIVE_CODE)
-					{
-						gFoundCDCSS = false;
-					}
-					else
-					if (!gFoundCDCSS)
-					{
-						gFoundCDCSS               = true;
-						gFoundCDCSSCountdown_10ms = 100;   // 1 sec
-					}
-
-					if (g_CxCSS_TAIL_Found)
-					{
-						if (BK4819_GetCTCType() == 1)
-							Mode = END_OF_RX_MODE_TTE;
-
-						g_CxCSS_TAIL_Found = false;
-					}
-
-					break;
-			}
-		}
-	}
-	else
-		Mode = END_OF_RX_MODE_END;
-
-	if (!gEndOfRxDetectedMaybe         &&
-	     Mode == END_OF_RX_MODE_SKIP   &&
-	     gNextTimeslice40ms            &&
-	     gEeprom.TAIL_TONE_ELIMINATION &&
-	    (gCurrentCodeType == CODE_TYPE_DIGITAL || gCurrentCodeType == CODE_TYPE_REVERSE_DIGITAL) &&
-	     BK4819_GetCTCType() == 1)
-		Mode = END_OF_RX_MODE_TTE;
-	else
-		gNextTimeslice40ms = false;
-
-Skip:
-	switch (Mode)
-	{
-		case END_OF_RX_MODE_SKIP:
-			break;
-
-		case END_OF_RX_MODE_END:
-			RADIO_SetupRegisters(true);
-
-			//gUpdateDisplay = true;
-
-			/*if (gScanStateDir != SCAN_OFF)
-			{
-				switch (gEeprom.SCAN_RESUME_MODE)
-				{
-					case SCAN_RESUME_TO:
-						break;
-
-					case SCAN_RESUME_CO:
-						gScanPauseDelayIn_10ms = scan_pause_delay_in_7_10ms;
-						gScheduleScanListen    = false;
-						break;
-
-					case SCAN_RESUME_SE:
-						CHFRSCANNER_Stop();
-						break;
-				}
-			}*/
-
-			break;
-
-		case END_OF_RX_MODE_TTE:
-			if (gEeprom.TAIL_TONE_ELIMINATION)
-			{
-				AUDIO_AudioPathOff();
-
-				gTailNoteEliminationCountdown_10ms = 20;
-				gFlagTailNoteEliminationComplete   = false;
-				gEndOfRxDetectedMaybe = true;
-				gEnableSpeaker        = false;
-			}
-			break;
-	}
-}
-
+/*
 static void HandleIncoming(void)
 {
 	APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
@@ -646,10 +409,12 @@ static void (*HandleFunction_fn_table[])(void) = {
 	[FUNCTION_RECEIVE] = &HandleReceive,
 	[FUNCTION_POWER_SAVE] = &HandlePowerSave,
 	[FUNCTION_BAND_SCOPE] = &FUNCTION_NOP,
-};
+};*/
 
 void APP_Function(FUNCTION_Type_t function) {	
-	HandleFunction_fn_table[function]();
+	(void)function;
+	//HandleFunction_fn_table[function]();
+
 }
 
 
@@ -696,41 +461,148 @@ void COMMON_SwitchVFOs()
 }
 
 /* --------------------------------------------------------------------------------------------------------- */
+// Hardware interrupt handlers
 
-
-void HandlerGPIOB1(void) {
-	LogUartf("HandlerGPIOB IRQ %b \r\n", GPIO_CheckBit(&GPIOB->DATA, GPIOB_PIN_SWD_CLK));
+/*
+void HandlerGPIOB(void) {
+	if (GPIOB_ENUM_EQUALS(INTSTAUS, 14, ASSERTED)) {
+		GPIOB->INTCLR |= GPIO_INTCLR_14_BITS_CLEAR_EDGE;
+		CheckRadioInterrupts();		
+		BK4819_WriteRegister(BK4819_REG_02, 0);
+	}
 }
+*/
 
-void hw_timer_callback(TimerHandle_t xTimer) {
-
-#ifdef ENABLE_UART
-	//taskENTER_CRITICAL();
+void HandlerUART1(void) {
 	if (UART_IsCommandAvailable()) {
 		UART_HandleCommand();
 	}
-	//taskEXIT_CRITICAL();
-#endif
-
-	if (GPIO_CheckBit(&GPIOB->DATA, GPIOB_PIN_SWD_CLK)) {
-		CheckRadioInterrupts();
-	}
-
-    xTimerStart(xTimer, 0);
+	UART1->IF |= UART_IF_RXTO_BITS_NOT_SET | UART_IF_RXFIFO_OVF_BITS_NOT_SET;
 }
 
-//bool flippp = false;
+/* --------------------------------------------------------------------------------------------------------- */
 
-void hw_timer_callback_500(TimerHandle_t xTimer) {
+void DTMF_Reply(void)
+{
+	uint16_t    Delay;
 
-	//BK4819_ToggleGpioOut(2, flippp);
-	//LogUartf("GPIOB->DATA %b \r\n", GPIO_CheckBit(&GPIOB->DATA, GPIOB_PIN_SWD_CLK));
-	//flippp = !flippp;
+	if ( gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_OFF    ||
+		 gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_TX_DOWN) {
+		return;
+	}
 
-	//LogUartf("500ms \r\n");
+	Delay = (gEeprom.DTMF_PRELOAD_TIME < 200) ? 200 : gEeprom.DTMF_PRELOAD_TIME;
 
-	//APP_TimeSlice500ms();
-    xTimerStart(xTimer, 0);
+	if (gEeprom.DTMF_SIDE_TONE)
+	{	// the user will also hear the transmitted tones
+		AUDIO_AudioPathOn();
+	}
+
+	SYSTEM_DelayMs(Delay);
+
+	BK4819_EnterDTMF_TX(gEeprom.DTMF_SIDE_TONE);
+
+	BK4819_PlayDTMFString(
+		gEeprom.DTMF_UP_CODE,
+		1,
+		gEeprom.DTMF_FIRST_CODE_PERSIST_TIME,
+		gEeprom.DTMF_HASH_CODE_PERSIST_TIME,
+		gEeprom.DTMF_CODE_PERSIST_TIME,
+		gEeprom.DTMF_CODE_INTERVAL_TIME);
+
+	AUDIO_AudioPathOff();
+
+	BK4819_ExitDTMF_TX(false);
+}
+
+
+void BK4819_ToggleAFBit(bool on) {
+  uint16_t reg = BK4819_ReadRegister(BK4819_REG_47);
+  reg &= ~(1 << 8);
+  if (on)
+    reg |= 1 << 8;
+  BK4819_WriteRegister(BK4819_REG_47, reg);
+}
+
+void BK4819_ToggleAFDAC(bool on) {
+  uint16_t Reg = BK4819_ReadRegister(BK4819_REG_30);
+  Reg &= ~BK4819_REG_30_ENABLE_AF_DAC;
+  if (on)
+    Reg |= BK4819_REG_30_ENABLE_AF_DAC;
+  BK4819_WriteRegister(BK4819_REG_30, Reg);
+}
+
+void BK4819_SetMode(bool on) {
+  if (on) {
+    BK4819_ToggleAFDAC(true);
+    BK4819_ToggleAFBit(true);
+
+    SYSTEM_DelayMs(10);
+	
+	gCurrentCodeType = (gRxVfo->Modulation != MODULATION_FM) ? CODE_TYPE_OFF : gRxVfo->pRX->CodeType;
+	if (gCurrentCodeType != CODE_TYPE_OFF) {
+		AUDIO_AudioPathOff();
+	} else {
+		AUDIO_AudioPathOn();
+	}
+
+  } else {
+	AUDIO_AudioPathOff();
+    SYSTEM_DelayMs(10);
+
+    BK4819_ToggleAFDAC(false);
+    BK4819_ToggleAFBit(false);
+  }
+}
+
+void RADIO_SetRX(bool on) {
+  if (gIsReceiving == on) {
+    return;
+  }
+  gIsReceiving = on;  
+  BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, on);
+  BK4819_SetMode(on);
+}
+
+
+void RADIO_SetTransmit() {
+
+	RADIO_SetRX(false);
+	//RADIO_SetVfoState(VFO_STATE_NORMAL);
+	RADIO_PrepareTX();
+
+	// if DTMF is enabled when TX'ing, it changes the TX audio filtering !! .. 1of11
+	BK4819_DisableDTMF();
+	RADIO_SetTxParameters();
+
+	// turn the RED LED on
+	BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);	
+
+	if (gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_APOLLO) {
+		BK4819_PlaySingleTone(2525, 250, 0, gEeprom.DTMF_SIDE_TONE);
+	} else {
+		DTMF_Reply();
+	}
+
+}
+
+void RADIO_Handler(void) {
+	CheckRadioInterrupts();
+	if (gIsReceiving) {
+		if (g_CTCSS_Lost && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE && BK4819_GetCTCType() == 1) {		
+			g_CTCSS_Lost = false;
+			AUDIO_AudioPathOn();
+			//LogUartf("CTCSS_Lost \r\n");
+		}
+
+		if (g_CDCSS_Lost && gCDCSSCodeType == CDCSS_POSITIVE_CODE
+	    	&& (gCurrentCodeType == CODE_TYPE_DIGITAL || gCurrentCodeType == CODE_TYPE_REVERSE_DIGITAL) ) {
+			g_CDCSS_Lost = false;
+			AUDIO_AudioPathOn();
+			//LogUartf("CDCSS_Lost \r\n");
+		}
+
+	}
 }
 
 
@@ -741,7 +613,9 @@ void main_task(void* arg) {
 
 #ifdef ENABLE_UART
 	UART_Init();
+	LogUartf("\r\n\r\n");
 	UART_Send(UART_Version, strlen(UART_Version));
+	LogUartf("\r\nUV-K5 Starting... \r\n\r\n");
 #endif
 
 	init_radio();
@@ -750,17 +624,25 @@ void main_task(void* arg) {
 
 	main_push_message(MAIN_MSG_INIT);
 
-	hwStatusTimer = xTimerCreateStatic("hwStatus", pdMS_TO_TICKS(20), pdFALSE, NULL, hw_timer_callback, &hwStatusTimerBuffer);
-	//hwStatusTimer500 = xTimerCreateStatic("hwStatus500", pdMS_TO_TICKS(500), pdFALSE, NULL, hw_timer_callback_500, &hwStatusTimerBuffer500);
+	//radioStatusTimer = xTimerCreateStatic("radioStatus", pdMS_TO_TICKS(50), pdFALSE, NULL, radio_timer_callback, &radioStatusTimerBuffer);
 
 	BACKLIGHT_TurnOn();
 
 	applications_task_init();
 
-	//xTimerStart(hwStatusTimer500, 0);
-	xTimerStart(hwStatusTimer, 0);
+	//xTimerStart(radioStatusTimer500, 0);
+	//xTimerStart(radioStatusTimer, 0);
 	
-	LogUartf("Main Task Ready... \r\n");
+	//LogUartf("Main Task Ready... \r\n");
+
+	NVIC_EnableIRQ((IRQn_Type)DP32_GPIOB_IRQn);
+
+#ifdef ENABLE_UART
+	NVIC_EnableIRQ((IRQn_Type)DP32_UART1_IRQn);
+#endif
+
+	FUNCTION_Init();
+	//FUNCTION_Select(FUNCTION_RECEIVE);
 
 	for (;;) {
 		MAIN_Messages_t msg;
@@ -791,51 +673,59 @@ void main_task(void* arg) {
 				case SET_VFO_STATE_NORMAL:
 					RADIO_SetVfoState(VFO_STATE_NORMAL);
 					break;
-				case RADIO_TX:
-					//FUNCTION_Select(FUNCTION_TRANSMIT);
-					RADIO_PrepareTX();
+
+				case RADIO_TX:					
+					//LogUartf("RADIO_TX\r\n");					
+					RADIO_SetTransmit();
 					break;
 
 				case RADIO_RX:
-					APP_EndTransmission(true);
+					//LogUartf("RADIO_RX\r\n");
+					RADIO_SetVfoState(VFO_STATE_NORMAL);
+					RADIO_SendEndOfTransmission();
+					RADIO_SetRX(false);
 					break;
 
-				case RADIO_SQUELCH_LOST:
-					gCurrentFunction = FUNCTION_INCOMING;
-					//APP_Function(gCurrentFunction);
-					if (gCurrentCodeType == CODE_TYPE_OFF) {
-						APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
-					}
+				case RADIO_SQUELCH_LOST:	
+					//LogUartf("RADIO_SQUELCH_LOST\r\n");				
+					RADIO_SetRX(true);
 					app_push_message(APP_MSG_RX);
-					//LogUartf("SQUELCH_LOST\r\n");
                     break;
 
 				case RADIO_SQUELCH_FOUND:
-					gCurrentFunction = FUNCTION_RECEIVE;
-					APP_Function(gCurrentFunction);
-					app_push_message(APP_MSG_IDLE);
-					//LogUartf("SQUELCH_FOUND\r\n");
+					RADIO_SetRX(false);
                     break;
 
 				case RADIO_CSS_TAIL_FOUND:
 					break;
 
 				case RADIO_CTCSS_LOST:
-					//LogUartf("CTCSS_LOST (%b) CT = (%i)\r\n", g_CTCSS_Lost, gCurrentCodeType);
-					APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
+					LogUartf("CTCSS_LOST CT = (%i) CTCType = (%i) (%b)\r\n", gCurrentCodeType, BK4819_GetCTCType(), g_CDCSS_Lost);
+					//if (BK4819_GetCTCType() == 1 && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE) {
+						/*BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);						
+						FUNCTION_Select(FUNCTION_INCOMING);
+						RADIO_StartListening();
+						app_push_message(APP_MSG_RX);*/
+						//HandleReceive();
+					//}
 					break;
 
 				case RADIO_CTCSS_FOUND:
-					//LogUartf("CTCSS_FOUND (%b) CT = (%i)\r\n", g_CTCSS_Lost, gCurrentCodeType);
 					break;
 
 				case RADIO_CDCSS_LOST:
-					//LogUartf("CDCSS_LOST (%b) CD = (%i)\r\n", g_CDCSS_Lost, gCurrentCodeType);
-					APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
+					//gCDCSSCodeType = BK4819_GetCDCSSCodeType();
+					LogUartf("CDCSS_LOST CD = (%i)  CDCSSCodeType = (%i)\r\n", gCurrentCodeType, gCDCSSCodeType);
+					//if (gCDCSSCodeType == 1 && (gCurrentCodeType == CODE_TYPE_DIGITAL || gCurrentCodeType == CODE_TYPE_REVERSE_DIGITAL)) {
+						/*BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
+						FUNCTION_Select(FUNCTION_INCOMING);
+						RADIO_StartListening();						
+						app_push_message(APP_MSG_RX);*/
+						//HandleReceive();
+					//}
 					break;
 
 				case RADIO_CDCSS_FOUND:
-					//LogUartf("CDCSS_FOUND (%b) CD = (%i)\r\n", g_CDCSS_Lost, gCurrentCodeType);
 					break;
 
 				case RADIO_VFO_UP:
@@ -883,6 +773,8 @@ void main_task(void* arg) {
 
 				case RADIO_SAVE_CHANNEL:
 					SETTINGS_SaveChannel(gTxVfo->CHANNEL_SAVE, gEeprom.TX_VFO, gTxVfo, 1);
+					RADIO_SetupRegisters(true);
+					FUNCTION_Init();
 					break;
 
 				case RADIO_SAVE_SETTINGS:
@@ -945,6 +837,8 @@ void main_task(void* arg) {
 			}
 		}
 
+		RADIO_Handler();
+		//vTaskDelay(pdMS_TO_TICKS(10));
 	}
 }
 

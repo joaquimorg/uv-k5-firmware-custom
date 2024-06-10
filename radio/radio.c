@@ -17,7 +17,6 @@
 #include "driver/bk4819-regs.h"
 #include <string.h>
 
-#include "am_fix.h"
 #include "app/dtmf.h"
 #ifdef ENABLE_FMRADIO
 	#include "app/fm.h"
@@ -48,7 +47,7 @@ VFO_Info_t    *gTxVfo;
 VFO_Info_t    *gRxVfo;
 VFO_Info_t    *gCurrentVfo;
 DCS_CodeType_t gCurrentCodeType;
-VfoState_t     VfoState[2];
+VfoState_t     gVfoState;
 
 const char* const gModulationStr[] = {
 	"FM",
@@ -524,30 +523,16 @@ void RADIO_SelectVfos(void)
 
 void RADIO_SetupRegisters(bool switchToForeground)
 {
-	BK4819_FilterBandwidth_t Bandwidth = gRxVfo->CHANNEL_BANDWIDTH;
+
+	(void)switchToForeground;
 
 	AUDIO_AudioPathOff();
 
-	gEnableSpeaker = false;
+	//gEnableSpeaker = false;
 
 	BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
 
-	switch (Bandwidth)
-	{
-		default:
-			Bandwidth = BK4819_FILTER_BW_WIDE;
-			[[fallthrough]];
-		case BK4819_FILTER_BW_WIDE:
-		case BK4819_FILTER_BW_NARROW:
-		case BK4819_FILTER_BW_NARROWER:
-			#ifdef ENABLE_AM_FIX
-//				BK4819_SetFilterBandwidth(Bandwidth, gRxVfo->Modulation == MODULATION_AM && gSetting_AM_fix);
-				BK4819_SetFilterBandwidth(Bandwidth, true);
-			#else
-				BK4819_SetFilterBandwidth(Bandwidth, false);
-			#endif
-			break;
-	}
+	BK4819_SetFilterBandwidth(gRxVfo->CHANNEL_BANDWIDTH, true);
 
 	BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, false);
 
@@ -555,12 +540,7 @@ void RADIO_SetupRegisters(bool switchToForeground)
 
 	BK4819_ToggleGpioOut(BK4819_GPIO1_PIN29_PA_ENABLE, false);
 
-	while (1)
-	{
-		const uint16_t Status = BK4819_ReadRegister(BK4819_REG_0C);
-		if ((Status & 1u) == 0) // INTERRUPT REQUEST
-			break;
-
+	while (BK4819_ReadRegister(BK4819_REG_0C) & 1u) {
 		BK4819_WriteRegister(BK4819_REG_02, 0);
 		SYSTEM_DelayMs(1);
 	}
@@ -569,16 +549,14 @@ void RADIO_SetupRegisters(bool switchToForeground)
 	// mic gain 0.5dB/step 0 to 31
 	BK4819_WriteRegister(BK4819_REG_7D, 0xE940 | (gEeprom.MIC_SENSITIVITY_TUNING & 0x1f));
 
-	uint32_t Frequency;
-	Frequency = gRxVfo->pRX->Frequency;
-	BK4819_SetFrequency(Frequency);
+	BK4819_SetFrequency(gRxVfo->pRX->Frequency);
 
 	BK4819_SetupSquelch(
 		gRxVfo->SquelchOpenRSSIThresh,    gRxVfo->SquelchCloseRSSIThresh,
 		gRxVfo->SquelchOpenNoiseThresh,   gRxVfo->SquelchCloseNoiseThresh,
 		gRxVfo->SquelchCloseGlitchThresh, gRxVfo->SquelchOpenGlitchThresh);
 
-	BK4819_PickRXFilterPathBasedOnFrequency(Frequency);
+	BK4819_PickRXFilterPathBasedOnFrequency(gRxVfo->pRX->Frequency);
 
 	// what does this in do ?
 	BK4819_ToggleGpioOut(BK4819_GPIO0_PIN28_RX_ENABLE, true);
@@ -643,13 +621,13 @@ void RADIO_SetupRegisters(bool switchToForeground)
 				break;
 		}
 
-		if (gRxVfo->SCRAMBLING_TYPE > 0 && gSetting_ScrambleEnable)
+		/*if (gRxVfo->SCRAMBLING_TYPE > 0 && gSetting_ScrambleEnable)
 			BK4819_EnableScramble(gRxVfo->SCRAMBLING_TYPE - 1);
 		else
-			BK4819_DisableScramble();
+			BK4819_DisableScramble();*/
 	}
 
-#ifdef ENABLE_VOX
+/*#ifdef ENABLE_VOX
 	if (gEeprom.VOX_SWITCH  && gCurrentVfo->Modulation == MODULATION_FM
 
 #ifdef ENABLE_FMRADIO
@@ -663,57 +641,48 @@ void RADIO_SetupRegisters(bool switchToForeground)
 #endif
 	{
 		BK4819_DisableVox();
-	}
+	}*/
+
+	BK4819_DisableScramble();
+	BK4819_DisableVox();
 
 	// RX expander
 	BK4819_SetCompander((gRxVfo->Modulation == MODULATION_FM && gRxVfo->Compander >= 2) ? gRxVfo->Compander : 0);
 
-	BK4819_EnableDTMF();
-	InterruptMask |= BK4819_REG_3F_DTMF_5TONE_FOUND;
+	//BK4819_EnableDTMF();
+	//InterruptMask |= BK4819_REG_3F_DTMF_5TONE_FOUND;
+
+	BK4819_DisableDTMF();
 
 	RADIO_SetupAGC(gRxVfo->Modulation == MODULATION_AM, false);
 
 	// enable/disable BK4819 selected interrupts
-
+/*
 #ifdef ENABLE_MESSENGER
 	MSG_EnableRX(true);
 	InterruptMask |= BK4819_REG_3F_FSK_RX_SYNC | BK4819_REG_3F_FSK_RX_FINISHED | BK4819_REG_3F_FSK_FIFO_ALMOST_FULL | BK4819_REG_3F_FSK_TX_FINISHED;
 #endif	
+*/
 	BK4819_WriteRegister(BK4819_REG_3F, InterruptMask);
 
-	FUNCTION_Init();
+	//FUNCTION_Init();
 
-	if (switchToForeground)
-		FUNCTION_Select(FUNCTION_FOREGROUND);
+	/*if (switchToForeground)
+		FUNCTION_Select(FUNCTION_FOREGROUND);*/
 		
 }
 
 void RADIO_SetTxParameters(void)
 {
-	BK4819_FilterBandwidth_t Bandwidth = gCurrentVfo->CHANNEL_BANDWIDTH;
-
 	AUDIO_AudioPathOff();
 
-	gEnableSpeaker = false;
+	//gEnableSpeaker = false;
 
 	BK4819_ToggleGpioOut(BK4819_GPIO0_PIN28_RX_ENABLE, false);
 
-	switch (Bandwidth)
-	{
-		default:
-			Bandwidth = BK4819_FILTER_BW_WIDE;
-			[[fallthrough]];
-		case BK4819_FILTER_BW_WIDE:
-		case BK4819_FILTER_BW_NARROW:
-		case BK4819_FILTER_BW_NARROWER:
-			#ifdef ENABLE_AM_FIX
-//				BK4819_SetFilterBandwidth(Bandwidth, gCurrentVfo->Modulation == MODULATION_AM && gSetting_AM_fix);
-				BK4819_SetFilterBandwidth(Bandwidth, true);
-			#else
-				BK4819_SetFilterBandwidth(Bandwidth, false);
-			#endif
-			break;
-	}
+//	BK4819_SetFilterBandwidth(Bandwidth, gCurrentVfo->Modulation == MODULATION_AM && gSetting_AM_fix);
+	BK4819_SetFilterBandwidth(gCurrentVfo->CHANNEL_BANDWIDTH, true);
+
 
 	// 
 	//LogUartf("freq. %u \r\n", gCurrentVfo->pTX->Frequency);
@@ -802,23 +771,15 @@ void RADIO_SetupAGC(bool listeningAM, bool disable)
 		BK4819_InitAGC(false);
 	}
 	else {
-#ifdef ENABLE_AM_FIX
-		if(gSetting_AM_fix) { // if AM fix active lock AGC so AM-fix can do it's job
-			BK4819_SetAGC(0);
-			AM_fix_enable(!disable);
-		}
-		else
-#endif
-		{
-			BK4819_SetAGC(!disable);
-			BK4819_InitAGC(true);
-		}
+		BK4819_SetAGC(0);
+		//AM_fix_enable(!disable);
 	}
 }
 
 void RADIO_SetVfoState(VfoState_t State)
 {
-	if (State == VFO_STATE_NORMAL) {
+	gVfoState = State;
+	/*if (State == VFO_STATE_NORMAL) {
 		VfoState[0] = VFO_STATE_NORMAL;
 		VfoState[1] = VFO_STATE_NORMAL;
 	} else if (State == VFO_STATE_VOLTAGE_HIGH) {
@@ -828,16 +789,16 @@ void RADIO_SetVfoState(VfoState_t State)
 		// 1of11
 		const unsigned int vfo = (gEeprom.CROSS_BAND_RX_TX == CROSS_BAND_OFF) ? gEeprom.RX_VFO : gEeprom.TX_VFO;
 		VfoState[vfo] = State;
-	}
+	}*/
 
-	gVFOStateResumeCountdown_500ms = (State == VFO_STATE_NORMAL) ? 0 : vfo_state_resume_countdown_500ms;
+	//gVFOStateResumeCountdown_500ms = (State == VFO_STATE_NORMAL) ? 0 : vfo_state_resume_countdown_500ms;
 	//gUpdateDisplay = true;
 }
 
 
 void RADIO_PrepareTX(void)
 {
-	VfoState_t State = VFO_STATE_NORMAL;  // default to OK to TX
+	VfoState_t State = VFO_STATE_TX;  // default to OK to TX
 
 	/*if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
 	{	// dual-RX is enabled
@@ -860,16 +821,16 @@ void RADIO_PrepareTX(void)
 	RADIO_SelectCurrentVfo();
 
 	if(TX_freq_check(gCurrentVfo->pTX->Frequency) != 0
-#if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
+/*#if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
 		&& gAlarmState != ALARM_STATE_SITE_ALARM
-#endif
+#endif*/
 	){
 		// TX frequency not allowed
 		State = VFO_STATE_TX_DISABLE;
 	} else if (SerialConfigInProgress()) {
 		// TX is disabled or config upload/download in progress
 		State = VFO_STATE_TX_DISABLE;
-	} else if (gCurrentVfo->BUSY_CHANNEL_LOCK && gCurrentFunction == FUNCTION_RECEIVE) {
+	} else if (gCurrentVfo->BUSY_CHANNEL_LOCK && gVfoState == VFO_STATE_BUSY) {
 		// busy RX'ing a station
 		State = VFO_STATE_BUSY;
 	} else if (gBatteryDisplayLevel == 0) {
@@ -879,31 +840,32 @@ void RADIO_PrepareTX(void)
 		// over voltage .. this is being a pain
 		State = VFO_STATE_VOLTAGE_HIGH;
 	}
-#ifndef ENABLE_TX_WHEN_AM
+/*#ifndef ENABLE_TX_WHEN_AM*/
 	else if (gCurrentVfo->Modulation != MODULATION_FM) {
 		// not allowed to TX if in AM mode
 		State = VFO_STATE_TX_DISABLE;
 	}
-#endif
+/*#endif*/
 
-	if (State != VFO_STATE_NORMAL) {
-		// TX not allowed
-		RADIO_SetVfoState(State);
+	RADIO_SetVfoState(State);
 
-#if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
+	if (State != VFO_STATE_TX) {
+		// TX not allowed		
+
+/*#if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
 		gAlarmState = ALARM_STATE_OFF;
 #endif
 
 #ifdef ENABLE_DTMF_CALLING
 		gDTMF_ReplyState = DTMF_REPLY_NONE;
-#endif
+#endif*/
 		AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
 		return;
 	}
 
 	// TX is allowed
 
-#ifdef ENABLE_DTMF_CALLING
+/*#ifdef ENABLE_DTMF_CALLING
 	if (gDTMF_ReplyState == DTMF_REPLY_ANI)
 	{
 		gDTMF_IsTx = gDTMF_CallMode == DTMF_CALL_MODE_DTMF;
@@ -915,20 +877,20 @@ void RADIO_PrepareTX(void)
 			gDTMF_CallState = DTMF_CALL_STATE_CALL_OUT;
 		}
 	}
-#endif
+#endif*/
 
-	FUNCTION_Select(FUNCTION_TRANSMIT);
+	//FUNCTION_Select(FUNCTION_TRANSMIT);
 
-	gTxTimerCountdown_500ms = 0;            // no timeout
-
+	//gTxTimerCountdown_500ms = 0;            // no timeout
+/*
 	#if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
 	if (gAlarmState == ALARM_STATE_OFF)
 	#endif
 	{
 		if (gEeprom.TX_TIMEOUT_TIMER == 0)
 			gTxTimerCountdown_500ms = 60;   // 30 sec
-		/*else if (gEeprom.TX_TIMEOUT_TIMER < (ARRAY_SIZE(gSubMenu_TOT) - 1))
-			gTxTimerCountdown_500ms = 120 * gEeprom.TX_TIMEOUT_TIMER;  // minutes*/
+		else if (gEeprom.TX_TIMEOUT_TIMER < (ARRAY_SIZE(gSubMenu_TOT) - 1))
+			gTxTimerCountdown_500ms = 120 * gEeprom.TX_TIMEOUT_TIMER;  // minutes
 		else
 			gTxTimerCountdown_500ms = 120 * 15;  // 15 minutes
 	}
@@ -938,7 +900,7 @@ void RADIO_PrepareTX(void)
 
 #ifdef ENABLE_DTMF_CALLING
 	gDTMF_ReplyState     = DTMF_REPLY_NONE;
-#endif
+#endif*/
 }
 
 void RADIO_EnableCxCSS(void)
@@ -956,10 +918,45 @@ void RADIO_EnableCxCSS(void)
 	SYSTEM_DelayMs(200);
 }
 
+void DTMF_SendEndOfTransmission(void)
+{
+	if (gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_APOLLO) {
+		BK4819_PlaySingleTone(2475, 250, 28, gEeprom.DTMF_SIDE_TONE);
+	}
+
+	if ((gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_TX_DOWN || gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_BOTH)
+/*#ifdef ENABLE_DTMF_CALLING
+		&& gDTMF_CallState == DTMF_CALL_STATE_NONE
+#endif*/
+	) {	// end-of-tx
+		if (gEeprom.DTMF_SIDE_TONE)
+		{
+			AUDIO_AudioPathOn();
+			//gEnableSpeaker = true;
+			SYSTEM_DelayMs(60);
+		}
+
+		BK4819_EnterDTMF_TX(gEeprom.DTMF_SIDE_TONE);
+
+		BK4819_PlayDTMFString(
+				gEeprom.DTMF_DOWN_CODE,
+				0,
+				gEeprom.DTMF_FIRST_CODE_PERSIST_TIME,
+				gEeprom.DTMF_HASH_CODE_PERSIST_TIME,
+				gEeprom.DTMF_CODE_PERSIST_TIME,
+				gEeprom.DTMF_CODE_INTERVAL_TIME);
+
+		AUDIO_AudioPathOff();
+		//gEnableSpeaker = false;
+	}
+
+	BK4819_ExitDTMF_TX(true);
+}
+
 void RADIO_SendEndOfTransmission(void)
 {
 	BK4819_PlayRoger();
-	//DTMF_SendEndOfTransmission();
+	DTMF_SendEndOfTransmission();
 
 	// send the CTCSS/DCS tail tone - allows the receivers to mute the usual FM squelch tail/crash
 	RADIO_EnableCxCSS();

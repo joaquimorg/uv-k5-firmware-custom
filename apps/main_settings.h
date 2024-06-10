@@ -97,9 +97,6 @@ enum Main_MENU_Option_e {
 	MENU_VOL,
 	MENU_BAT_TXT,
 	MENU_AM,
-#ifdef ENABLE_AM_FIX
-	MENU_AM_FIX,
-#endif
 	MENU_RESET,
 	MENU_F_LOCK,
 	MENU_200TX,
@@ -201,9 +198,6 @@ const menu_item_t MainMenuList[] =
 //	{"DTMF List", 	MENU_D_LIST        },
 //#endif
 //	{"DTMF Live", 	MENU_D_LIVE_DEC    }, // live DTMF decoder
-//#ifdef ENABLE_AM_FIX
-//	{"AM Fix", 		MENU_AM_FIX        },
-//#endif
 //#ifdef ENABLE_VOX
 //	{"VOX",    		MENU_VOX           },
 //#endif
@@ -565,8 +559,6 @@ void MainSettingsMenu_loadSubList() {
 		case MENU_D_ST:
 		case MENU_S_ADD1:
 		case MENU_S_ADD2:
-		case MENU_AM_FIX:
-		case MENU_MIC_BAR:
 		case MENU_BCL:
 		case MENU_BEEP:
 		case MENU_AUTOLK:
@@ -917,12 +909,6 @@ void MainSettingsMenu_loadSubListValues() {
 			mainSettingsCurrentSubMenu = gTxVfo->Modulation;
 			break;*/
 
-#ifdef ENABLE_AM_FIX
-		case MENU_AM_FIX:
-			mainSettingsCurrentSubMenu = gSetting_AM_fix;
-			break;
-#endif
-
 		/*case MENU_DEL_CH:
 			#if 0
 				mainSettingsCurrentSubMenu = RADIO_FindNextChannel(gEeprom.MrChannel[0], 1, false, 1);
@@ -1093,12 +1079,6 @@ int MainSettingsMenu_GetLimits(uint8_t menu_id, uint16_t *pMin, uint16_t *pMax)
 		case MENU_ABR_ON_TX_RX:
 			*pMax = ARRAY_SIZE(gSubMenu_RX_TX) - 1;
 			break;
-		#ifdef ENABLE_AM_FIX
-			case MENU_AM_FIX:
-		#endif
-		#ifdef ENABLE_AUDIO_BAR
-			case MENU_MIC_BAR:
-		#endif
 		case MENU_BCL:
 		case MENU_BEEP:
 		case MENU_AUTOLK:
@@ -1540,14 +1520,6 @@ void MainSettings_saveSetting(void) {
 			//gRequestSaveChannel = 1;
 			return;
 
-		#ifdef ENABLE_AM_FIX
-			case MENU_AM_FIX:
-				gSetting_AM_fix = mainSettingsCurrentSubMenu;
-				//gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
-				//gFlagResetVfos    = true;
-				break;
-		#endif
-
 		case MENU_DEL_CH:
 			/*SETTINGS_UpdateChannel(mainSettingsCurrentSubMenu, NULL, false);
 			gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
@@ -1635,8 +1607,7 @@ void MainSettings_initFunction() {
 
 void MainSettings_renderFunction() {
 
-    UI_displayClear();
-    UI_drawFastVLine(2, 9, 53, true);
+    UI_drawFastVLine(2, 9, 54, true);
 
     MainSettingsMenu_showList();
 

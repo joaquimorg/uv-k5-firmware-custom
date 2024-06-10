@@ -20,14 +20,17 @@
 #include "gui/ui.h"
 #include "gui/gui.h"
 
-void Welcome_initFunction() {    
+void Welcome_renderFunction() {    
     
-    UI_displayClear();
+    const uint8_t batteryPercentage = BATTERY_VoltsToPercent(gBatteryVoltageAverage);
 
-	UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 12, "Open Radio FW", true, false);    
+	UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 18, "Open Radio FW", true, false);    
     UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 32, "version "VERSION_STRING, false, true);
-    UI_drawString(&font_small, TEXT_ALIGN_CENTER, 0, 128, 42, __DATE__, true, false);;
-	UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 60, "2024 - joaquim.org", true, false);
+    UI_drawString(&font_small, TEXT_ALIGN_CENTER, 0, 128, 42, __DATE__, true, false);
+	
+    UI_printf(&font_small, TEXT_ALIGN_CENTER, 0, 128, 50, true, false,	"^ %u.%02uV - %3i%%", gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100, batteryPercentage);
+	
+    UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 60, "2024 - joaquim.org", true, false);
 
 }
 
@@ -47,7 +50,7 @@ void Welcome_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
 
 app_t APPWelcome = {
     .showStatusLine = false,
-    .init = Welcome_initFunction,
+    .render = Welcome_renderFunction,
     .keyHandler = Welcome_keyHandlerFunction
 };
 

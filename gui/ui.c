@@ -146,18 +146,32 @@ void UI_drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, bool isBlack) {
 }
 
 void UI_drawRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r, bool isBlack) {
-  int16_t max_radius = ((w < h) ? w : h) / 2; // 1/2 minor axis
-  if (r > max_radius)
-    r = max_radius;
-  UI_drawFastHLine(x + r, y, w - 2 * r, isBlack);         // Top
-  UI_drawFastHLine(x + r, y + h - 1, w - 2 * r, isBlack); // Bottom
-  UI_drawFastVLine(x, y + r, h - 2 * r, isBlack);         // Left
-  UI_drawFastVLine(x + w - 1, y + r, h - 2 * r, isBlack); // Right
-  // draw four corners
-  UI_drawCircleHelper(x + r, y + r, r, 1, isBlack);
-  UI_drawCircleHelper(x + w - r - 1, y + r, r, 2, isBlack);
-  UI_drawCircleHelper(x + w - r - 1, y + h - r - 1, r, 4, isBlack);
-  UI_drawCircleHelper(x + r, y + h - r - 1, r, 8, isBlack);
+	int16_t max_radius = ((w < h) ? w : h) / 2; // 1/2 minor axis
+	if (r > max_radius)
+		r = max_radius;
+	UI_drawFastHLine(x + r, y, w - 2 * r, isBlack);         // Top
+	UI_drawFastHLine(x + r, y + h - 1, w - 2 * r, isBlack); // Bottom
+	UI_drawFastVLine(x, y + r, h - 2 * r, isBlack);         // Left
+	UI_drawFastVLine(x + w - 1, y + r, h - 2 * r, isBlack); // Right
+	// draw four corners
+	UI_drawCircleHelper(x + r, y + r, r, 1, isBlack);
+	UI_drawCircleHelper(x + w - r - 1, y + r, r, 2, isBlack);
+	UI_drawCircleHelper(x + w - r - 1, y + h - r - 1, r, 4, isBlack);
+	UI_drawCircleHelper(x + r, y + h - r - 1, r, 8, isBlack);
+}
+
+
+void UI_fillRectWithChessboard(uint8_t x, uint8_t y, uint8_t w, uint8_t h, bool isBlack) {
+	// Fill the rectangular area with the chessboard pattern
+    for (uint8_t i = y; i < y + h; i++) {
+        for (uint8_t j = x; j < x + w; j++) {
+            if ((i + j) % 2 == 0) {  // Chessboard pattern
+                setPixel(j, i, isBlack);
+            } else {
+                setPixel(j, i, !isBlack);
+            }
+        }
+    }
 }
 
 // Draw a character

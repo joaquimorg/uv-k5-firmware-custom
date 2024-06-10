@@ -50,6 +50,7 @@ void UI_fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, bool isBlack);
 
 void UI_drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, bool isBlack);
 void UI_drawRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r, bool isBlack);
+void UI_fillRectWithChessboard(uint8_t x, uint8_t y, uint8_t w, uint8_t h, bool isBlack);
 
 
 #endif

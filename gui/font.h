@@ -24,6 +24,8 @@
 //https://www.dafont.com/bitmap.php
 
 
+// ./fontconvert font_n_20 superstar_memesbruh03.ttf 8 > /mnt/d/Work/UV-K5/uv-k5-firmware-custom-dev/gui/font_n_20.c
+
 // From Adafruit-GFX-Library
 
 /// Font data stored PER GLYPH

@@ -48,6 +48,7 @@ __inline uint16_t scale_freq(const uint16_t freq)
 	return (((uint32_t)freq * 1353245u) + (1u << 16)) >> 17;   // with rounding
 }
 
+
 void BK4819_Init(void)
 {
 	GPIO_SetBit(&GPIOC->DATA, GPIOC_PIN_BK4819_SCN);
@@ -123,10 +124,12 @@ void BK4819_Init(void)
 	gBK4819_GpioOutState = 0x8000; // 1000 0000 0000 0000 - enable GPIO2 try to use to set interrupt on MCU
 
 	BK4819_WriteRegister(BK4819_REG_33, gBK4819_GpioOutState);
-	BK4819_WriteRegister(BK4819_REG_3F, 0);
+	BK4819_WriteRegister(BK4819_REG_3F, 0x7FFF); // enable GPIO2 try to use to set interrupt on MCU
 
-	BK4819_WriteRegister(BK4819_REG_34, 0x00);
+	//BK4819_WriteRegister(BK4819_REG_34, 0x00);
 	BK4819_WriteRegister(BK4819_REG_35, 0x01); // SET GPIO02 for Interrupt -> MCU PB14 (GPIOB_PIN_SWD_CLK)
+
+	//BK4819_WriteRegister(BK4819_REG_02, 0);
 }
 
 static uint16_t BK4819_ReadU16(void)
@@ -135,7 +138,9 @@ static uint16_t BK4819_ReadU16(void)
 	uint16_t     Value;
 
 	PORTCON_PORTC_IE = (PORTCON_PORTC_IE & ~PORTCON_PORTC_IE_C2_MASK) | PORTCON_PORTC_IE_C2_BITS_ENABLE;
+
 	GPIOC->DIR = (GPIOC->DIR & ~GPIO_DIR_2_MASK) | GPIO_DIR_2_BITS_INPUT;
+	
 	SYSTICK_DelayUs(1);
 	Value = 0;
 	for (i = 0; i < 16; i++)
@@ -148,6 +153,7 @@ static uint16_t BK4819_ReadU16(void)
 		SYSTICK_DelayUs(1);
 	}
 	PORTCON_PORTC_IE = (PORTCON_PORTC_IE & ~PORTCON_PORTC_IE_C2_MASK) | PORTCON_PORTC_IE_C2_BITS_DISABLE;
+
 	GPIOC->DIR = (GPIOC->DIR & ~GPIO_DIR_2_MASK) | GPIO_DIR_2_BITS_OUTPUT;
 
 	return Value;

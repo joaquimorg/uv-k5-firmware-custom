@@ -47,9 +47,10 @@ typedef enum PTT_ID_t PTT_ID_t;
 enum VfoState_t
 {
 	VFO_STATE_NORMAL = 0,
+	VFO_STATE_TX,
 	VFO_STATE_BUSY,
 	VFO_STATE_BAT_LOW,
-	VFO_STATE_TX_DISABLE,
+	VFO_STATE_TX_DISABLE,	
 	VFO_STATE_TIMEOUT,
 	VFO_STATE_ALARM,
 	VFO_STATE_VOLTAGE_HIGH,
@@ -149,7 +150,7 @@ extern VFO_Info_t    *gCurrentVfo;
 
 extern DCS_CodeType_t gCurrentCodeType;
 
-extern VfoState_t     VfoState[2];
+extern VfoState_t     gVfoState;
 
 bool     RADIO_CheckValidChannel(uint16_t channel, bool checkScanList, uint8_t scanList);
 uint8_t  RADIO_FindNextChannel(uint8_t ChNum, int8_t Direction, bool bCheckScanList, uint8_t RadioNum);

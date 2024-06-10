@@ -22,7 +22,9 @@
 
 void EmptyAPP_initFunction() {    
     
-    UI_displayClear();
+}
+
+void EmptyAPP_renderFunction() {
 
 	UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 22, "Open Radio FW", true, false);    
     UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 42, "Empty APP", true, false);
@@ -45,6 +47,7 @@ void EmptyAPP_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
 app_t APPEmptyAPP = {
     .showStatusLine = true,
     .init = EmptyAPP_initFunction,
+    .render = EmptyAPP_renderFunction,
     .keyHandler = EmptyAPP_keyHandlerFunction
 };
 

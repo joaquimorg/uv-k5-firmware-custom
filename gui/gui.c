@@ -39,14 +39,14 @@ void GUI_drawBattery(void) {
 	const uint8_t maxBattBars = 10;
 	const uint8_t battBars = (gBatteryPercentage / 100.0) * maxBattBars;
 
-	gFrameBuffer[0][2] = 0x3F;
-	gFrameBuffer[0][maxBattBars + 3] = 0x1E;
-	gFrameBuffer[0][maxBattBars + 4] = 0x1E;
+	gFrameBuffer[0][2] = 0x7E;
+	gFrameBuffer[0][maxBattBars + 3] = 0x3C;
+	gFrameBuffer[0][maxBattBars + 4] = 0x3C;
 	for (uint8_t i = 0; i < maxBattBars; i++) {
 		if ( i <= battBars ) {
-			gFrameBuffer[0][3 + i] = 0x3F;
+			gFrameBuffer[0][3 + i] = 0x7E;
 		} else {
-			gFrameBuffer[0][3 + i] = 0x21;
+			gFrameBuffer[0][3 + i] = 0x42;
 		}
 	}
 }
@@ -175,10 +175,21 @@ void GUI_showPopup(uint8_t popupW, uint8_t popupH, uint8_t *startX, uint8_t *sta
 
 	*startX = (LCD_WIDTH / 2) - (popupW / 2);
 	*startY = (LCD_HEIGHT / 2) - (popupH / 2);
+	
+	UI_fillRect(*startX, *startY, popupW, popupH, false);
 
-	UI_fillRect(*startX - 2, *startY - 2, popupW + 5, popupH + 5, false);
-    UI_drawRoundRect(*startX, *startY, popupW, popupH, 4, true);
-	UI_drawRoundRect(*startX, *startY, popupW + 1, popupH + 1, 4, true);
+	//UI_fillRectWithChessboard(*startX + 3, *startY + popupH - 1, popupW - 2, 3, true);
+	//UI_fillRectWithChessboard(*startX + 4, *startY + popupH + 2, popupW - 3, 1, true);
+	
+	//UI_fillRectWithChessboard(*startX + popupW - 1, *startY + 3, 3, popupH - 2, true);
+	//UI_fillRectWithChessboard(*startX + popupW + 2, *startY + 5, 1, popupH - 4, true);
+	
+	UI_drawRoundRect(*startX - 1, *startY - 1, popupW + 3, popupH + 3, 5, false);
+	//UI_drawRoundRect(*startX - 2, *startY - 2, popupW + 4, popupH + 4, 5, false);
+	//UI_drawRoundRect(*startX - 3, *startY - 3, popupW + 4, popupH + 4, 5, false);
+
+	UI_drawRoundRect(*startX, *startY, popupW, popupH, 5, true);
+	UI_drawRoundRect(*startX, *startY, popupW + 1, popupH + 1, 5, true);	
 
 	*startX = *startX + 1;
 	*startY = *startY + 7;
