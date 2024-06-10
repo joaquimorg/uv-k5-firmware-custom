@@ -34,6 +34,7 @@ In VFO
 ![VFO settings](images/uv-k5-screenshot_vfosettings.png "VFO settings")
 ![Main menu](images/uv-k5-screenshot_mainmenu.png "Main menu")
 ![Main settings](images/uv-k5-screenshot_mainsettings.png "Main settings")
+![Screen shot](images/uv_k5_screen.jpg "Screen shot")
 
 ## Open implementation of the Quansheng UV-K5/K6/5R firmware
 
