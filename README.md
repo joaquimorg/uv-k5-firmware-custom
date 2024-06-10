@@ -50,11 +50,12 @@ Anyway, have fun.
 
 ## Build in windows
 
-- Create GPIO bsp headers : python.exe .\utils\convert-def.py --headers -i .\hardware\dp32g030\gpio.def -o bsp
-
 make clean
+
 make
+
 make prog COMPORT=com4
+
 
 ## Credits
 
