@@ -207,26 +207,11 @@ void popupListCalc(uint8_t listSelected, uint8_t listSize, uint8_t *yPos, uint8_
         } else if (listSize == 1 ) {
             *yPos = *yPos + 8;
         }
-        *listCount = listSize + 1;
+		*listCount = listSize + 1;
     } else {
-		*offset = Clamp(listSelected - 2, 0, listSize - 3);
+		*offset = Clamp(listSelected - 1, 0, listSize - 2);
     }
 }
-
-/*
-void popupShowList(uint8_t listSelected, uint8_t listSize, uint8_t x, uint8_t y, uint8_t w, size_t num_cols, const char subList[][num_cols]) {
-	uint8_t yPos = y;
-    uint8_t listCount = 3;
-	uint8_t offset = 0;
-	popupListCalc(listSelected, listSize, &yPos, &listCount, &offset);
-    for (uint8_t i = 0; i < listCount; i++) {
-		bool isFill = listSelected == i + offset ? true : false;
-		UI_printf(&font_10, TEXT_ALIGN_CENTER, x, w, yPos, !isFill, isFill,
-			"%s", subList[i + offset]);
-        yPos += 11;
-    }
-}
-*/
 
 void popupShowList(uint8_t listSelected, uint8_t listSize, uint8_t x, uint8_t y, uint8_t w, const char* const subList[]) {
 	uint8_t yPos = y;

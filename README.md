@@ -21,20 +21,21 @@
 In VFO
 
 - M = Current VFO settings
-- F + M = Main Menu
-- F + 4 = Bandwidth
-- F + 5 = Modulation
-- F + 6 = TX Power
+- F + M = Main Menu ( Long press M )
+- F + 4 = Bandwidth ( Long press 4 )
+- F + 5 = Modulation ( Long press 5 )
+- F + 6 = TX Power ( Long press 6 )
+- F + 8 = Change Registers ( Long press 8 ) in popup use 8 to select register and UP / Down to change value
 
-![About](images/uv-k5-screenshot_about.png "About")
-![Main VFO](images/uv-k5-screenshot_mainvfo.png "Main VFO")
-![Change bandwidth](images/uv-k5-screenshot_bandwidth.png "Change bandwidth")
-![Change modulation](images/uv-k5-screenshot_modulation.png "Change modulation")
-![Change TX power](images/uv-k5-screenshot_txpower.png "Change TX power")
-![VFO settings](images/uv-k5-screenshot_vfosettings.png "VFO settings")
-![Main menu](images/uv-k5-screenshot_mainmenu.png "Main menu")
-![Main settings](images/uv-k5-screenshot_mainsettings.png "Main settings")
-![Screen shot](images/uv_k5_screen.jpg "Screen shot")
+<img src="images/uv-k5-screenshot_about.png" alt="About" width="400" />
+<img src="images/uv-k5-screenshot_mainvfo.png" alt="Main VFO" width="400" />
+<img src="images/uv-k5-screenshot_bandwidth.png" alt="Change bandwidth" width="400" />
+<img src="images/uv-k5-screenshot_modulation.png" alt="Change modulation" width="400" />
+<img src="images/uv-k5-screenshot_txpower.png" alt="Change TX power" width="400" />
+<img src="images/uv-k5-screenshot_vfosettings.png" alt="VFO settings" width="400" />
+<img src="images/uv-k5-screenshot_mainmenu.png" alt="Main menu" width="400" />
+<img src="images/uv-k5-screenshot_mainsettings.png" alt="Main settings" width="400" />
+<img src="images/uv_k5_screen.jpg" alt="Screen shot" width="400" />
 
 ## Open implementation of the Quansheng UV-K5/K6/5R firmware
 

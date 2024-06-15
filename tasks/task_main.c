@@ -473,12 +473,14 @@ void HandlerGPIOB(void) {
 }
 */
 
+/*
 void HandlerUART1(void) {
 	if (UART_IsCommandAvailable()) {
 		UART_HandleCommand();
 	}
 	UART1->IF |= UART_IF_RXTO_BITS_NOT_SET | UART_IF_RXFIFO_OVF_BITS_NOT_SET;
 }
+*/
 
 /* --------------------------------------------------------------------------------------------------------- */
 
@@ -587,6 +589,13 @@ void RADIO_SetTransmit() {
 }
 
 void RADIO_Handler(void) {
+
+#ifdef ENABLE_UART
+	if (UART_IsCommandAvailable()) {
+		UART_HandleCommand();
+	}
+#endif
+
 	CheckRadioInterrupts();
 	if (gIsReceiving) {
 		if (g_CTCSS_Lost && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE && BK4819_GetCTCType() == 1) {		
@@ -635,11 +644,13 @@ void main_task(void* arg) {
 	
 	//LogUartf("Main Task Ready... \r\n");
 
-	NVIC_EnableIRQ((IRQn_Type)DP32_GPIOB_IRQn);
+/*	NVIC_EnableIRQ((IRQn_Type)DP32_GPIOB_IRQn);
 
 #ifdef ENABLE_UART
 	NVIC_EnableIRQ((IRQn_Type)DP32_UART1_IRQn);
 #endif
+
+*/
 
 	FUNCTION_Init();
 	//FUNCTION_Select(FUNCTION_RECEIVE);

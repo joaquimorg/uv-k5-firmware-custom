@@ -32,6 +32,7 @@ typedef enum APPS_e APPS_t;
 
 enum APPS_Popup_e {
     APP_POPUP_NONE = 0,
+    APP_POPUP_REG,
 	APP_POPUP_TXP,
     APP_POPUP_W_N,
     APP_POPUP_AM,
