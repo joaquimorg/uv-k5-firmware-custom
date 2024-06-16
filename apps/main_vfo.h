@@ -160,6 +160,51 @@ uint8_t StatusLine = 0;
 
 uint8_t vfoNumA = 0;
 
+typedef struct {
+    char name[20];
+    uint32_t lower_freq;
+    uint32_t upper_freq;
+} FrequencyBand;
+
+FrequencyBand bands[] = {
+    {"HAM 17m", 1806800, 1816800},
+    {"HAM 15m", 2100000, 2145000},
+    {"HAM 12m", 2489000, 2499000},
+    {"HAM 10m", 2800000, 2970000},
+    {"HAM 6m", 5000000, 5400000},
+    {"HAM 4m (Europe)", 7000000, 7100000},
+    {"HAM 2m", 14400000, 14800000},
+    {"HAM 1.25m", 21900000, 22500000},
+    {"HAM 70cm", 42000000, 45000000},
+    {"HAM 33cm", 90200000, 92800000},
+    {"HAM 23cm", 124000000, 130000000},
+    // Other Bands
+    {"CB Radio", 2696500, 2740500}, // 11m Citizens Band
+    {"FM Broadcast", 8800000, 10800000},
+    {"Aircraft Band", 10800000, 13700000},
+    {"Marine VHF", 15600000, 17400000},
+    {"Weather Band", 16240000, 16255000},
+    {"Public Service Band", 15000000, 17400000},
+    {"Industrial/Business", 46100000, 47000000},
+    {"GMRS/FRS", 46255000, 46772500},
+
+    // PMR (Private Mobile Radio)
+    {"PMR446", 44600000, 44620000}, // PMR 446
+
+};
+
+const char* getBandName(uint32_t frequency) {
+    int num_bands = sizeof(bands) / sizeof(bands[0]);
+
+    for (int i = 0; i < num_bands; ++i) {
+        if (frequency >= bands[i].lower_freq && frequency <= bands[i].upper_freq) {
+            return bands[i].name;
+        }
+    }
+
+    return "";
+}
+
 // this must be in other place, radio specific
 // todo
 RegisterSpec registerRadio[] = {
@@ -229,7 +274,7 @@ void MainVFO_showVFO(void) {
     const VFO_Info_t *vfoInfoA = &gEeprom.VfoInfo[vfoNumA];
     //const VFO_Info_t *vfoInfoB = &gEeprom.VfoInfo[vfoNumB];
 
-    const bool isChannelModeA = IS_MR_CHANNEL(gEeprom.ScreenChannel[vfoNumA]);
+    //const bool isChannelModeA = IS_MR_CHANNEL(gEeprom.ScreenChannel[vfoNumA]);
     //const bool isChannelModeB = IS_MR_CHANNEL(gEeprom.ScreenChannel[vfoNumB]);
 
     const enum VfoState_t state = gVfoState;
@@ -242,7 +287,13 @@ void MainVFO_showVFO(void) {
     // VFO
     //UI_printf(&font_10, TEXT_ALIGN_LEFT, 3, 0, yPosVFO - 7, true, true, vfoNumA == 0 ? "VFO A" : "VFO B");
 
-    if ( isChannelModeA ) {
+    if (state == VFO_STATE_TX){
+        frequency = vfoInfoA->pTX->Frequency;
+    } else {
+        frequency = vfoInfoA->pRX->Frequency;
+    }
+
+    if ( IS_MR_CHANNEL(gEeprom.ScreenChannel[vfoNumA]) ) {
         // Channel Name
         memcpy(String, vfoInfoA->Name, 16);
         if (String[0] == 0) {
@@ -251,33 +302,29 @@ void MainVFO_showVFO(void) {
             UI_printf(&font_10, TEXT_ALIGN_LEFT, 3, 0, yPosVFO - 7, true, true, "M%03u", gEeprom.ScreenChannel[vfoNumA] + 1);
             UI_printf(&font_10, TEXT_ALIGN_RIGHT, UI_nextX + 4, 124, yPosVFO - 8, false, false, String);
         }
-    } /*else {
-        UI_printf(&font_10, TEXT_ALIGN_LEFT, 2, 0, yPosVFO + 7, true, false, "VFO");
-    }*/
+    } else {
+        UI_printf(&font_10, TEXT_ALIGN_LEFT, 3, 0, yPosVFO - 8, false, false, "%s", getBandName(frequency));
+    }
 
    UI_printf(&font_n_20, TEXT_ALIGN_LEFT, 2, 0, yPosVFO + 9, false, false, vfoNumA == 0 ? "/" : "*");
 
     // Frequency
 
-    if (state == VFO_STATE_TX){
-        frequency = vfoInfoA->pTX->Frequency;
-    } else {
-        frequency = vfoInfoA->pRX->Frequency;
-    }
-
     if ( frequency >= _1GHz_in_KHz ) {
-        UI_printf(&font_n_20, TEXT_ALIGN_RIGHT, 15, 100, yPosVFO + 9, false, false, "%1u.%03u.%03u", (frequency / 100000000), (frequency / 100000) % 1000, (frequency % 100000) / 100);
+        UI_printf(&font_n_20, TEXT_ALIGN_RIGHT, 15, 110, yPosVFO + 10, false, false, "%1u.%03u.%03u", (frequency / 100000000), (frequency / 100000) % 1000, (frequency % 100000) / 100);
     } else if ( frequency >= 10000000 ) {
-        UI_printf(&font_n_20, TEXT_ALIGN_RIGHT, 15, 100, yPosVFO + 9, false, false, "%3u.%03u", (frequency / 100000), (frequency % 100000) / 100);
+        UI_printf(&font_n_20, TEXT_ALIGN_RIGHT, 15, 110, yPosVFO + 10, false, false, "%3u.%03u", (frequency / 100000), (frequency % 100000) / 100);
     } else {
-        UI_printf(&font_n_20, TEXT_ALIGN_RIGHT, 15, 100, yPosVFO + 9, false, false, "%2u.%03u", (frequency / 100000), (frequency % 100000) / 100);
+        UI_printf(&font_n_20, TEXT_ALIGN_RIGHT, 15, 110, yPosVFO + 10, false, false, "%2u.%03u", (frequency / 100000), (frequency % 100000) / 100);
     }
-    UI_printf(&font_n_16,   TEXT_ALIGN_LEFT, UI_nextX + 3, 0, yPosVFO + 9, false, false, "%02u", (frequency % 100));
+    UI_printf(&font_n_16,   TEXT_ALIGN_LEFT, UI_nextX + 2, 0, yPosVFO + 10, false, false, "%02u", (frequency % 100));
 
-    if (vfoInfoA->freq_config_RX.Frequency != vfoInfoA->freq_config_TX.Frequency) {
-        // show the TX offset symbol
-        if(vfoInfoA->TX_OFFSET_FREQUENCY_DIRECTION <=2 && vfoInfoA->TX_OFFSET_FREQUENCY_DIRECTION > 0) {
-            UI_printf(&font_n_20, TEXT_ALIGN_LEFT, 2, 0, yPosVFO + 22, false, false, "%s", gSubMenu_SFT_D[vfoInfoA->TX_OFFSET_FREQUENCY_DIRECTION]);
+    if (state != VFO_STATE_TX && !FUNCTION_IsRx()){
+        if (vfoInfoA->freq_config_RX.Frequency != vfoInfoA->freq_config_TX.Frequency) {
+            // show the TX offset symbol
+            if(vfoInfoA->TX_OFFSET_FREQUENCY_DIRECTION <=2 && vfoInfoA->TX_OFFSET_FREQUENCY_DIRECTION > 0) {
+                UI_printf(&font_n_20, TEXT_ALIGN_LEFT, 2, 0, yPosVFO + 22, false, false, "%s", gSubMenu_SFT_D[vfoInfoA->TX_OFFSET_FREQUENCY_DIRECTION]);
+            }
         }
     }
 

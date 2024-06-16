@@ -129,6 +129,7 @@ uint8_t FREQUENCY_CalculateOutputPower(uint8_t TxpLow, uint8_t TxpMid, uint8_t T
 
 uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
 {
+	
 	if(step == 833) {
         uint32_t base = freq/2500*2500;
         int chno = (freq - base) / 700;    // convert entered aviation 8.33Khz channel number scheme to actual frequency. 
@@ -140,18 +141,26 @@ uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
 	if(step >= 1000) 
 		step = step/2;
 	return (freq + (step + 1) / 2) / step * step;
+	
 }
 
 int32_t TX_freq_check(const uint32_t Frequency)
 {	// return '0' if TX frequency is allowed
 	// otherwise return '-1'
 
-	if (Frequency < frequencyBandTable[0].lower || Frequency > frequencyBandTable[BAND_N_ELEM - 1].upper)
-		return 1;  // not allowed outside this range
+	if (Frequency >= 14400000 && Frequency <= 14799999)
+		return 0;
+
+	if (Frequency >= 42000000 && Frequency <= 45000000)
+		return 0;
+
+	if (Frequency >= 44600625 && Frequency <= 44619375)
+		return 0;
 
 	if (Frequency >= BX4819_band1.upper && Frequency < BX4819_band2.lower)
 		return -1;  // BX chip does not work in this range
 
+	/*
 	switch (gSetting_F_LOCK)
 	{
 		case F_LOCK_DEF:
@@ -214,6 +223,7 @@ int32_t TX_freq_check(const uint32_t Frequency)
 					return 0;
 			break;
 	}
+	*/
 
 	// dis-allowed TX frequency
 	return -1;

@@ -473,14 +473,14 @@ void HandlerGPIOB(void) {
 }
 */
 
-/*
+
 void HandlerUART1(void) {
 	if (UART_IsCommandAvailable()) {
 		UART_HandleCommand();
 	}
 	UART1->IF |= UART_IF_RXTO_BITS_NOT_SET | UART_IF_RXFIFO_OVF_BITS_NOT_SET;
 }
-*/
+
 
 /* --------------------------------------------------------------------------------------------------------- */
 
@@ -590,12 +590,13 @@ void RADIO_SetTransmit() {
 
 void RADIO_Handler(void) {
 
+/*
 #ifdef ENABLE_UART
 	if (UART_IsCommandAvailable()) {
 		UART_HandleCommand();
 	}
 #endif
-
+*/
 	CheckRadioInterrupts();
 	if (gIsReceiving) {
 		if (g_CTCSS_Lost && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE && BK4819_GetCTCType() == 1) {		
@@ -644,20 +645,20 @@ void main_task(void* arg) {
 	
 	//LogUartf("Main Task Ready... \r\n");
 
-/*	NVIC_EnableIRQ((IRQn_Type)DP32_GPIOB_IRQn);
+	//NVIC_EnableIRQ((IRQn_Type)DP32_GPIOB_IRQn);
 
 #ifdef ENABLE_UART
 	NVIC_EnableIRQ((IRQn_Type)DP32_UART1_IRQn);
 #endif
 
-*/
-
 	FUNCTION_Init();
 	//FUNCTION_Select(FUNCTION_RECEIVE);
 
+	MAIN_Messages_t msg;
+
 	for (;;) {
-		MAIN_Messages_t msg;
-    	if (xQueueReceive(mainTasksMsgQueue, &msg, 10)) {
+		
+    	if (xQueueReceive(mainTasksMsgQueue, &msg, pdMS_TO_TICKS(1))) {
 			switch(msg.message) {
 				case MAIN_MSG_INIT:
 					//LogUartf("MSG INIT \r\n");
@@ -849,7 +850,7 @@ void main_task(void* arg) {
 		}
 
 		RADIO_Handler();
-		//vTaskDelay(pdMS_TO_TICKS(10));
+		//vTaskDelay(pdMS_TO_TICKS(1));
 	}
 }
 
@@ -857,7 +858,7 @@ void main_task(void* arg) {
 void main_push_message_value(MAIN_MSG_t msg, uint32_t value) {
 	MAIN_Messages_t mainMSG = { msg, value };
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xQueueSendToBackFromISR(mainTasksMsgQueue, (void *)&mainMSG, &xHigherPriorityTaskWoken);
+    xQueueSendFromISR(mainTasksMsgQueue, (void *)&mainMSG, &xHigherPriorityTaskWoken);
 }
 
 void main_push_message(MAIN_MSG_t msg) {

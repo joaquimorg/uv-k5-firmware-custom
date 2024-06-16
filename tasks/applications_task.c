@@ -192,11 +192,11 @@ void app_task(void* arg) {
 
     keyboard_init();
     
-    for (;;) {
+    APP_Messages_t msg;
 
-        APP_Messages_t msg;
+    for (;;) {        
 
-    	if (xQueueReceive(appTasksMsgQueue, &msg, 20)) {
+    	if (xQueueReceive(appTasksMsgQueue, &msg, pdMS_TO_TICKS(5))) {
 
 			switch(msg.message) {
                 case APP_MSG_KEY:
@@ -257,6 +257,7 @@ void app_task(void* arg) {
             }
 
         }
+        //vTaskDelay(pdMS_TO_TICKS(1));
 
     }
 }
@@ -265,13 +266,13 @@ void app_task(void* arg) {
 void app_push_message_value(APP_MSG_t msg, uint32_t value) {
     APP_Messages_t appMSG = { msg, value, 0, 0 };
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xQueueSendToBackFromISR(appTasksMsgQueue, (void *)&appMSG, &xHigherPriorityTaskWoken);
+    xQueueSendFromISR(appTasksMsgQueue, (void *)&appMSG, &xHigherPriorityTaskWoken);
 }
 
 void app_push_message_key(KEY_Code_t key, KEY_State_t state) {
     APP_Messages_t appMSG = { APP_MSG_KEY, 0, key, state };
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xQueueSendToBackFromISR(appTasksMsgQueue, (void *)&appMSG, &xHigherPriorityTaskWoken);
+    xQueueSendFromISR(appTasksMsgQueue, (void *)&appMSG, &xHigherPriorityTaskWoken);
 }
 
 void app_push_message(APP_MSG_t msg) {
