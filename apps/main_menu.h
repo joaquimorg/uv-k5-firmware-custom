@@ -55,7 +55,7 @@ void MainMenu_showList() {
     }
 
     yPos = 10;
-    yPos += (uint8_t)((( (100 * mainMenuCurrentMenu) / MAIN_MENU_SIZE ) / 100.0) * 57);
+    yPos += (uint8_t)((mainMenuCurrentMenu * 57.0) / MAIN_MENU_SIZE);
 
     UI_drawFastVLine(1, yPos - 1, 3, true);
     UI_drawFastVLine(3, yPos - 1, 3, true);

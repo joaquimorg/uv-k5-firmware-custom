@@ -136,12 +136,13 @@ ifeq ($(ENABLE_REMOTE_CONTROL),1)
 	CFLAGS += -DENABLE_REMOTE_CONTROL
 endif
 
-# C flags common to all targets
-CFLAGS += -Os -Wall -Werror -mcpu=cortex-m0 -fno-builtin -fshort-enums -fno-delete-null-pointer-checks -std=c2x -MMD
-CFLAGS += -flto=auto
+# C flags common optimized for size
+CFLAGS += -Os -Wall -Werror -mcpu=cortex-m0 -g -fno-builtin -fshort-enums -fno-delete-null-pointer-checks -std=c2x -MMD
+CFLAGS += -flto
 CFLAGS += -ftree-vectorize -funroll-loops
 CFLAGS += -Wextra -Wunused-parameter -Wconversion
 CFLAGS += -fno-math-errno -pipe -ffunction-sections -fdata-sections -ffast-math
+CFLAGS += -fsingle-precision-constant -finline-functions-called-once
 
 # Assembler flags common to all targets
 ASFLAGS += -mcpu=cortex-m0

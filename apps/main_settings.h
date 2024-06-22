@@ -362,7 +362,7 @@ void MainSettingsMenu_showList() {
     }
 
     yPos = 10;
-    yPos += (uint8_t)((( (100 * mainSettingsCurrentMenu) / MENU_SETTINGS_SIZE ) / 100.0) * 54);
+	yPos += (uint8_t)((mainSettingsCurrentMenu * 54.0) / MENU_SETTINGS_SIZE);
 
     UI_drawFastVLine(1, yPos - 1, 3, true);
     UI_drawFastVLine(3, yPos - 1, 3, true);
