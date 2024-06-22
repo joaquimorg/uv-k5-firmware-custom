@@ -44,14 +44,14 @@ void UI_statusUpdate(void) {
 
 /**************************************************************************/
 
-void setPixel(uint8_t x, uint8_t y, bool isBlack) {
+void setPixel(int x, int y, bool isBlack) {
 	if (x < LCD_WIDTH && y < LCD_HEIGHT) {
-		const uint8_t pixel = (1 << (y % 8));
-		const uint8_t row = y / 8;
+		const uint8_t pixel = (uint8_t)(1 << (y % 8));
+		const uint8_t row = (uint8_t)(y / 8);
     	if (isBlack) {
         	gFrameBuffer[row][x] |= pixel;
     	} else {
-        	gFrameBuffer[row][x] &= ~pixel;
+        	gFrameBuffer[row][x] &= (uint8_t)~pixel;
     	}
 	}
 }
@@ -84,7 +84,7 @@ static void sort(uint8_t *a, uint8_t *b) {
 }
 
 
-void UI_drawDottedLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, bool black, int dotSpacing) {
+void UI_drawDottedLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, bool black, uint8_t dotSpacing) {
     if (x2 == x1) {
         sort(&y1, &y2);
         for (uint8_t i = y1; i <= y2; i += dotSpacing) {
@@ -140,24 +140,24 @@ void UI_drawCircleHelper(uint8_t x0, uint8_t y0, uint8_t r, uint8_t cornername, 
 
 void UI_drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, bool isBlack) {
   UI_drawFastHLine(x, y, w, isBlack);
-  UI_drawFastHLine(x, y + h - 1, w, isBlack);
+  UI_drawFastHLine(x, (uint8_t)(y + h - 1), w, isBlack);
   UI_drawFastVLine(x, y, h, isBlack);
-  UI_drawFastVLine(x + w - 1, y, h, isBlack);
+  UI_drawFastVLine((uint8_t)(x + w - 1), y, h, isBlack);
 }
 
 void UI_drawRoundRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t r, bool isBlack) {
-	int16_t max_radius = ((w < h) ? w : h) / 2; // 1/2 minor axis
+	uint8_t max_radius = ((w < h) ? w : h) / 2; // 1/2 minor axis
 	if (r > max_radius)
 		r = max_radius;
-	UI_drawFastHLine(x + r, y, w - 2 * r, isBlack);         // Top
-	UI_drawFastHLine(x + r, y + h - 1, w - 2 * r, isBlack); // Bottom
-	UI_drawFastVLine(x, y + r, h - 2 * r, isBlack);         // Left
-	UI_drawFastVLine(x + w - 1, y + r, h - 2 * r, isBlack); // Right
+	UI_drawFastHLine(x + r, y, (uint8_t)(w - 2 * r), isBlack);         // Top
+	UI_drawFastHLine(x + r, (uint8_t)(y + h - 1), (uint8_t)(w - 2 * r), isBlack); // Bottom
+	UI_drawFastVLine(x, y + r, (uint8_t)(h - 2 * r), isBlack);         // Left
+	UI_drawFastVLine((uint8_t)(x + w - 1), y + r, (uint8_t)(h - 2 * r), isBlack); // Right
 	// draw four corners
 	UI_drawCircleHelper(x + r, y + r, r, 1, isBlack);
-	UI_drawCircleHelper(x + w - r - 1, y + r, r, 2, isBlack);
-	UI_drawCircleHelper(x + w - r - 1, y + h - r - 1, r, 4, isBlack);
-	UI_drawCircleHelper(x + r, y + h - r - 1, r, 8, isBlack);
+	UI_drawCircleHelper((uint8_t)(x + w - r - 1), y + r, r, 2, isBlack);
+	UI_drawCircleHelper((uint8_t)(x + w - r - 1), (uint8_t)(y + h - r - 1), r, 4, isBlack);
+	UI_drawCircleHelper(x + r, (uint8_t)(y + h - r - 1), r, 8, isBlack);
 }
 
 
@@ -244,8 +244,8 @@ void charBounds(unsigned char c, int16_t *x, int16_t *y,
 		int8_t xo = glyph->xOffset,
 			yo = glyph->yOffset;
 		int16_t tsx = 1, tsy = 1,
-                x1 = *x + xo * tsx, y1 = *y + yo * tsy, x2 = x1 + gw * tsx - 1,
-                y2 = y1 + gh * tsy - 1;
+                x1 = (int16_t)(*x + xo * tsx), y1 = (int16_t)(*y + yo * tsy), x2 = (int16_t)(x1 + gw * tsx - 1),
+                y2 = (int16_t)(y1 + gh * tsy - 1);
 		if (x1 < *minx)
 			*minx = x1;
 		if (y1 < *miny)
@@ -254,7 +254,7 @@ void charBounds(unsigned char c, int16_t *x, int16_t *y,
 			*maxx = x2;
 		if (y2 > *maxy)
 			*maxy = y2;
-		*x += xa * tsx;
+		*x += (int16_t)(xa * tsx);
 	}
 }
 
@@ -278,11 +278,11 @@ void getTextBounds(const char *str, int16_t x, int16_t y,
 
 	if (maxx >= minx) {     // If legit string bounds were found...
 		*x1 = minx - 1;           // Update x1 to least X coord,
-		*w = maxx - minx + 3; // And w to bound rect width
+		*w = (uint16_t)(maxx - minx + 3); // And w to bound rect width
 	}
 	if (maxy >= miny) { // Same for height
 		*y1 = miny - 1;
-		*h = maxy - miny + 3;
+		*h = (uint16_t)(maxy - miny + 3);
 	}
 }
 
@@ -302,7 +302,7 @@ void UI_drawStringInt(const GFXfont * font, TEXT_Align_t tAlign, uint8_t xstart,
 	if ( xend > xstart ) {
 		if ( tAlign == TEXT_ALIGN_CENTER ) {
 			if (stringWidth < xend) {
-				startX = ((xstart + xend) / 2) - (stringWidth / 2);
+				startX = (uint8_t)(((xstart + xend) / 2) - (stringWidth / 2));
 			}
 		} else if ( tAlign == TEXT_ALIGN_RIGHT ) {
 			startX = xend - stringWidth;
@@ -314,21 +314,21 @@ void UI_drawStringInt(const GFXfont * font, TEXT_Align_t tAlign, uint8_t xstart,
 		if ( x1 < 0 ) x1 = 0;
 		if ( y1 < 0 ) y1 = 0;
 		if ( xend > xstart ) {
-			UI_fillRect(xstart, y1, xend - xstart, h, !isBlack);
+			UI_fillRect(xstart, (uint8_t)y1, xend - xstart, (uint8_t)h, !isBlack);
 		} else {
-			UI_fillRect(x1, y1, w, h, !isBlack);
+			UI_fillRect((uint8_t)x1, (uint8_t)y1, (uint8_t)w, (uint8_t)h, !isBlack);
 		}
-		UI_nextX = x1 + w;
+		UI_nextX = (uint8_t)(x1 + w);
 	} else if ( isBox ) {
 		getTextBounds(str, startX, y, &x1, &y1, &w, &h, font);
 		if ( x1 < 0 ) x1 = 0;
 		if ( y1 < 0 ) y1 = 0;
 		if ( xend > xstart ) {
-			UI_drawRect(xstart - 1, y1 - 1, (xend - xstart) + 2, h + 2, isBlack);
+			UI_drawRect(xstart - 1, (uint8_t)(y1 - 1), (uint8_t)((xend - xstart) + 2), (uint8_t)(h + 2), isBlack);
 		} else {
-			UI_drawRect(x1 - 1, y1 - 1, w + 2, h + 2, isBlack);
+			UI_drawRect((uint8_t)(x1 - 1), (uint8_t)(y1 - 1), (uint8_t)(w + 2), (uint8_t)(h + 2), isBlack);
 		}
-		UI_nextX = x1 + w + 1;
+		UI_nextX = (uint8_t)(x1 + w + 1);
 	} else {
 		UI_nextX = startX + stringWidth;
 	}

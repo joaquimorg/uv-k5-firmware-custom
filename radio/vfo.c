@@ -22,13 +22,10 @@
 #include "app.h"
 #include "audio.h"
 #include "task_main.h"
-#ifdef ENABLE_UART
-	#include "driver/uart.h"	
-#endif
+#include "driver/uart.h"	
 
 
-
-void VFO_Up_Down(uint8_t Direction) {
+void VFO_Up_Down(int8_t Direction) {
 	uint8_t Channel = gEeprom.ScreenChannel[gEeprom.TX_VFO];
 
     uint8_t Next;
@@ -50,7 +47,7 @@ void VFO_Up_Down(uint8_t Direction) {
         return;
     }
 
-    Next = RADIO_FindNextChannel(Channel + Direction, Direction, false, 0);
+    Next = RADIO_FindNextChannel((uint8_t)(Channel + Direction), Direction, false, 0);
     if (Next == 0xFF)
         return;
     if (Channel == Next)

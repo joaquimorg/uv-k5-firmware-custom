@@ -22,7 +22,7 @@
 
 void Welcome_renderFunction() {    
     
-    const uint8_t batteryPercentage = BATTERY_VoltsToPercent(gBatteryVoltageAverage);
+    const uint16_t batteryPercentage = (uint16_t)BATTERY_VoltsToPercent(gBatteryVoltageAverage);
 
 	UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 18, "Open Radio FW", true, false);    
     UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 32, "version "VERSION_STRING, false, true);

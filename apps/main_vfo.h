@@ -27,10 +27,7 @@
 #include "gui/gui.h"
 #include "ui.h"
 
-#ifdef ENABLE_UART
-	#include "driver/uart.h"
-#endif
-
+#include "driver/uart.h"
 
 uint8_t popupListSelected = 0;
 uint8_t popupListSize = 0;
@@ -82,9 +79,9 @@ void MainVFO_showRSSI(void) {
 	    const int16_t rssi_dBm = BK4819_GetRSSI_dBm() + dBmCorrTable[gRxVfo->Band];
 
         int s0_9 = gEeprom.S0_LEVEL - gEeprom.S9_LEVEL;
-        const uint8_t s_level = MIN(MAX((int32_t)(rssi_dBm - s0_dBm)*100 / (s0_9*100/9), 0), 9); // S0 - S9
-        uint8_t overS9dBm = MIN(MAX(rssi_dBm + gEeprom.S9_LEVEL, 0), 99);
-        uint8_t overS9Bars = MIN(overS9dBm/10, 9);
+        const uint8_t s_level = (uint8_t)MIN(MAX((int32_t)(rssi_dBm - s0_dBm)*100 / (s0_9*100/9), 0), 9); // S0 - S9
+        uint8_t overS9dBm = (uint8_t)MIN(MAX(rssi_dBm + gEeprom.S9_LEVEL, 0), 99);
+        uint8_t overS9Bars = (uint8_t)MIN(overS9dBm/10, 9);
 
         memset(bar, '@', s_level + overS9Bars);
 
@@ -132,13 +129,11 @@ void MainVFO_showMICBar(void) {
     memset(bar, '&', sizeof(bar));
     bar[12] = 0x00;
 
-    const unsigned int voice_amp  = BK4819_GetVoiceAmplitudeOut();  // 15:0
-
     // make non-linear to make more sensitive at low values
-    const unsigned int level      = MIN(voice_amp * 8, 65535u);
+    const unsigned int level = MIN((unsigned int)(BK4819_GetVoiceAmplitudeOut() * 8), 65535u);
     const unsigned int sqrt_level = MIN(sqrt16(level), 124u);
-    uint8_t bars = 11 * sqrt_level / 124;
-    bars = MIN(bars, 11);
+    uint8_t bars = (uint8_t)(11 * sqrt_level / 124);
+    bars = (uint8_t)MIN(bars, 11);
     memset(bar, '@', bars);
 
     UI_printf(&font_small, TEXT_ALIGN_LEFT, xPosVFO + 16, 0, yPosVFO + 6, false, false, "%s", bar);
@@ -225,7 +220,7 @@ uint16_t GetRegRadioValue(uint8_t st) {
     if(s.num == BK4819_REG_7E) {
 	    return (BK4819_ReadRegister(s.num) & (1 << 15)) == 0;
     } else {
-        return (BK4819_ReadRegister(s.num) >> s.offset) & s.mask;
+        return (uint16_t)((BK4819_ReadRegister(s.num) >> s.offset) & s.mask);
     }
 }
 
@@ -250,8 +245,8 @@ void SetRegRadioValue(uint8_t st, bool add) {
         }
         // TODO: use max value for bits count in max value, or reset by additional
         // mask in spec
-        reg &= ~(s.mask << s.offset);
-        BK4819_WriteRegister(s.num, reg | (v << s.offset));
+        reg &= (uint16_t)~(s.mask << s.offset);
+        BK4819_WriteRegister(s.num, (uint16_t)(reg | (v << s.offset)));
     }
 }
 
@@ -361,11 +356,11 @@ void MainVFO_showVFO(void) {
 
     if (StatusLine == 0) {
         for (uint8_t i = 0; i < 5; ++i) {
-            UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + ( i == 0 ? 3 : 4 ), 0, 60, true, true, "%s %u", registerRadio[i].name, GetRegRadioValue(i));
+            UI_printf(&font_small, TEXT_ALIGN_LEFT, (uint8_t)(UI_nextX + ( i == 0 ? 3 : 4 )), 0, 60, true, true, "%s %u", registerRadio[i].name, GetRegRadioValue(i));
         }
     } else {    
         for (uint8_t i = 0; i < 4; ++i) {
-            UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + ( i == 0 ? 3 : 4 ), 0, 60, true, true, "%s %u", registerRadio[i + 5].name, GetRegRadioValue(i + 5));
+            UI_printf(&font_small, TEXT_ALIGN_LEFT, (uint8_t)(UI_nextX + ( i == 0 ? 3 : 4 )), 0, 60, true, true, "%s %u", registerRadio[i + 5].name, GetRegRadioValue(i + 5));
         }
     }
 

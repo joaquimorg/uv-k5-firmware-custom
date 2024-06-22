@@ -67,16 +67,14 @@ uint32_t DCS_GetGolayCodeWord(DCS_CodeType_t CodeType, uint8_t Option)
 }
 
 uint8_t DCS_GetCdcssCode(uint32_t Code)
-{
-	unsigned int i;
-	for (i = 0; i < 23; i++)
+{	
+	for (uint8_t i = 0; i < 23; i++)
 	{
 		uint32_t Shift;
 
 		if (((Code >> 9) & 0x7U) == 4)
-		{
-			unsigned int j;
-			for (j = 0; j < ARRAY_SIZE(DCS_Options); j++)
+		{			
+			for (uint8_t j = 0; j < ARRAY_SIZE(DCS_Options); j++)
 				if (DCS_Options[j] == (Code & 0x1FF))
 					if (DCS_GetGolayCodeWord(2, j) == Code)
 						return j;
@@ -93,11 +91,10 @@ uint8_t DCS_GetCdcssCode(uint32_t Code)
 
 uint8_t DCS_GetCtcssCode(int Code)
 {
-	unsigned int i;
 	uint8_t      Result = 0xFF;
 	int          Smallest = ARRAY_SIZE(CTCSS_Options);
 
-	for (i = 0; i < ARRAY_SIZE(CTCSS_Options); i++)
+	for (uint8_t i = 0; i < ARRAY_SIZE(CTCSS_Options); i++)
 	{
 		int Delta = Code - CTCSS_Options[i];
 		if (Delta < 0)

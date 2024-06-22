@@ -85,8 +85,8 @@ unsigned int BATTERY_VoltsToPercent(const unsigned int voltage_10mV)
 		if (voltage_10mV > crv[i][0]) {
 			const int a = (crv[i - 1][1] - crv[i][1]) * mulipl / (crv[i - 1][0] - crv[i][0]);
 			const int b = crv[i][1] - a * crv[i][0] / mulipl;
-			const int p = a * voltage_10mV / mulipl + b;
-			return MIN(p, 100);
+			const int p = (int)(a * (int)voltage_10mV / mulipl + b);
+			return (unsigned int)MIN(p, 100);
 		}
 	}
 
@@ -97,9 +97,9 @@ void BATTERY_GetReadings(const bool bDisplayBatteryLevel)
 {
 	(void) bDisplayBatteryLevel;
 	const uint8_t  PreviousBatteryLevel = gBatteryDisplayLevel;
-	const uint16_t Voltage              = (gBatteryVoltages[0] + gBatteryVoltages[1] + gBatteryVoltages[2] + gBatteryVoltages[3]) / 4;
+	const uint16_t Voltage              = (uint16_t)((gBatteryVoltages[0] + gBatteryVoltages[1] + gBatteryVoltages[2] + gBatteryVoltages[3]) / 4);
 
-	gBatteryVoltageAverage = (Voltage * 760) / gBatteryCalibration[3];
+	gBatteryVoltageAverage = (uint16_t)((Voltage * 760) / gBatteryCalibration[3]);
 
 	if(gBatteryVoltageAverage > 890)
 		gBatteryDisplayLevel = 7; // battery overvoltage
@@ -108,7 +108,7 @@ void BATTERY_GetReadings(const bool bDisplayBatteryLevel)
 	else {
 		gBatteryDisplayLevel = 1;
 		const uint8_t levels[] = {5,17,41,65,88};
-		uint8_t perc = BATTERY_VoltsToPercent(gBatteryVoltageAverage);
+		uint8_t perc = (uint8_t)BATTERY_VoltsToPercent(gBatteryVoltageAverage);
 		for(uint8_t i = 6; i >= 1; i--){
 			if (perc > levels[i-2]) {
 				gBatteryDisplayLevel = i;

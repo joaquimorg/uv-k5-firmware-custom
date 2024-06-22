@@ -23,10 +23,7 @@
 #include "driver/keyboard.h"
 #include "gui.h"
 #include "ui.h"
-
-#ifdef ENABLE_UART
-	#include "driver/uart.h"
-#endif
+#include "driver/uart.h"
 
 char inputKeys[13];
 int8_t inputKeysIndex = -1;
@@ -35,9 +32,9 @@ uint8_t showCursorCount = 0;
 
 void GUI_drawBattery(void) {
 
-	const uint8_t gBatteryPercentage = BATTERY_VoltsToPercent(gBatteryVoltageAverage);
+	const uint8_t gBatteryPercentage = (uint8_t)BATTERY_VoltsToPercent(gBatteryVoltageAverage);
 	const uint8_t maxBattBars = 10;
-	const uint8_t battBars = (gBatteryPercentage / 100.0) * maxBattBars;
+	const uint8_t battBars = (uint8_t)((gBatteryPercentage / 100.0) * maxBattBars);
 
 	gFrameBuffer[0][2] = 0x7E;
 	gFrameBuffer[0][maxBattBars + 3] = 0x3C;
@@ -95,7 +92,7 @@ void GUI_inputAppendKey(const KEY_Code_t key, uint8_t length, bool decimal) {
 
 uint8_t GUI_inputGetSize() {
 	if (inputKeysIndex >= 0) {
-		return inputKeysIndex;
+		return (uint8_t)inputKeysIndex;
 	} else {
 		return 0;
 	}
@@ -116,7 +113,7 @@ void GUI_inputReset() {
 
 uint32_t string_to_uint32(const char *str) {
     uint32_t result = 0;
-    const uint8_t len = strlen(str);
+    const uint8_t len = (uint8_t)strlen(str);
 
     for (uint8_t i = 0; i < len; i++) {
         if (str[i] != '.') {
@@ -209,7 +206,7 @@ void popupListCalc(uint8_t listSelected, uint8_t listSize, uint8_t *yPos, uint8_
         }
 		*listCount = listSize + 1;
     } else {
-		*offset = Clamp(listSelected - 1, 0, listSize - 2);
+		*offset = (uint8_t)Clamp(listSelected - 1, 0, listSize - 2);
     }
 }
 

@@ -115,7 +115,7 @@ static uint8_t currentBrightness;
 void BACKLIGHT_SetBrightness(uint8_t brigtness)
 {
 	currentBrightness = brigtness;
-	PWM_PLUS0_CH0_COMP = (1 << brigtness) - 1;
+	PWM_PLUS0_CH0_COMP = (uint32_t)(1 << brigtness) - 1;
 	//PWM_PLUS0_SWLOAD = 1;
 }
 

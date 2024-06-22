@@ -124,7 +124,7 @@ bool gWasFKeyPressed  = false;
 // Scan the matrix keyboard and detect key events
 void keyboard_read() {
 
-	uint16_t regH, regL;
+	uint32_t regH, regL;
 
 	// KEY_PTT
 	key_ptt = !GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_PTT);

@@ -1,7 +1,7 @@
 #ifndef DEBUGGING_H
 #define DEBUGGING_H
 
-#if defined(ENABLE_UART) || defined(ENABLE_UART_DEBUG)
+#if defined(ENABLE_UART_DEBUG)
 
 #include "driver/uart.h"
 #include "driver/bk4819.h"

@@ -65,7 +65,7 @@ void UI_DisplayStatus()
 		}
 
 		case 2: {	// percentage
-			const uint8_t gBatteryPercentage = BATTERY_VoltsToPercent(gBatteryVoltageAverage);
+			const uint8_t gBatteryPercentage = (uint8_t)BATTERY_VoltsToPercent(gBatteryVoltageAverage);
 			UI_printf(&font_small, TEXT_ALIGN_LEFT, 18, 0, STATUS_YPOS, true, false, "% 3i%%", gBatteryPercentage);
 			break;
 		}
@@ -131,7 +131,7 @@ void UI_DisplayStatus()
 	}
 
 	//if(!SCANNER_IsScanning()) {
-		uint8_t dw = (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) + (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) * 2;
+		uint8_t dw = (uint8_t)((gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) + (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) * 2);
 		if(dw == 1 || dw == 3) { // DWR - dual watch + respond
 			if(gDualWatchActive) {
 				UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, STATUS_YPOS, true, false, "DW");

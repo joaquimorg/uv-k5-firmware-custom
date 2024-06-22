@@ -18,12 +18,6 @@
 #include <string.h>
 
 #include "app/dtmf.h"
-#ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
-#endif
-#ifdef ENABLE_MESSENGER
-	#include "app/messenger.h"
-#endif
 #include "audio.h"
 #include "bsp/dp32g030/gpio.h"
 #include "dcs.h"
@@ -38,10 +32,8 @@
 #include "radio.h"
 #include "settings.h"
 #include "ui/menu.h"
+#include "driver/uart.h"	
 
-#ifdef ENABLE_UART
-	#include "driver/uart.h"	
-#endif
 
 VFO_Info_t    *gTxVfo;
 VFO_Info_t    *gRxVfo;
@@ -87,7 +79,7 @@ bool RADIO_CheckValidChannel(uint16_t channel, bool checkScanList, uint8_t scanL
 
 uint8_t RADIO_FindNextChannel(uint8_t Channel, int8_t Direction, bool bCheckScanList, uint8_t VFO)
 {
-	for (unsigned int i = 0; IS_MR_CHANNEL(i); i++, Channel += Direction) {
+	for (unsigned int i = 0; IS_MR_CHANNEL(i); i++, Channel = (uint8_t)(Channel + Direction)) {
 		if (Channel == 0xFF) {
 			Channel = MR_CHANNEL_LAST;
 		} else if (!IS_MR_CHANNEL(Channel)) {
@@ -128,7 +120,7 @@ void RADIO_InitInfo(VFO_Info_t *pInfo, const uint8_t ChannelSave, const uint32_t
 	RADIO_ConfigureSquelchAndOutputPower(pInfo);
 }
 
-void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure)
+void RADIO_ConfigureChannel(const uint8_t VFO, const uint8_t configure)
 {
 	VFO_Info_t *pVfo = &gEeprom.VfoInfo[VFO];
 
@@ -198,7 +190,7 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
 	if (IS_MR_CHANNEL(channel))
 		base = channel * 16;
 	else
-		base = 0x0C80 + ((channel - FREQ_CHANNEL_FIRST) * 32) + (VFO * 16);
+		base = (uint16_t)(0x0C80 + ((channel - FREQ_CHANNEL_FIRST) * 32) + (VFO * 16));
 
 	if (configure == VFO_CONFIGURE_RELOAD || IS_FREQ_CHANNEL(channel))
 	{
@@ -438,8 +430,8 @@ void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
 		pInfo->SquelchCloseGlitchThresh = (glitch_close > 255) ? 255 : glitch_close;
 #endif
 
-		pInfo->SquelchOpenNoiseThresh   = (noise_open   > 127) ? 127 : noise_open;
-		pInfo->SquelchCloseNoiseThresh  = (noise_close  > 127) ? 127 : noise_close;
+		pInfo->SquelchOpenNoiseThresh   = (uint8_t)((noise_open   > 127) ? 127 : noise_open);
+		pInfo->SquelchCloseNoiseThresh  = (uint8_t)((noise_close  > 127) ? 127 : noise_close);
 	}
 
 	// *******************************
@@ -448,7 +440,7 @@ void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
 	Band = FREQUENCY_GetBand(pInfo->pTX->Frequency);
 
 	uint8_t Txp[3];
-	EEPROM_ReadBuffer(0x1ED0 + (Band * 16) + (pInfo->OUTPUT_POWER * 3), Txp, 3);
+	EEPROM_ReadBuffer((uint16_t)(0x1ED0 + (Band * 16) + (pInfo->OUTPUT_POWER * 3)), Txp, 3);
 
 #ifdef ENABLE_REDUCE_LOW_MID_TX_POWER
 	// make low and mid even lower
@@ -468,10 +460,10 @@ void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
 		Txp[0],
 		Txp[1],
 		Txp[2],
-		 frequencyBandTable[Band].lower,
-		(frequencyBandTable[Band].lower + frequencyBandTable[Band].upper) / 2,
-		 frequencyBandTable[Band].upper,
-		pInfo->pTX->Frequency);
+		(int32_t)frequencyBandTable[Band].lower,
+		(int32_t)((frequencyBandTable[Band].lower + frequencyBandTable[Band].upper) / 2),
+		(int32_t)frequencyBandTable[Band].upper,
+		(int32_t)pInfo->pTX->Frequency);
 
 	// *******************************
 }
@@ -547,7 +539,7 @@ void RADIO_SetupRegisters(bool switchToForeground)
 	BK4819_WriteRegister(BK4819_REG_3F, 0);
 
 	// mic gain 0.5dB/step 0 to 31
-	BK4819_WriteRegister(BK4819_REG_7D, 0xE940 | (gEeprom.MIC_SENSITIVITY_TUNING & 0x1f));
+	BK4819_WriteRegister(BK4819_REG_7D, (uint16_t)(0xE940 | (gEeprom.MIC_SENSITIVITY_TUNING & 0x1f)));
 
 	BK4819_SetFrequency(gRxVfo->pRX->Frequency);
 
@@ -563,11 +555,11 @@ void RADIO_SetupRegisters(bool switchToForeground)
 
 	// AF RX Gain and DAC
 	//BK4819_WriteRegister(BK4819_REG_48, 0xB3A8);  // 1011 00 111010 1000
-	BK4819_WriteRegister(BK4819_REG_48,
+	BK4819_WriteRegister(BK4819_REG_48, (uint16_t)(
 		(11u << 12)                 |     // ??? .. 0 ~ 15, doesn't seem to make any difference
 		( 0u << 10)                 |     // AF Rx Gain-1
 		(gEeprom.VOLUME_GAIN << 4) |     // AF Rx Gain-2
-		(gEeprom.DAC_GAIN    << 0));     // AF DAC Gain (after Gain-1 and Gain-2)
+		(gEeprom.DAC_GAIN    << 0)));     // AF DAC Gain (after Gain-1 and Gain-2)
 
 	uint16_t InterruptMask = BK4819_REG_3F_SQUELCH_FOUND | BK4819_REG_3F_SQUELCH_LOST;
 
@@ -760,7 +752,7 @@ void RADIO_SetModulation(ModulationMode_t modulation)
 void RADIO_SetupAGC(bool listeningAM, bool disable)
 {
 	static uint8_t lastSettings;
-	uint8_t newSettings = (listeningAM << 1) | (disable << 1);
+	uint8_t newSettings = (uint8_t)((listeningAM << 1) | (disable << 1));
 	if(lastSettings == newSettings)
 		return;
 	lastSettings = newSettings;

@@ -327,7 +327,7 @@ static void CMD_051D(const uint8_t *pBuffer)
 		unsigned int i;
 		for (i = 0; i < (pCmd->Size / 8); i++)
 		{
-			const uint16_t Offset = pCmd->Offset + (i * 8U);
+			const uint16_t Offset = (uint16_t)(pCmd->Offset + (i * 8U));
 
 			if (Offset >= 0x0F30 && Offset < 0x0F40)
 				if (!gIsLocked)
@@ -353,7 +353,7 @@ static void CMD_0527(void)
 	Reply.Header.Size           = sizeof(Reply.Data);
 	Reply.Data.RSSI             = BK4819_ReadRegister(BK4819_REG_67) & 0x01FF;
 	Reply.Data.ExNoiseIndicator = BK4819_ReadRegister(BK4819_REG_65) & 0x007F;
-	Reply.Data.GlitchIndicator  = BK4819_ReadRegister(BK4819_REG_63);
+	Reply.Data.GlitchIndicator  = (uint8_t)BK4819_ReadRegister(BK4819_REG_63);
 
 	SendReply(&Reply, sizeof(Reply));
 }
@@ -602,7 +602,7 @@ bool UART_IsCommandAvailable(void)
 		if (gUART_WriteIndex < DmaLength)
 			CommandLength = DmaLength - gUART_WriteIndex;
 		else
-			CommandLength = (DmaLength + sizeof(UART_DMA_Buffer)) - gUART_WriteIndex;
+			CommandLength = (uint16_t)((DmaLength + sizeof(UART_DMA_Buffer)) - gUART_WriteIndex);
 
 		if (CommandLength < 8)
 			return 0;
@@ -614,7 +614,7 @@ bool UART_IsCommandAvailable(void)
 	}
 
 	Index = DMA_INDEX(gUART_WriteIndex, 2);
-	Size  = (UART_DMA_Buffer[DMA_INDEX(Index, 1)] << 8) | UART_DMA_Buffer[Index];
+	Size  = (uint16_t)((UART_DMA_Buffer[DMA_INDEX(Index, 1)] << 8) | UART_DMA_Buffer[Index]);
 
 	if ((Size + 8u) > sizeof(UART_DMA_Buffer))
 	{
@@ -626,7 +626,7 @@ bool UART_IsCommandAvailable(void)
 		return false;
 
 	Index     = DMA_INDEX(Index, 2);
-	TailIndex = DMA_INDEX(Index, Size + 2);
+	TailIndex = (uint16_t)DMA_INDEX(Index, (uint16_t)(Size + 2));
 
 	if (UART_DMA_Buffer[TailIndex] != 0xDC || UART_DMA_Buffer[DMA_INDEX(TailIndex, 1)] != 0xBA)
 	{
@@ -667,7 +667,7 @@ bool UART_IsCommandAvailable(void)
 			UART_Command.Buffer[i] ^= Obfuscation[i % 16];
 	}
 	
-	CRC = UART_Command.Buffer[Size] | (UART_Command.Buffer[Size + 1] << 8);
+	CRC = (uint16_t)(UART_Command.Buffer[Size] | (UART_Command.Buffer[Size + 1] << 8));
 
 	return (CRC_Calculate(UART_Command.Buffer, Size) != CRC) ? false : true;
 }

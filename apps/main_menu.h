@@ -40,7 +40,7 @@ const main_menu_item_t mainMenuList[] =
 
 void MainMenu_showList() {
     uint8_t yPos = 15;
-	const uint8_t offset = Clamp(mainMenuCurrentMenu - 2, 0, MAIN_MENU_SIZE - 5);
+	const uint8_t offset = (uint8_t)Clamp(mainMenuCurrentMenu - 2, 0, MAIN_MENU_SIZE - 5);
 
     for (uint8_t i = 0; i < 5; i++) {
 		if ( (i + offset) < MAIN_MENU_SIZE ) {
@@ -55,7 +55,7 @@ void MainMenu_showList() {
     }
 
     yPos = 10;
-    yPos += ((( (100 * mainMenuCurrentMenu) / MAIN_MENU_SIZE ) / 100.0) * 57);
+    yPos += (uint8_t)((( (100 * mainMenuCurrentMenu) / MAIN_MENU_SIZE ) / 100.0) * 57);
 
     UI_drawFastVLine(1, yPos - 1, 3, true);
     UI_drawFastVLine(3, yPos - 1, 3, true);

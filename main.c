@@ -27,18 +27,14 @@
 #include "bsp/dp32g030/syscon.h"
 #include "driver/systick.h"
 
-#ifdef ENABLE_UART
-	#include "driver/uart.h"
-#endif
+#include "driver/uart.h"
 
 #include "board.h"
 #include "task_main.h"
 
 
 void _putchar(__attribute__((unused)) char c) {
-#ifdef ENABLE_UART
 	UART_Send((uint8_t *)&c, 1);
-#endif
 }
 
 void vAssertCalled( unsigned long ulLine, const char * const pcFileName ) {

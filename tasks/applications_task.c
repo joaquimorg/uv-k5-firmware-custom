@@ -31,9 +31,7 @@
 #include "driver/keyboard.h"
 #include "driver/backlight.h"
 
-#ifdef ENABLE_UART
-	#include "driver/uart.h"
-#endif
+#include "driver/uart.h"
 
 #include "misc.h"
 #include "audio.h"

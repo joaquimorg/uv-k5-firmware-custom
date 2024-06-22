@@ -3,37 +3,8 @@
 # 0 = disable
 # 1 = enable
 
-# ---- STOCK QUANSHENG FERATURES ----
-ENABLE_UART                   ?= 1
-ENABLE_AIRCOPY                ?= 0
-ENABLE_FMRADIO                ?= 0
-ENABLE_VOX                    ?= 0
-ENABLE_DTMF_CALLING           ?= 0
-ENABLE_FLASHLIGHT             ?= 0
-
-# ---- CUSTOM MODS ----
-ENABLE_WIDE_RX                ?= 1
-ENABLE_CTCSS_TAIL_PHASE_SHIFT ?= 0
-ENABLE_SQUELCH_MORE_SENSITIVE ?= 1
-ENABLE_FASTER_CHANNEL_SCAN    ?= 1
-ENABLE_SPECTRUM               ?= 0
-ENABLE_BLMIN_TMP_OFF          ?= 0
-
-# ---- DEBUGGING ----
-ENABLE_AGC_SHOW_DATA          ?= 0
-ENABLE_UART_RW_BK_REGS        ?= 0
-
-# ---- COMPILER/LINKER OPTIONS ----
-ENABLE_SWD                    ?= 0
-
-#############################################################
-
-ENABLE_MESSENGER              			?= 0
-ENABLE_MESSENGER_UART					?= 0
-
-ENABLE_REMOTE_CONTROL			  		?= 1
-
-ENABLE_UART_DEBUG			  			?= 1
+ENABLE_REMOTE_CONTROL			?= 1
+ENABLE_UART_DEBUG			  	?= 1
 
 #------------------------------------------------------------------------------
 AUTHOR_STRING ?= JOAQUIM
@@ -97,7 +68,7 @@ IPATH += \
 
 CFLAGS += -DARMCM0
 
-# Source files FreeRTOS
+# Source files external libs
 
 C_SRC += \
 	$(EXTERNAL_LIB)/FreeRTOS/list.c \
@@ -105,92 +76,41 @@ C_SRC += \
 	$(EXTERNAL_LIB)/FreeRTOS/tasks.c \
 	$(EXTERNAL_LIB)/FreeRTOS/timers.c \
 	$(EXTERNAL_LIB)/FreeRTOS/portable/GCC/ARM_CM0/port.c \
+	$(EXTERNAL_LIB)/printf/printf.c \
 
 # Include folders external libs
 IPATH += \
 	$(EXTERNAL_LIB)/FreeRTOS/include/. \
 	$(EXTERNAL_LIB)/FreeRTOS/portable/GCC/ARM_CM0/. \
+	$(EXTERNAL_LIB)/printf/. \
+	$(EXTERNAL_LIB)/CMSIS_5/CMSIS/Core/Include/. \
+	$(EXTERNAL_LIB)/CMSIS_5/Device/ARM/ARMCM0/Include/. \
 
+# driver
+C_SRC += $(wildcard driver/*.c)
+
+# radio
+C_SRC += $(wildcard radio/*.c)
+
+# tasks
+C_SRC += $(wildcard tasks/*.c)
+
+# gui
+C_SRC += $(wildcard gui/*.c)
+
+# other
 C_SRC += \
-	external/printf/printf.c \
 	init.c \
 	board.c \
 	misc.c \
 	settings.c \
 	version.c \
-	driver/adc.c \
-	driver/backlight.c \
-	driver/bk4819.c \
-	driver/eeprom.c \
-	driver/gpio.c \
-	driver/i2c.c \
-	driver/keyboard.c \
-	driver/spi.c \
-	driver/st7565.c \
-	driver/system.c \
-	driver/systick.c \
-	radio/dcs.c \
-	radio/frequencies.c \
-	radio/functions.c \
-	radio/radio.c \
-	radio/audio.c \
-	radio/vfo.c \
 	helper/battery.c \
+	app/uart.c \
 	main.c \
-
-C_SRC += \
-	tasks/task_main.c \
-	tasks/applications_task.c \
-
-C_SRC += \
 	ui/status.c \
-	gui/ui.c \
-	gui/gui.c \
-	gui/font_10.c \
-	gui/font_small.c \
-	gui/font_n_16.c \
-	gui/font_n_20.c \
+	
 
-
-ifeq ($(ENABLE_UART),1)
-	C_SRC += driver/aes.c
-endif
-ifeq ($(ENABLE_FMRADIO),1)
-	C_SRC += driver/bk1080.c
-endif
-ifeq ($(filter $(ENABLE_AIRCOPY) $(ENABLE_UART),1),1)
-	C_SRC += driver/crc.c
-endif
-ifeq ($(ENABLE_UART),1)
-	C_SRC += driver/uart.c
-endif
-ifeq ($(ENABLE_AIRCOPY),1)
-	C_SRC += app/aircopy.c
-endif
-ifeq ($(ENABLE_FLASHLIGHT),1)
-	C_SRC += app/flashlight.c
-endif
-ifeq ($(ENABLE_FMRADIO),1)
-	C_SRC += app/fm.c
-endif
-ifeq ($(ENABLE_SPECTRUM), 1)
-	C_SRC += app/spectrum.c
-endif
-ifeq ($(ENABLE_UART),1)
-	C_SRC += app/uart.c
-endif
-ifeq ($(ENABLE_MESSENGER),1)
-	C_SRC += app/messenger.c
-endif
-ifeq ($(ENABLE_AIRCOPY),1)
-	C_SRC += ui/aircopy.c
-endif
-ifeq ($(ENABLE_FMRADIO),1)
-	C_SRC += ui/fmradio.c
-endif
-ifeq ($(ENABLE_MESSENGER),1)
-	C_SRC += ui/messenger.c
-endif
 
 # Include folders common to all targets
 IPATH += \
@@ -204,9 +124,6 @@ IPATH += \
 	driver/. \
 	radio/. \
 	bsp/dp32g030/. \
-	external/printf/. \
-	external/CMSIS_5/CMSIS/Core/Include/. \
-	external/CMSIS_5/Device/ARM/ARMCM0/Include/. \
 
 
 CFLAGS += -DPRINTF_INCLUDE_CONFIG_H
@@ -218,74 +135,20 @@ endif
 ifeq ($(ENABLE_REMOTE_CONTROL),1)
 	CFLAGS += -DENABLE_REMOTE_CONTROL
 endif
-ifeq ($(ENABLE_SPECTRUM),1)
-	CFLAGS += -DENABLE_SPECTRUM
-endif
-ifeq ($(ENABLE_SWD),1)
-	CFLAGS += -DENABLE_SWD
-endif
-ifeq ($(ENABLE_AIRCOPY),1)
-	CFLAGS += -DENABLE_AIRCOPY
-endif
-ifeq ($(ENABLE_FMRADIO),1)
-	CFLAGS += -DENABLE_FMRADIO
-endif
-ifeq ($(ENABLE_UART),1)
-	CFLAGS += -DENABLE_UART
-endif
-ifeq ($(ENABLE_VOX),1)
-	CFLAGS += -DENABLE_VOX
-endif
-ifeq ($(ENABLE_WIDE_RX),1)
-	CFLAGS += -DENABLE_WIDE_RX
-endif
-ifeq ($(ENABLE_CTCSS_TAIL_PHASE_SHIFT),1)
-	CFLAGS += -DENABLE_CTCSS_TAIL_PHASE_SHIFT
-endif
-ifeq ($(ENABLE_SQUELCH_MORE_SENSITIVE),1)
-	CFLAGS += -DENABLE_SQUELCH_MORE_SENSITIVE
-endif
-ifeq ($(ENABLE_BACKLIGHT_ON_RX),1)
-	CFLAGS += -DENABLE_BACKLIGHT_ON_RX
-endif
-ifeq ($(ENABLE_REDUCE_LOW_MID_TX_POWER),1)
-	CFLAGS += -DENABLE_REDUCE_LOW_MID_TX_POWER
-endif
-ifeq ($(ENABLE_BLMIN_TMP_OFF),1)
-	CFLAGS += -DENABLE_BLMIN_TMP_OFF
-endif
-ifeq ($(ENABLE_DTMF_CALLING),1)
-	CFLAGS += -DENABLE_DTMF_CALLING
-endif
-ifeq ($(ENABLE_FLASHLIGHT),1)
-	CFLAGS += -DENABLE_FLASHLIGHT
-endif
-ifeq ($(ENABLE_UART_RW_BK_REGS),1)
-	CFLAGS += -DENABLE_UART_RW_BK_REGS
-endif
-ifeq ($(ENABLE_UART), 0)
-	ENABLE_MESSENGER_UART := 0
-	ENABLE_REMOTE_CONTROL := 0
-endif
-ifeq ($(ENABLE_MESSENGER),1)
-	CFLAGS += -DENABLE_MESSENGER
-endif
-ifeq ($(ENABLE_MESSENGER_UART),1)
-	CFLAGS += -DENABLE_MESSENGER_UART
-endif
 
 # C flags common to all targets
 CFLAGS += -Os -Wall -Werror -mcpu=cortex-m0 -fno-builtin -fshort-enums -fno-delete-null-pointer-checks -std=c2x -MMD
 CFLAGS += -flto=auto
 CFLAGS += -ftree-vectorize -funroll-loops
-CFLAGS += -Wextra
+CFLAGS += -Wextra -Wunused-parameter -Wconversion
+CFLAGS += -fno-math-errno -pipe -ffunction-sections -fdata-sections -ffast-math
 
 # Assembler flags common to all targets
 ASFLAGS += -mcpu=cortex-m0
 
 # Linker flags
-LDFLAGS +=
-LDFLAGS += -z noexecstack -mcpu=cortex-m0 -nostartfiles -Wl,-L,linker -Wl,-T,$(LD_FILE) -Wl,--gc-sections
+LDFLAGS += -z noseparate-code -z noexecstack -mcpu=cortex-m0 -nostartfiles -Wl,-L,linker -Wl,-T,$(LD_FILE) -Wl,--gc-sections
+LDFLAGS += -Wl,--build-id=none
 
 # Use newlib-nano instead of newlib
 LDFLAGS += --specs=nosys.specs --specs=nano.specs

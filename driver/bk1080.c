@@ -83,11 +83,11 @@ uint16_t BK1080_ReadRegister(BK1080_Register_t Register)
 
 	I2C_Start();
 	I2C_Write(0x80);
-	I2C_Write((Register << 1) | I2C_READ);
+	I2C_Write((uint8_t)(Register << 1) | I2C_READ);
 	I2C_ReadBuffer(Value, sizeof(Value));
 	I2C_Stop();
 
-	return (Value[0] << 8) | Value[1];
+	return (uint16_t)((Value[0] << 8) | Value[1]);
 }
 
 void BK1080_WriteRegister(BK1080_Register_t Register, uint16_t Value)
@@ -95,7 +95,7 @@ void BK1080_WriteRegister(BK1080_Register_t Register, uint16_t Value)
 	I2C_Start();
 	I2C_Write(0x80);
 	I2C_Write((Register << 1) | I2C_WRITE);
-	Value = ((Value >> 8) & 0xFF) | ((Value & 0xFF) << 8);
+	Value = (uint16_t)(((Value >> 8) & 0xFF) | ((Value & 0xFF) << 8));
 	I2C_WriteBuffer(&Value, sizeof(Value));
 	I2C_Stop();
 }
@@ -113,7 +113,7 @@ void BK1080_SetFrequency(uint16_t frequency, uint8_t band/*, uint8_t space*/)
 	uint16_t channel = (frequency - BK1080_GetFreqLoLimit(band))/* * 10 / spacings[space]*/;
 
 	uint16_t regval = BK1080_ReadRegister(BK1080_REG_05_SYSTEM_CONFIGURATION2);
-	regval = (regval & ~(0b11 << 6)) | ((band & 0b11) << 6);
+	regval = (uint16_t)((regval & ~(0b11 << 6)) | ((band & 0b11) << 6));
 	//regval = (regval & ~(0b11 << 4)) | ((space & 0b11) << 4);
 
 	BK1080_WriteRegister(BK1080_REG_05_SYSTEM_CONFIGURATION2, regval);

@@ -104,11 +104,11 @@ void UART_Send(const void *pBuffer, uint32_t Size)
 void UART_printf(const char *str, ...)
 {
 	char text[256];
-	int  len;
+	uint32_t len;
 	
 	va_list va;
 	va_start(va, str);
-	len = vsnprintf(text, sizeof(text), str, va);
+	len = (uint32_t)vsnprintf(text, sizeof(text), str, va);
 	va_end(va);
 
 	UART_Send(text, len);

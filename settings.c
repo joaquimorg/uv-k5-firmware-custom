@@ -324,7 +324,7 @@ void SETTINGS_LoadCalibration(void)
 		gEeprom.VOLUME_GAIN          = (Misc.VOLUME_GAIN < 64) ? Misc.VOLUME_GAIN : 58;
 		gEeprom.DAC_GAIN             = (Misc.DAC_GAIN    < 16) ? Misc.DAC_GAIN    : 8;
 
-		BK4819_WriteRegister(BK4819_REG_3B, 22656 + gEeprom.BK4819_XTAL_FREQ_LOW);
+		BK4819_WriteRegister(BK4819_REG_3B, (uint16_t)(22656 + gEeprom.BK4819_XTAL_FREQ_LOW));
 //		BK4819_WriteRegister(BK4819_REG_3C, gEeprom.BK4819_XTAL_FREQ_HIGH);
 	}
 }
@@ -337,7 +337,7 @@ uint32_t SETTINGS_FetchChannelFrequency(const int channel)
 		uint32_t offset;
 	} __attribute__((packed)) info;
 
-	EEPROM_ReadBuffer(channel * 16, &info, sizeof(info));
+	EEPROM_ReadBuffer((uint16_t)(channel * 16), &info, sizeof(info));
 
 	return info.frequency;
 }
@@ -352,10 +352,10 @@ void SETTINGS_FetchChannelName(char *s, const int channel)
 	if (channel < 0)
 		return;
 
-	if (!RADIO_CheckValidChannel(channel, false, 0))
+	if (!RADIO_CheckValidChannel((uint16_t)channel, false, 0))
 		return;
 
-	EEPROM_ReadBuffer(0x0F50 + (channel * 16), s, 10);
+	EEPROM_ReadBuffer((uint16_t)(0x0F50 + (channel * 16)), s, 10);
 
 	int i;
 	for (i = 0; i < 10; i++)
@@ -408,7 +408,7 @@ void SETTINGS_FactoryReset(bool bIsAll)
 			gRxVfo->freq_config_RX.Frequency = Frequency;
 			gRxVfo->freq_config_TX.Frequency = Frequency;
 			gRxVfo->Band               = FREQUENCY_GetBand(Frequency);
-			SETTINGS_SaveChannel(MR_CHANNEL_FIRST + i, 0, gRxVfo, 2);
+			SETTINGS_SaveChannel((uint8_t)(MR_CHANNEL_FIRST + i), 0, gRxVfo, 2);
 		}
 	}
 }
@@ -477,7 +477,7 @@ void SETTINGS_SaveSettings(void)
 	State[7] = gEeprom.MIC_SENSITIVITY;
 	EEPROM_WriteBuffer(0x0E70, State);
 
-	State[0] = (gEeprom.BACKLIGHT_MIN << 4) + gEeprom.BACKLIGHT_MAX;
+	State[0] = (uint8_t)((gEeprom.BACKLIGHT_MIN << 4) + gEeprom.BACKLIGHT_MAX);
 	State[1] = gEeprom.CHANNEL_DISPLAY_MODE;
 	State[2] = gEeprom.CROSS_BAND_RX_TX;
 	State[3] = gEeprom.BATTERY_SAVE;
@@ -486,13 +486,13 @@ void SETTINGS_SaveSettings(void)
 	//State[6] = gEeprom.TAIL_TONE_ELIMINATION;
 	State[7] = gEeprom.VFO_OPEN;
 
-	State[6] = (gEeprom.LCD_CONTRAST & 0x7F) | (gEeprom.TAIL_TONE_ELIMINATION << 7);
+	State[6] = (uint8_t)((gEeprom.LCD_CONTRAST & 0x7F) | (gEeprom.TAIL_TONE_ELIMINATION << 7));
 
 
 	EEPROM_WriteBuffer(0x0E78, State);
 
 	State[0] = gEeprom.BEEP_CONTROL;
-	State[0] |= gEeprom.KEY_M_LONG_PRESS_ACTION << 1;
+	State[0] |= (uint8_t)(gEeprom.KEY_M_LONG_PRESS_ACTION << 1);
 	State[1] = gEeprom.KEY_1_SHORT_PRESS_ACTION;
 	State[2] = gEeprom.KEY_1_LONG_PRESS_ACTION;
 	State[3] = gEeprom.KEY_2_SHORT_PRESS_ACTION;
@@ -534,14 +534,14 @@ void SETTINGS_SaveSettings(void)
 	State[3] = gEeprom.DTMF_DECODE_RESPONSE;
 	State[4] = gEeprom.DTMF_auto_reset_time;
 #endif
-	State[5] = gEeprom.DTMF_PRELOAD_TIME / 10U;
-	State[6] = gEeprom.DTMF_FIRST_CODE_PERSIST_TIME / 10U;
-	State[7] = gEeprom.DTMF_HASH_CODE_PERSIST_TIME / 10U;
+	State[5] = (uint8_t)(gEeprom.DTMF_PRELOAD_TIME / 10U);
+	State[6] = (uint8_t)(gEeprom.DTMF_FIRST_CODE_PERSIST_TIME / 10U);
+	State[7] = (uint8_t)(gEeprom.DTMF_HASH_CODE_PERSIST_TIME / 10U);
 	EEPROM_WriteBuffer(0x0ED0, State);
 
 	memset(State, 0xFF, sizeof(State));
-	State[0] = gEeprom.DTMF_CODE_PERSIST_TIME / 10U;
-	State[1] = gEeprom.DTMF_CODE_INTERVAL_TIME / 10U;
+	State[0] = (uint8_t)(gEeprom.DTMF_CODE_PERSIST_TIME / 10U);
+	State[1] = (uint8_t)(gEeprom.DTMF_CODE_INTERVAL_TIME / 10U);
 #ifdef ENABLE_DTMF_CALLING
 	State[2] = gEeprom.PERMIT_REMOTE_KILL;
 #endif
@@ -568,9 +568,9 @@ void SETTINGS_SaveSettings(void)
 	State[5]  = gSetting_350EN;
 	State[6]  = gSetting_ScrambleEnable;
 	//if (!gSetting_TX_EN)             State[7] &= ~(1u << 0);
-	if (!gSetting_live_DTMF_decoder) State[7] &= ~(1u << 1);
-	State[7] = (State[7] & ~(3u << 2)) | ((gSetting_battery_text & 3u) << 2);
-	State[7] = (State[7] & ~(3u << 6)) | ((gSetting_backlight_on_tx_rx & 3u) << 6);
+	if (!gSetting_live_DTMF_decoder) State[7] &= (uint8_t)~(1u << 1);
+	State[7] = (uint8_t)((State[7] & ~(3u << 2)) | ((gSetting_battery_text & 3u) << 2));
+	State[7] = (uint8_t)((State[7] & ~(3u << 6)) | ((gSetting_backlight_on_tx_rx & 3u) << 6));
 
 	EEPROM_WriteBuffer(0x0F40, State);
 }
@@ -582,7 +582,7 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
 
 	if (IS_FREQ_CHANNEL(Channel)) { // it's a VFO, not a channel
 		OffsetVFO  = (VFO == 0) ? 0x0C80 : 0x0C90;
-		OffsetVFO += (Channel - FREQ_CHANNEL_FIRST) * 32;
+		OffsetVFO += (uint16_t)((Channel - FREQ_CHANNEL_FIRST) * 32);
 	}
 
 	if (Mode >= 2 || IS_FREQ_CHANNEL(Channel)) { // copy VFO to a channel
@@ -597,13 +597,13 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
 
 		State._8[0] =  pVFO->freq_config_RX.Code;
 		State._8[1] =  pVFO->freq_config_TX.Code;
-		State._8[2] = (pVFO->freq_config_TX.CodeType << 4) | pVFO->freq_config_RX.CodeType;
-		State._8[3] = (pVFO->Modulation << 4) | pVFO->TX_OFFSET_FREQUENCY_DIRECTION;
-		State._8[4] = 0
+		State._8[2] = (uint8_t)((pVFO->freq_config_TX.CodeType << 4) | pVFO->freq_config_RX.CodeType);
+		State._8[3] = (uint8_t)((pVFO->Modulation << 4) | pVFO->TX_OFFSET_FREQUENCY_DIRECTION);
+		State._8[4] = (uint8_t)(0
 			| (pVFO->BUSY_CHANNEL_LOCK << 4)
 			| (pVFO->OUTPUT_POWER      << 2)
 			| (pVFO->CHANNEL_BANDWIDTH << 1)
-			| (pVFO->FrequencyReverse  << 0);
+			| (pVFO->FrequencyReverse  << 0));
 		State._8[5] = ((pVFO->DTMF_PTT_ID_TX_MODE & 7u) << 1)
 #ifdef ENABLE_DTMF_CALLING
 			| ((pVFO->DTMF_DECODING_ENABLE & 1u) << 0)
@@ -651,6 +651,8 @@ void SETTINGS_SaveChannelName(uint8_t channel, const char * name)
 void SETTINGS_UpdateChannel(uint8_t channel, const VFO_Info_t *pVFO, bool keep)
 {
 	uint8_t  state[8];
+	MEMFAULT_UNUSED(keep);
+	MEMFAULT_UNUSED(pVFO);
 	ChannelAttributes_t  att = {
 		.band = 0xf,
 		.compander = 0,
@@ -658,17 +660,17 @@ void SETTINGS_UpdateChannel(uint8_t channel, const VFO_Info_t *pVFO, bool keep)
 		.scanlist2 = 0,
 		};        // default attributes
 
-	uint16_t offset = 0x0D60 + (channel & ~7u);
+	uint16_t offset = (uint16_t)(0x0D60 + (channel & ~7u));
 	EEPROM_ReadBuffer(offset, state, sizeof(state));
 
-	if (keep) {
+	/*if (keep) {
 		att.band = pVFO->Band;
 		att.scanlist1 = pVFO->SCANLIST1_PARTICIPATION;
 		att.scanlist2 = pVFO->SCANLIST2_PARTICIPATION;
 		att.compander = pVFO->Compander;
 		if (state[channel & 7u] == att.__val)
 			return; // no change in the attributes
-	}
+	}*/
 
 	state[channel & 7u] = att.__val;
 	EEPROM_WriteBuffer(offset, state);

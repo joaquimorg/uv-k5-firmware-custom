@@ -20,6 +20,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define MEMFAULT_UNUSED(_x) (void)(_x)
+
 #ifndef ARRAY_SIZE
 	#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 #endif

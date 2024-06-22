@@ -40,12 +40,11 @@
 #include "driver/gpio.h"
 #include "driver/system.h"
 #include "driver/systick.h"
-#ifdef ENABLE_UART
-	#include "bsp/dp32g030/uart.h"
-	#include "driver/uart.h"	
-	#include "app/uart.h"
-	#include "ARMCM0.h"
-#endif
+
+#include "bsp/dp32g030/uart.h"
+#include "driver/uart.h"	
+#include "app/uart.h"
+#include "ARMCM0.h"
 
 #include "ui/status.h"
 
@@ -85,7 +84,7 @@ void main_push_message(MAIN_MSG_t msg);
 
 uint32_t APP_SetFreqByStepAndLimits(VFO_Info_t *pInfo, int8_t direction, uint32_t lower, uint32_t upper)
 {
-	uint32_t Frequency = FREQUENCY_RoundToStep(pInfo->freq_config_RX.Frequency + (direction * pInfo->StepFrequency), pInfo->StepFrequency);
+	uint32_t Frequency = FREQUENCY_RoundToStep(pInfo->freq_config_RX.Frequency + (uint32_t)(direction * pInfo->StepFrequency), pInfo->StepFrequency);
 
 	if (Frequency >= upper)
 		Frequency =  lower;
@@ -327,11 +326,11 @@ void RADIO_StartListening(/*FUNCTION_Type_t function*/)
 		//gUpdateStatus    = true;
 	}*/
 
-	BK4819_WriteRegister(BK4819_REG_48,
+	BK4819_WriteRegister(BK4819_REG_48, (uint16_t)(
 		(11u << 12)                |     // ??? .. 0 to 15, doesn't seem to make any difference
 		( 0u << 10)                |     // AF Rx Gain-1
 		(gEeprom.VOLUME_GAIN << 4) |     // AF Rx Gain-2
-		(gEeprom.DAC_GAIN    << 0));     // AF DAC Gain (after Gain-1 and Gain-2)
+		(gEeprom.DAC_GAIN    << 0)));     // AF DAC Gain (after Gain-1 and Gain-2)
 
 		RADIO_SetModulation(gRxVfo->Modulation);  // no need, set it now
 
@@ -520,7 +519,7 @@ void DTMF_Reply(void)
 
 void BK4819_ToggleAFBit(bool on) {
   uint16_t reg = BK4819_ReadRegister(BK4819_REG_47);
-  reg &= ~(1 << 8);
+  reg &= (uint16_t)~(1 << 8);
   if (on)
     reg |= 1 << 8;
   BK4819_WriteRegister(BK4819_REG_47, reg);
@@ -528,7 +527,7 @@ void BK4819_ToggleAFBit(bool on) {
 
 void BK4819_ToggleAFDAC(bool on) {
   uint16_t Reg = BK4819_ReadRegister(BK4819_REG_30);
-  Reg &= ~BK4819_REG_30_ENABLE_AF_DAC;
+  Reg &= (uint16_t)~BK4819_REG_30_ENABLE_AF_DAC;
   if (on)
     Reg |= BK4819_REG_30_ENABLE_AF_DAC;
   BK4819_WriteRegister(BK4819_REG_30, Reg);
@@ -591,11 +590,9 @@ void RADIO_SetTransmit() {
 void RADIO_Handler(void) {
 
 /*
-#ifdef ENABLE_UART
 	if (UART_IsCommandAvailable()) {
 		UART_HandleCommand();
 	}
-#endif
 */
 	CheckRadioInterrupts();
 	if (gIsReceiving) {
@@ -621,12 +618,10 @@ void main_task(void* arg) {
 
 	BOARD_Init();
 
-#ifdef ENABLE_UART
 	UART_Init();
 	LogUartf("\r\n\r\n");
 	UART_Send(UART_Version, strlen(UART_Version));
 	LogUartf("\r\nUV-K5 Starting... \r\n\r\n");
-#endif
 
 	init_radio();
 
@@ -647,9 +642,7 @@ void main_task(void* arg) {
 
 	//NVIC_EnableIRQ((IRQn_Type)DP32_GPIOB_IRQn);
 
-#ifdef ENABLE_UART
 	NVIC_EnableIRQ((IRQn_Type)DP32_UART1_IRQn);
-#endif
 
 	FUNCTION_Init();
 	//FUNCTION_Select(FUNCTION_RECEIVE);
@@ -826,8 +819,8 @@ void main_task(void* arg) {
 
                         if (gTxVfo->Band != band) {
                             gTxVfo->Band               				= band;
-                            gEeprom.ScreenChannel[gEeprom.TX_VFO] 	= band + FREQ_CHANNEL_FIRST;
-                            gEeprom.FreqChannel[gEeprom.TX_VFO]   	= band + FREQ_CHANNEL_FIRST;
+                            gEeprom.ScreenChannel[gEeprom.TX_VFO] 	= (uint8_t)(band + FREQ_CHANNEL_FIRST);
+                            gEeprom.FreqChannel[gEeprom.TX_VFO]   	= (uint8_t)(band + FREQ_CHANNEL_FIRST);
 
                             main_push_message(RADIO_SAVE_VFO);
                             main_push_message(RADIO_VFO_CONFIGURE_CHANNEL);

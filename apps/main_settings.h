@@ -347,7 +347,7 @@ uint8_t getMainMenuID(void) {
 
 void MainSettingsMenu_showList() {
     uint8_t yPos = 15;
-	const uint8_t offset = Clamp(mainSettingsCurrentMenu - 2, 0, MENU_SETTINGS_SIZE - 5);
+	const uint8_t offset = (uint8_t)Clamp(mainSettingsCurrentMenu - 2, 0, MENU_SETTINGS_SIZE - 5);
 
     for (uint8_t i = 0; i < 5; i++) {
 		if ( (i + offset) < MENU_SETTINGS_SIZE ) {
@@ -362,7 +362,7 @@ void MainSettingsMenu_showList() {
     }
 
     yPos = 10;
-    yPos += ((( (100 * mainSettingsCurrentMenu) / MENU_SETTINGS_SIZE ) / 100.0) * 54);
+    yPos += (uint8_t)((( (100 * mainSettingsCurrentMenu) / MENU_SETTINGS_SIZE ) / 100.0) * 54);
 
     UI_drawFastVLine(1, yPos - 1, 3, true);
     UI_drawFastVLine(3, yPos - 1, 3, true);
@@ -375,9 +375,9 @@ void MainSettingsMenu_showSubListCalc(uint8_t *yPos, uint8_t *listCount, uint8_t
         } else if (mainSettingsSubmenuSize == 1 ) {
             *yPos = *yPos + 11;
         }
-        *listCount = mainSettingsSubmenuSize + 1;
+        *listCount = (uint8_t)mainSettingsSubmenuSize + 1;
     } else {
-		*offset = Clamp(mainSettingsCurrentSubMenu - 2, 0, mainSettingsSubmenuSize - 3);
+		*offset = (uint8_t)Clamp(mainSettingsCurrentSubMenu - 2, 0, mainSettingsSubmenuSize - 3);
     }
 }
 
@@ -622,7 +622,7 @@ void MainSettingsMenu_loadSubList() {
 			break;
 
 		case MENU_VOL: {
-			const uint8_t gBatteryPercentage = BATTERY_VoltsToPercent(gBatteryVoltageAverage);
+			const uint16_t gBatteryPercentage = (uint16_t)BATTERY_VoltsToPercent(gBatteryVoltageAverage);
 			UI_printf(&font_10, TEXT_ALIGN_CENTER, SUB_MENU_X, 125, 26, true, false,	"%u.%02uV", gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100);
 			UI_printf(&font_10, TEXT_ALIGN_CENTER, SUB_MENU_X, 125, 37, true, false,	"%3i%%", gBatteryPercentage);
 			UI_printf(&font_10, TEXT_ALIGN_CENTER, SUB_MENU_X, 125, 48, true, false,	"%dmA", gBatteryCurrent);
@@ -659,7 +659,7 @@ void MainSettingsMenu_loadSubListValues() {
 			break;
 
 		case MENU_STEP:
-			mainSettingsCurrentSubMenu = FREQUENCY_GetSortedIdxFromStepIdx(gTxVfo->STEP_SETTING);
+			mainSettingsCurrentSubMenu = (uint16_t)FREQUENCY_GetSortedIdxFromStepIdx(gTxVfo->STEP_SETTING);
 			break;
 
 		/*case MENU_TXP:
@@ -726,7 +726,7 @@ void MainSettingsMenu_loadSubListValues() {
 			break;
 
 		case MENU_OFFSET:
-			mainSettingsCurrentSubMenu = gTxVfo->TX_OFFSET_FREQUENCY;
+			mainSettingsCurrentSubMenu = (uint16_t)(gTxVfo->TX_OFFSET_FREQUENCY);
 			break;
 
 		/*case MENU_W_N:
@@ -784,7 +784,7 @@ void MainSettingsMenu_loadSubListValues() {
 			break;*/
 
 		case MENU_TDR:
-			mainSettingsCurrentSubMenu = (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) + (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) * 2;
+			mainSettingsCurrentSubMenu = (uint16_t)((gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) + (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) * 2);
 			break;
 
 		/*case MENU_BEEP:
@@ -1126,7 +1126,7 @@ int MainSettingsMenu_GetLimits(uint8_t menu_id, uint16_t *pMin, uint16_t *pMax)
 
 		case MENU_SLIST1:
 		case MENU_SLIST2:
-			*pMin = -1;
+			*pMin = 0;
 			*pMax = MR_CHANNEL_LAST;
 			break;
 
@@ -1217,12 +1217,12 @@ void MainSettings_saveSetting(void) {
 			return;
 
 		case MENU_SQL:
-			gEeprom.SQUELCH_LEVEL = mainSettingsCurrentSubMenu;
+			gEeprom.SQUELCH_LEVEL = (uint8_t)mainSettingsCurrentSubMenu;
 			//gVfoConfigureMode     = VFO_CONFIGURE;
 			break;
 
 		case MENU_STEP:
-			gTxVfo->STEP_SETTING = FREQUENCY_GetStepIdxFromSortedIdx(mainSettingsCurrentSubMenu);
+			gTxVfo->STEP_SETTING = FREQUENCY_GetStepIdxFromSortedIdx((uint8_t)mainSettingsCurrentSubMenu);
 			if (IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE))
 			{
 				//gRequestSaveChannel = 1;
@@ -1250,11 +1250,11 @@ void MainSettings_saveSetting(void) {
 			}
 			else if (mainSettingsCurrentSubMenu < 105) {
 				pConfig->CodeType = CODE_TYPE_DIGITAL;
-				pConfig->Code = mainSettingsCurrentSubMenu - 1;
+				pConfig->Code = (uint8_t)mainSettingsCurrentSubMenu - 1;
 			}
 			else {
 				pConfig->CodeType = CODE_TYPE_REVERSE_DIGITAL;
-				pConfig->Code = mainSettingsCurrentSubMenu - 105;
+				pConfig->Code = (uint8_t)mainSettingsCurrentSubMenu - 105;
 			}
 
 			//gRequestSaveChannel = 1;
@@ -1272,7 +1272,7 @@ void MainSettings_saveSetting(void) {
 				pConfig->CodeType = CODE_TYPE_OFF;
 			}
 			else {
-				pConfig->Code     = mainSettingsCurrentSubMenu - 1;
+				pConfig->Code     = (uint8_t)mainSettingsCurrentSubMenu - 1;
 				pConfig->CodeType = CODE_TYPE_CONTINUOUS_TONE;
 			}
 
@@ -1280,36 +1280,36 @@ void MainSettings_saveSetting(void) {
 			return;
 		}
 		case MENU_SFT_D:
-			gTxVfo->TX_OFFSET_FREQUENCY_DIRECTION = mainSettingsCurrentSubMenu;
+			gTxVfo->TX_OFFSET_FREQUENCY_DIRECTION = (uint8_t)mainSettingsCurrentSubMenu;
 			//gRequestSaveChannel                   = 1;
 			return;
 
 		case MENU_OFFSET:
-			gTxVfo->TX_OFFSET_FREQUENCY = mainSettingsCurrentSubMenu;
+			gTxVfo->TX_OFFSET_FREQUENCY = (uint32_t)mainSettingsCurrentSubMenu;
 			//gRequestSaveChannel         = 1;
 			return;
 
 		case MENU_W_N:
-			gTxVfo->CHANNEL_BANDWIDTH = mainSettingsCurrentSubMenu;
+			gTxVfo->CHANNEL_BANDWIDTH = (uint8_t)mainSettingsCurrentSubMenu;
 			//gRequestSaveChannel       = 1;
 			return;
 
 		case MENU_SCR:
-			gTxVfo->SCRAMBLING_TYPE = mainSettingsCurrentSubMenu;
+			gTxVfo->SCRAMBLING_TYPE = (uint8_t)mainSettingsCurrentSubMenu;
 			//gRequestSaveChannel     = 1;
 			return;
 
 		case MENU_BCL:
-			gTxVfo->BUSY_CHANNEL_LOCK = mainSettingsCurrentSubMenu;
+			gTxVfo->BUSY_CHANNEL_LOCK = (uint8_t)mainSettingsCurrentSubMenu;
 			//gRequestSaveChannel       = 1;
 			return;
 
 		case MENU_MEM_CH:
-			gTxVfo->CHANNEL_SAVE = mainSettingsCurrentSubMenu;
+			gTxVfo->CHANNEL_SAVE = (uint8_t)mainSettingsCurrentSubMenu;
 			#if 0
-				gEeprom.MrChannel[0] = mainSettingsCurrentSubMenu;
+				gEeprom.MrChannel[0] = (uint8_t)mainSettingsCurrentSubMenu;
 			#else
-				gEeprom.MrChannel[gEeprom.TX_VFO] = mainSettingsCurrentSubMenu;
+				gEeprom.MrChannel[gEeprom.TX_VFO] = (uint8_t)mainSettingsCurrentSubMenu;
 			#endif
 			//gRequestSaveChannel = 2;
 			//gVfoConfigureMode   = VFO_CONFIGURE_RELOAD;
@@ -1327,14 +1327,14 @@ void MainSettings_saveSetting(void) {
 			return;
 
 		case MENU_SAVE:
-			gEeprom.BATTERY_SAVE = mainSettingsCurrentSubMenu;
+			gEeprom.BATTERY_SAVE = (uint8_t)mainSettingsCurrentSubMenu;
 			break;
 
 		#ifdef ENABLE_VOX
 			case MENU_VOX:
 				gEeprom.VOX_SWITCH = mainSettingsCurrentSubMenu != 0;
 				if (gEeprom.VOX_SWITCH)
-					gEeprom.VOX_LEVEL = mainSettingsCurrentSubMenu - 1;
+					gEeprom.VOX_LEVEL = (uint8_t)mainSettingsCurrentSubMenu - 1;
 				//SETTINGS_LoadCalibration();
 				//gFlagReconfigureVfos = true;
 				//gUpdateStatus        = true;
@@ -1342,22 +1342,22 @@ void MainSettings_saveSetting(void) {
 		#endif
 
 		case MENU_ABR:
-			gEeprom.BACKLIGHT_TIME = mainSettingsCurrentSubMenu;
+			gEeprom.BACKLIGHT_TIME = (uint8_t)mainSettingsCurrentSubMenu;
 			app_push_message(APP_MSG_BACKLIGHT);
 			break;
 
 		case MENU_ABR_MIN:
-			gEeprom.BACKLIGHT_MIN = mainSettingsCurrentSubMenu;
-			gEeprom.BACKLIGHT_MAX = MAX(mainSettingsCurrentSubMenu + 1 , gEeprom.BACKLIGHT_MAX);
+			gEeprom.BACKLIGHT_MIN = (uint8_t)mainSettingsCurrentSubMenu;
+			gEeprom.BACKLIGHT_MAX = (uint8_t)MAX(mainSettingsCurrentSubMenu + 1 , gEeprom.BACKLIGHT_MAX);
 			break;
 
 		case MENU_ABR_MAX:
-			gEeprom.BACKLIGHT_MAX = mainSettingsCurrentSubMenu;
-			gEeprom.BACKLIGHT_MIN = MIN(mainSettingsCurrentSubMenu - 1, gEeprom.BACKLIGHT_MIN);
+			gEeprom.BACKLIGHT_MAX = (uint8_t)mainSettingsCurrentSubMenu;
+			gEeprom.BACKLIGHT_MIN = (uint8_t)MIN(mainSettingsCurrentSubMenu - 1, gEeprom.BACKLIGHT_MIN);
 			break;			
 
 		case MENU_CONTRAST:
-			gEeprom.LCD_CONTRAST = mainSettingsCurrentSubMenu;
+			gEeprom.LCD_CONTRAST = (uint8_t)mainSettingsCurrentSubMenu;
 			//ST7565_SetContrast(gEeprom.LCD_CONTRAST);
 			break;
 
@@ -1366,8 +1366,8 @@ void MainSettings_saveSetting(void) {
 			break;
 
 		case MENU_TDR:
-			gEeprom.DUAL_WATCH = (gEeprom.TX_VFO + 1) * (mainSettingsCurrentSubMenu & 1);
-			gEeprom.CROSS_BAND_RX_TX = (gEeprom.TX_VFO + 1) * ((mainSettingsCurrentSubMenu & 2) > 0);
+			gEeprom.DUAL_WATCH = (uint8_t)((gEeprom.TX_VFO + 1) * (mainSettingsCurrentSubMenu & 1));
+			gEeprom.CROSS_BAND_RX_TX = (uint8_t)((gEeprom.TX_VFO + 1) * ((mainSettingsCurrentSubMenu & 2) > 0));
 
 			//gFlagReconfigureVfos = true;
 			//gUpdateStatus        = true;
@@ -1378,11 +1378,11 @@ void MainSettings_saveSetting(void) {
 			break;
 
 		case MENU_TOT:
-			gEeprom.TX_TIMEOUT_TIMER = mainSettingsCurrentSubMenu;
+			gEeprom.TX_TIMEOUT_TIMER = (uint8_t)mainSettingsCurrentSubMenu;
 			break;
 
 		case MENU_SC_REV:
-			gEeprom.SCAN_RESUME_MODE = mainSettingsCurrentSubMenu;
+			gEeprom.SCAN_RESUME_MODE = (uint8_t)mainSettingsCurrentSubMenu;
 			break;
 
 		/*case MENU_MDF:
@@ -1395,14 +1395,14 @@ void MainSettings_saveSetting(void) {
 			break;
 
 		case MENU_S_ADD1:
-			gTxVfo->SCANLIST1_PARTICIPATION = mainSettingsCurrentSubMenu;
+			gTxVfo->SCANLIST1_PARTICIPATION = (uint8_t)mainSettingsCurrentSubMenu;
 			//SETTINGS_UpdateChannel(gTxVfo->CHANNEL_SAVE, gTxVfo, true);
 			//gVfoConfigureMode = VFO_CONFIGURE;
 			//gFlagResetVfos    = true;
 			return;
 
 		case MENU_S_ADD2:
-			gTxVfo->SCANLIST2_PARTICIPATION = mainSettingsCurrentSubMenu;
+			gTxVfo->SCANLIST2_PARTICIPATION = (uint8_t)mainSettingsCurrentSubMenu;
 			//SETTINGS_UpdateChannel(gTxVfo->CHANNEL_SAVE, gTxVfo, true);
 			//gVfoConfigureMode = VFO_CONFIGURE;
 			//gFlagResetVfos    = true;
@@ -1413,11 +1413,11 @@ void MainSettings_saveSetting(void) {
 			break;
 
 		case MENU_RP_STE:
-			gEeprom.REPEATER_TAIL_TONE_ELIMINATION = mainSettingsCurrentSubMenu;
+			gEeprom.REPEATER_TAIL_TONE_ELIMINATION = (uint8_t)mainSettingsCurrentSubMenu;
 			break;
 
 		case MENU_MIC:
-			gEeprom.MIC_SENSITIVITY = mainSettingsCurrentSubMenu;
+			gEeprom.MIC_SENSITIVITY = (uint8_t)mainSettingsCurrentSubMenu;
 			//SETTINGS_LoadCalibration();
 			//gFlagReconfigureVfos = true;
 			break;
@@ -1429,7 +1429,7 @@ void MainSettings_saveSetting(void) {
 		#endif
 
 		case MENU_COMPAND:
-			gTxVfo->Compander = mainSettingsCurrentSubMenu;
+			gTxVfo->Compander = (uint8_t)mainSettingsCurrentSubMenu;
 			//SETTINGS_UpdateChannel(gTxVfo->CHANNEL_SAVE, gTxVfo, true);
 			//gVfoConfigureMode = VFO_CONFIGURE;
 			//gFlagResetVfos    = true;
@@ -1437,11 +1437,11 @@ void MainSettings_saveSetting(void) {
 			return;
 
 		case MENU_1_CALL:
-			gEeprom.CHAN_1_CALL = mainSettingsCurrentSubMenu;
+			gEeprom.CHAN_1_CALL = (uint8_t)mainSettingsCurrentSubMenu;
 			break;
 
 		case MENU_S_LIST:
-			gEeprom.SCAN_LIST_DEFAULT = mainSettingsCurrentSubMenu;
+			gEeprom.SCAN_LIST_DEFAULT = (uint8_t)mainSettingsCurrentSubMenu;
 			break;
 
 		#ifdef ENABLE_ALARM
@@ -1473,7 +1473,7 @@ void MainSettings_saveSetting(void) {
 			return;
 
 		case MENU_BAT_TXT:
-			gSetting_battery_text = mainSettingsCurrentSubMenu;
+			gSetting_battery_text = (uint8_t)mainSettingsCurrentSubMenu;
 			break;
 
 #ifdef ENABLE_DTMF_CALLING
@@ -1616,9 +1616,9 @@ void MainSettings_renderFunction() {
     } else {
         if (xTaskGetTickCount() - mainSettingsSubMenuTime > pdMS_TO_TICKS(SETTINGS_TIMESHOW_SUB)) {
 			if( GUI_inputGetSize() == 1 ) {
-				const uint8_t inputValue = GUI_inputGetNumberClear();
+				const uint32_t inputValue = GUI_inputGetNumberClear();
 				if ( inputValue > 0) {
-					mainSettingsCurrentMenu = inputValue - 1;
+					mainSettingsCurrentMenu = (uint8_t)(inputValue - 1);
 					mainSettingsShowSubMenu = false;
 					mainSettingsSubMenuTime = xTaskGetTickCount();
 				}
@@ -1651,9 +1651,9 @@ void MainSettings_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
 				if ( !mainSettingsSubMenuActive ) {
 					GUI_inputAppendKey(key, 2, false);
 					if( GUI_inputGetSize() == 2 ) {
-						const uint8_t inputValue = GUI_inputGetNumberClear();
+						const uint32_t inputValue = GUI_inputGetNumberClear();
 						if ( inputValue > 0 && inputValue < MENU_SETTINGS_SIZE ) {
-							mainSettingsCurrentMenu = inputValue - 1;
+							mainSettingsCurrentMenu = (uint8_t)(inputValue - 1);
 						}
 					}
 					mainSettingsSubMenuTime = xTaskGetTickCount();

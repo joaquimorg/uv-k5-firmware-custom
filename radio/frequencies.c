@@ -29,15 +29,9 @@ const freq_band_table_t BX4819_band2 = {84000000, BX4819_band2_upper};
 
 const freq_band_table_t frequencyBandTable[] =
 {
-	#ifndef ENABLE_WIDE_RX
-		// QS original
-		[BAND1_50MHz ]={.lower =  5000000,  .upper =  7600000},
-		[BAND7_470MHz]={.lower = 47000000,  .upper = 60000000},
-	#else
 		// extended range
 		[BAND1_50MHz ]={.lower =  BX4819_band1_lower, .upper =  10800000},
 		[BAND7_470MHz]={.lower = 47000000, .upper = BX4819_band2_upper},
-	#endif
 		[BAND2_108MHz]={.lower = 10800000,  .upper = 13700000},
 		[BAND3_137MHz]={.lower = 13700000,  .upper = 17400000},
 		[BAND4_174MHz]={.lower = 17400000,  .upper = 35000000},
@@ -117,11 +111,11 @@ uint8_t FREQUENCY_CalculateOutputPower(uint8_t TxpLow, uint8_t TxpMid, uint8_t T
 
 	if (Frequency <= Middle)
 	{
-		TxpMid += ((TxpMid - TxpLow) * (Frequency - LowerLimit)) / (Middle - LowerLimit);
+		TxpMid += (uint8_t)(((TxpMid - TxpLow) * (Frequency - LowerLimit)) / (Middle - LowerLimit));
 		return TxpMid;
 	}
 
-	TxpMid += ((TxpHigh - TxpMid) * (Frequency - Middle)) / (UpperLimit - Middle);
+	TxpMid += (uint8_t)(((TxpHigh - TxpMid) * (Frequency - Middle)) / (UpperLimit - Middle));
 
 	return TxpMid;
 }
@@ -132,7 +126,7 @@ uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
 	
 	if(step == 833) {
         uint32_t base = freq/2500*2500;
-        int chno = (freq - base) / 700;    // convert entered aviation 8.33Khz channel number scheme to actual frequency. 
+        uint32_t chno = (freq - base) / 700;    // convert entered aviation 8.33Khz channel number scheme to actual frequency. 
         return base + (chno * 833) + (chno == 3);
 	}
 
@@ -140,7 +134,7 @@ uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
 		return freq;
 	if(step >= 1000) 
 		step = step/2;
-	return (freq + (step + 1) / 2) / step * step;
+	return (freq + (uint16_t)(step + 1) / 2) / step * step;
 	
 }
 

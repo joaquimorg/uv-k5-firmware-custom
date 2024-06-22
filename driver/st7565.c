@@ -50,7 +50,7 @@ static inline void ST7565_LowLevelWrite(uint8_t Value)
 uint16_t checksumArray(uint8_t array[], uint8_t size) {
     uint16_t checksum = 0;
     for (int i = 0; i < size; i++) {
-        checksum += (i + 1) * array[i];
+        checksum += (uint16_t)((i + 1) * array[i]);
     }
     return checksum;
 }
@@ -77,7 +77,7 @@ void ST7565_BlitFullScreen(bool onlystatus)
 	if ( sendType != 0 ) {
 		SPI_ToggleMasterMode(&SPI0->CR, false);
 		ST7565_WriteByte(0x40);
-		for (unsigned line = (onlystatus ? 0 : 1); line < (onlystatus ? 1 : FRAME_LINES); line++) {
+		for (uint8_t line = (onlystatus ? 0 : 1); line < (onlystatus ? 1 : FRAME_LINES); line++) {
 			if ( updateLine[line] ) {
 				ST7565_SelectColumnAndLine(4, line);
 				GPIO_SetBit(&GPIOB->DATA, GPIOB_PIN_ST7565_A0);
@@ -282,7 +282,7 @@ void ST7565_SelectColumnAndLine(uint8_t Column, uint8_t Line)
 	while ((SPI0->FIFOST & SPI_FIFOST_TFF_MASK) != SPI_FIFOST_TFF_BITS_NOT_FULL) {}
 	SPI0->WDR = Line + 176;
 	while ((SPI0->FIFOST & SPI_FIFOST_TFF_MASK) != SPI_FIFOST_TFF_BITS_NOT_FULL) {}
-	SPI0->WDR = ((Column >> 4) & 0x0F) | 0x10;
+	SPI0->WDR = (uint32_t)(((Column >> 4) & 0x0F) | 0x10);
 	while ((SPI0->FIFOST & SPI_FIFOST_TFF_MASK) != SPI_FIFOST_TFF_BITS_NOT_FULL) {}
 	SPI0->WDR = ((Column >> 0) & 0x0F);
 	SPI_WaitForUndocumentedTxFifoStatusBit();
