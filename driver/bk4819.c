@@ -1852,11 +1852,11 @@ void BK4819_PlayRogerMDC(void)
 void BK4819_PlayRoger(void)
 {
 
-	/*if (gEeprom.ROGER == ROGER_MODE_MDC)
+	/*if (gSettings.roger == ROGER_MODE_MDC)
 		BK4819_PlayRogerMDC();
 	else*/
-	if (gEeprom.ROGER != ROGER_MODE_OFF) {
-		BK4819_PlayRogerNormal(gEeprom.ROGER - 1);
+	if (gSettings.roger != ROGER_MODE_OFF) {
+		BK4819_PlayRogerNormal(gSettings.roger - 1);
 	}
 }
 

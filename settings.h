@@ -25,6 +25,74 @@
 #include "radio.h"
 #include <driver/backlight.h>
 
+typedef enum {
+  BAT_1600,
+  BAT_2200,
+  BAT_3500,
+} BatteryType;
+
+typedef enum {
+  BAT_CLEAN,
+  BAT_VOLTAGE,
+  BAT_PERCENT,  
+} BatteryStyle;
+
+typedef enum {
+  BL_SQL_OFF,
+  BL_SQL_ON,
+  BL_SQL_OPEN,
+} BacklightOnSquelchMode;
+
+typedef struct {
+	uint16_t settingsVersion : 8;
+	uint16_t squelch : 4;
+	uint16_t scrambler : 4;
+	uint16_t batSave : 4;
+	uint16_t vox : 4;
+	uint16_t backlight : 4;
+	uint16_t backlightTime : 4;
+	uint16_t txTime : 4;
+	uint16_t micGain : 4;
+	uint16_t currentScanlist : 4;
+	uint16_t roger : 2;
+	uint16_t scanMode : 2;
+	uint16_t dw : 1;
+	uint16_t crossBand : 1;
+	uint16_t beep : 1;
+	uint16_t keylock : 1;
+	uint16_t busyChannelTxLock : 1;
+	uint16_t ste : 1;
+	uint16_t repeaterSte : 1;
+	uint16_t dtmfDecode : 1;
+	uint16_t contrast : 4;
+	int16_t activePreset : 8;
+	uint16_t batteryCalibration : 12;
+	BatteryType batteryType : 2;
+	BatteryStyle batteryStyle : 2;
+	BacklightOnSquelchMode backlightOnSquelch : 2;
+	uint16_t sqlOpenTime : 2;
+	uint16_t sqlCloseTime : 3;
+	uint16_t activeVFO : 2;
+	uint16_t pmrLock : 1;
+	uint16_t reserved1 : 8;
+	uint16_t reserved2 : 8;
+	uint16_t reserved3 : 8;
+	uint16_t reserved4 : 8;
+	char radioName[10];
+} __attribute__((packed)) Settings;
+
+#define SETTINGS_OFFSET (0x0E30)
+#define SETTINGS_SIZE sizeof(Settings)
+#define SETTINGS_VERSION 0x51
+
+extern Settings gSettings;
+
+extern VFO_Info_t	gVfoInfo[2];
+extern uint8_t		gScreenChannel[2]; // current channels set in the radio (memory or frequency channels)
+extern uint8_t		gFreqChannel[2]; // last frequency channels used
+extern uint8_t		gMrChannel[2]; // last memory channels used
+
+
 enum POWER_OnDisplayMode_t {
 	POWER_ON_DISPLAY_MODE_FULL_SCREEN = 0,
 	POWER_ON_DISPLAY_MODE_MESSAGE,
@@ -241,7 +309,7 @@ typedef struct {
 
 } EEPROM_Config_t;
 
-extern EEPROM_Config_t gEeprom;
+//extern EEPROM_Config_t gEeprom;
 
 void     SETTINGS_InitEEPROM(void);
 void     SETTINGS_LoadCalibration(void);

@@ -24,10 +24,9 @@
 #include "driver/i2c.h"
 #include "driver/system.h"
 
-void EEPROM_ReadBuffer(uint16_t Address, void *pBuffer, uint8_t Size)
-{
+void EEPROM_ReadBuffer(uint32_t address, void *pBuffer, uint16_t size) {
 	taskENTER_CRITICAL();
-	I2C_Start();
+	/*I2C_Start();
 
 	I2C_Write(0xA0);
 
@@ -40,13 +39,25 @@ void EEPROM_ReadBuffer(uint16_t Address, void *pBuffer, uint8_t Size)
 
 	I2C_ReadBuffer(pBuffer, Size);
 
+	I2C_Stop();*/
+
+	uint8_t IIC_ADD = (uint8_t)(0xA0 | ((address / 0x10000) << 1));
+
+	I2C_Start();
+	I2C_Write(IIC_ADD);
+	I2C_Write((uint8_t)((address >> 8) & 0xFF));
+	I2C_Write((uint8_t)(address & 0xFF));
+	I2C_Start();
+	I2C_Write(IIC_ADD + 1);
+	I2C_ReadBuffer(pBuffer, (uint8_t)size);
 	I2C_Stop();
+
 	taskEXIT_CRITICAL();
 }
 
-void EEPROM_WriteBuffer(uint16_t Address, const void *pBuffer)
-{
-	if (pBuffer == NULL || Address >= 0x2000)
+static uint8_t tmpBuffer[128];
+void EEPROM_WriteBuffer(uint32_t address, void* pBuffer, uint16_t size) {
+	/*if (pBuffer == NULL || Address >= 0x2000)
 		return;
 
 
@@ -66,5 +77,39 @@ void EEPROM_WriteBuffer(uint16_t Address, const void *pBuffer)
 
 	// give the EEPROM time to burn the data in (apparently takes 5ms)
 	SYSTEM_DelayMs(8);
+	taskEXIT_CRITICAL();*/
+
+	if (pBuffer == NULL) {
+		return;
+	}
+	const uint8_t PAGE_SIZE = 32;
+
+	taskENTER_CRITICAL();
+	while (size) {
+		uint16_t i = address % PAGE_SIZE;
+		uint16_t rest = PAGE_SIZE - i;
+		uint16_t n = size < rest ? size : rest;
+
+		EEPROM_ReadBuffer(address, tmpBuffer, n);
+		if (memcmp(pBuffer, tmpBuffer, n) != 0) {
+			uint8_t IIC_ADD = (uint8_t)(0xA0 | ((address / 0x10000) << 1));
+
+			I2C_Start();
+			I2C_Write(IIC_ADD);
+			I2C_Write((uint8_t)((address >> 8) & 0xFF));
+			I2C_Write((uint8_t)(address & 0xFF));
+
+			I2C_WriteBuffer(pBuffer, (uint8_t)n);
+
+			I2C_Stop();
+			SYSTEM_DelayMs(10);
+		}
+
+		pBuffer += n;
+		address += n;
+		size -= n;
+	}
+
 	taskEXIT_CRITICAL();
+
 }

@@ -79,7 +79,7 @@ static_assert(ARRAY_SIZE(Voltage2PercentageTable[BATTERY_TYPE_1600_MAH]) ==
 
 unsigned int BATTERY_VoltsToPercent(const unsigned int voltage_10mV)
 {
-	const uint16_t (*crv)[2] = Voltage2PercentageTable[gEeprom.BATTERY_TYPE];
+	const uint16_t (*crv)[2] = Voltage2PercentageTable[gSettings.batteryType];
 	const int mulipl = 1000;
 	for (unsigned int i = 1; i < ARRAY_SIZE(Voltage2PercentageTable[BATTERY_TYPE_2200_MAH]); i++) {
 		if (voltage_10mV > crv[i][0]) {
@@ -210,7 +210,7 @@ void BATTERY_TimeSlice500ms(void)
 
 	ST7565_HardwareReset();
 
-	/*if (gEeprom.BACKLIGHT_TIME < (ARRAY_SIZE(gSubMenu_BACKLIGHT) - 1)) {
+	/*if (gSettings.backlightTime < (ARRAY_SIZE(gSubMenu_BACKLIGHT) - 1)) {
 		BACKLIGHT_TurnOff();
 	}*/
 }

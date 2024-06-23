@@ -23,10 +23,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "bsp/dp32g030/gpio.h"
-#include "bsp/dp32g030/syscon.h"
 #include "driver/systick.h"
-
+#include "driver/system.h"
 #include "driver/uart.h"
 
 #include "board.h"
@@ -90,24 +88,10 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer,
 /*-----------------------------------------------------------*/
 
 
-void Main(void)
-{
-	// Enable clock gating of blocks we need
-	SYSCON_DEV_CLK_GATE = 0
-		| SYSCON_DEV_CLK_GATE_GPIOA_BITS_ENABLE
-		| SYSCON_DEV_CLK_GATE_GPIOB_BITS_ENABLE
-		| SYSCON_DEV_CLK_GATE_GPIOC_BITS_ENABLE
-		| SYSCON_DEV_CLK_GATE_UART1_BITS_ENABLE
-		| SYSCON_DEV_CLK_GATE_SPI0_BITS_ENABLE
-		| SYSCON_DEV_CLK_GATE_SARADC_BITS_ENABLE
-		| SYSCON_DEV_CLK_GATE_CRC_BITS_ENABLE
-		| SYSCON_DEV_CLK_GATE_AES_BITS_ENABLE
-		| SYSCON_DEV_CLK_GATE_PWM_PLUS0_BITS_ENABLE;
+void Main(void) {
 
-
+	SYSTEM_ConfigureSysCon();
 	SYSTICK_Init();
-	BOARD_PORTCON_Init();
-	BOARD_GPIO_Init();
 	
 	main_task_init();
 

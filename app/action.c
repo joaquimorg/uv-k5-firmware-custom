@@ -182,7 +182,7 @@ void ACTION_Scan(bool bRestart)
 		}
 
 		// channel mode. Keep scanning but toggle between scan lists
-		gEeprom.SCAN_LIST_DEFAULT = (gEeprom.SCAN_LIST_DEFAULT + 1) % 3;
+		gSettings.SCAN_LIST_DEFAULT = (gSettings.SCAN_LIST_DEFAULT + 1) % 3;
 
 		// jump to the next channel
 		CHFRSCANNER_Start(false, gScanStateDir);
@@ -193,7 +193,7 @@ void ACTION_Scan(bool bRestart)
 		CHFRSCANNER_Start(true, SCAN_FWD);
 
 		// clear the other vfo's rssi level (to hide the antenna symbol)
-		gVFO_RSSI_bar_level[(gEeprom.RX_VFO + 1) & 1U] = 0;
+		gVFO_RSSI_bar_level[(gSettings.activeVFO + 1) & 1U] = 0;
 
 		// let the user see DW is not active
 		gDualWatchActive = false;
@@ -255,15 +255,15 @@ void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 	enum ACTION_OPT_t funcLong  = ACTION_OPT_NONE;
 	switch(Key) {
 		case KEY_SIDE1:
-			funcShort = gEeprom.KEY_1_SHORT_PRESS_ACTION;
-			funcLong  = gEeprom.KEY_1_LONG_PRESS_ACTION;
+			funcShort = gSettings.KEY_1_SHORT_PRESS_ACTION;
+			funcLong  = gSettings.KEY_1_LONG_PRESS_ACTION;
 			break;
 		case KEY_SIDE2:
-			funcShort = gEeprom.KEY_2_SHORT_PRESS_ACTION;
-			funcLong  = gEeprom.KEY_2_LONG_PRESS_ACTION;
+			funcShort = gSettings.KEY_2_SHORT_PRESS_ACTION;
+			funcLong  = gSettings.KEY_2_LONG_PRESS_ACTION;
 			break;
 		case KEY_MENU:
-			funcLong  = gEeprom.KEY_M_LONG_PRESS_ACTION;
+			funcLong  = gSettings.KEY_M_LONG_PRESS_ACTION;
 			break;
 		default:
 			break;
@@ -342,11 +342,11 @@ static void ACTION_Scan_FM(bool bRestart)
 		gFM_AutoScan = true;
 		gFM_ChannelPosition = 0;
 		FM_EraseChannels();
-		freq = BK1080_GetFreqLoLimit(gEeprom.FM_Band);
+		freq = BK1080_GetFreqLoLimit(gSettings.FM_Band);
 	} else {
 		gFM_AutoScan = false;
 		gFM_ChannelPosition = 0;
-		freq = gEeprom.FM_FrequencyPlaying;
+		freq = gSettings.FM_FrequencyPlaying;
 	}
 
 	BK1080_GetFrequencyDeviation(freq);
@@ -362,7 +362,7 @@ static void ACTION_AlarmOr1750(const bool b1750)
 {
 
 	#if defined(ENABLE_ALARM)
-		const AlarmState_t alarm_mode = (gEeprom.ALARM_MODE == ALARM_MODE_TONE) ? ALARM_STATE_TXALARM : ALARM_STATE_SITE_ALARM;
+		const AlarmState_t alarm_mode = (gSettings.ALARM_MODE == ALARM_MODE_TONE) ? ALARM_STATE_TXALARM : ALARM_STATE_SITE_ALARM;
 		gAlarmRunningCounter = 0;
 	#endif
 
@@ -389,7 +389,7 @@ static void ACTION_AlarmOr1750(const bool b1750)
 #ifdef ENABLE_VOX
 void ACTION_Vox(void)
 {
-	gEeprom.VOX_SWITCH   = !gEeprom.VOX_SWITCH;
+	gSettings.VOX_SWITCH   = !gSettings.VOX_SWITCH;
 	gRequestSaveSettings = true;
 	gFlagReconfigureVfos = true;
 	//gUpdateStatus        = true;
@@ -399,9 +399,9 @@ void ACTION_Vox(void)
 #ifdef ENABLE_BLMIN_TMP_OFF
 void ACTION_BlminTmpOff(void)
 {
-	if(++gEeprom.BACKLIGHT_MIN_STAT == BLMIN_STAT_UNKNOWN) {
-		gEeprom.BACKLIGHT_MIN_STAT = BLMIN_STAT_ON;
-		BACKLIGHT_SetBrightness(gEeprom.BACKLIGHT_MIN);
+	if(++gSettings.BACKLIGHT_MIN_STAT == BLMIN_STAT_UNKNOWN) {
+		gSettings.BACKLIGHT_MIN_STAT = BLMIN_STAT_ON;
+		BACKLIGHT_SetBrightness(gSettings.BACKLIGHT_MIN);
 	} else {
 		BACKLIGHT_SetBrightness(0);
 	}

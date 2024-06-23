@@ -276,11 +276,11 @@ static void CMD_051B(const uint8_t *pBuffer)
 	if (pCmd->Timestamp != Timestamp)
 		return;
 
-	gSerialConfigCountDown_500ms = 12; // 6 sec
+	/*gSerialConfigCountDown_500ms = 12; // 6 sec
 
 	#ifdef ENABLE_FMRADIO
 		gFmRadioCountdown_500ms = fm_radio_countdown_500ms;
-	#endif
+	#endif*/
 
 	memset(&Reply, 0, sizeof(Reply));
 	Reply.Header.ID   = 0x051C;
@@ -288,8 +288,8 @@ static void CMD_051B(const uint8_t *pBuffer)
 	Reply.Data.Offset = pCmd->Offset;
 	Reply.Data.Size   = pCmd->Size;
 
-	if (bHasCustomAesKey)
-		bLocked = gIsLocked;
+	/*if (bHasCustomAesKey)
+		bLocked = gIsLocked;*/
 
 	if (!bLocked)
 		EEPROM_ReadBuffer(pCmd->Offset, Reply.Data.Data, pCmd->Size);
@@ -303,24 +303,24 @@ static void CMD_051D(const uint8_t *pBuffer)
 	const CMD_051D_t *pCmd = (const CMD_051D_t *)pBuffer;
 	REPLY_051D_t Reply;
 	bool bReloadEeprom;
-	bool bIsLocked;
+	bool bIsLocked = false;
 
 	if (pCmd->Timestamp != Timestamp)
 		return;
 
-	gSerialConfigCountDown_500ms = 12; // 6 sec
+	//gSerialConfigCountDown_500ms = 12; // 6 sec
 	
 	bReloadEeprom = false;
 
-	#ifdef ENABLE_FMRADIO
+	/*#ifdef ENABLE_FMRADIO
 		gFmRadioCountdown_500ms = fm_radio_countdown_500ms;
-	#endif
+	#endif*/
 
 	Reply.Header.ID   = 0x051E;
 	Reply.Header.Size = sizeof(Reply.Data);
 	Reply.Data.Offset = pCmd->Offset;
 
-	bIsLocked = bHasCustomAesKey ? gIsLocked : bHasCustomAesKey;
+	//bIsLocked = bHasCustomAesKey ? gIsLocked : bHasCustomAesKey;
 
 	if (!bIsLocked)
 	{
@@ -334,7 +334,7 @@ static void CMD_051D(const uint8_t *pBuffer)
 					bReloadEeprom = true;
 
 			if ((Offset < 0x0E98 || Offset >= 0x0EA0) || !bIsInLockScreen || pCmd->bAllowPassword)
-				EEPROM_WriteBuffer(Offset, &pCmd->Data[i * 8U]);
+				EEPROM_WriteBuffer(Offset, (void *)&pCmd->Data[i * 8U], 8);
 		}
 
 		if (bReloadEeprom)
@@ -422,17 +422,17 @@ static void CMD_052F(const uint8_t *pBuffer)
 {
 	const CMD_052F_t *pCmd = (const CMD_052F_t *)pBuffer;
 
-	gEeprom.DUAL_WATCH                               = DUAL_WATCH_OFF;
-	gEeprom.CROSS_BAND_RX_TX                         = CROSS_BAND_OFF;
-	gEeprom.RX_VFO                                   = 0;
-	gEeprom.DTMF_SIDE_TONE                           = false;
-	gEeprom.VfoInfo[0].FrequencyReverse              = false;
-	gEeprom.VfoInfo[0].pRX                           = &gEeprom.VfoInfo[0].freq_config_RX;
-	gEeprom.VfoInfo[0].pTX                           = &gEeprom.VfoInfo[0].freq_config_TX;
-	gEeprom.VfoInfo[0].TX_OFFSET_FREQUENCY_DIRECTION = TX_OFFSET_FREQUENCY_DIRECTION_OFF;
-	gEeprom.VfoInfo[0].DTMF_PTT_ID_TX_MODE           = PTT_ID_OFF;
+	/*gSettings.DUAL_WATCH                               = DUAL_WATCH_OFF;
+	gSettings.CROSS_BAND_RX_TX                         = CROSS_BAND_OFF;
+	gSettings.activeVFO                                   = 0;
+	false                           = false;
+	gVfoInfo[0].FrequencyReverse              = false;
+	gVfoInfo[0].pRX                           = &gVfoInfo[0].freq_config_RX;
+	gVfoInfo[0].pTX                           = &gVfoInfo[0].freq_config_TX;
+	gVfoInfo[0].TX_OFFSET_FREQUENCY_DIRECTION = TX_OFFSET_FREQUENCY_DIRECTION_OFF;
+	gVfoInfo[0].DTMF_PTT_ID_TX_MODE           = PTT_ID_OFF;
 #ifdef ENABLE_DTMF_CALLING
-	gEeprom.VfoInfo[0].DTMF_DECODING_ENABLE          = false;
+	gVfoInfo[0].DTMF_DECODING_ENABLE          = false;
 #endif
 
 	#ifdef ENABLE_NOAA
@@ -440,9 +440,9 @@ static void CMD_052F(const uint8_t *pBuffer)
 	#endif
 
 	if (gCurrentFunction == FUNCTION_POWER_SAVE)
-		FUNCTION_Select(FUNCTION_FOREGROUND);
+		FUNCTION_Select(FUNCTION_FOREGROUND);*/
 
-	gSerialConfigCountDown_500ms = 12; // 6 sec
+	//gSerialConfigCountDown_500ms = 12; // 6 sec
 
 	Timestamp = pCmd->Timestamp;
 

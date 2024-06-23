@@ -86,10 +86,10 @@ uint8_t I2C_Read(bool bFinal)
 	return Data;
 }
 
-int I2C_Write(uint8_t Data)
+int16_t I2C_Write(uint8_t Data)
 {
 	uint8_t i;
-	int ret = -1;
+	int16_t ret = -1;
 
 	GPIO_ClearBit(&GPIOA->DATA, GPIOA_PIN_I2C_SCL);
 	SYSTICK_DelayUs(1);
@@ -132,10 +132,10 @@ int I2C_Write(uint8_t Data)
 	return ret;
 }
 
-int I2C_ReadBuffer(void *pBuffer, uint8_t Size)
+uint16_t I2C_ReadBuffer(void *pBuffer, uint16_t Size)
 {
 	uint8_t *pData = (uint8_t *)pBuffer;
-	uint8_t i;
+	uint16_t i;
 
 	for (i = 0; i < Size - 1; i++) {
 		SYSTICK_DelayUs(1);
@@ -148,10 +148,10 @@ int I2C_ReadBuffer(void *pBuffer, uint8_t Size)
 	return Size;
 }
 
-int I2C_WriteBuffer(const void *pBuffer, uint8_t Size)
+int16_t I2C_WriteBuffer(const void *pBuffer, uint16_t Size)
 {
 	const uint8_t *pData = (const uint8_t *)pBuffer;
-	uint8_t i;
+	uint16_t i;
 
 	for (i = 0; i < Size; i++) {
 		if (I2C_Write(*pData++) < 0) {

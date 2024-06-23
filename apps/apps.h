@@ -20,7 +20,8 @@
 #include "driver/keyboard.h"
 
 enum APPS_e {
-	APP_WELCOME = 0,
+    APP_RESET = 0,
+	APP_WELCOME,
     APP_EMPTY,
     APP_MAIN_VFO,
     APP_MENU,

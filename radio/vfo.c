@@ -22,13 +22,13 @@
 #include "app.h"
 #include "audio.h"
 #include "task_main.h"
-#include "driver/uart.h"	
+
+#include "debugging.h"
 
 
 void VFO_Up_Down(int8_t Direction) {
-	uint8_t Channel = gEeprom.ScreenChannel[gEeprom.TX_VFO];
+	uint8_t Channel = gScreenChannel[gSettings.activeVFO];
 
-    uint8_t Next;
     if (IS_FREQ_CHANNEL(Channel)) { // step/down in frequency
         const uint32_t frequency = APP_SetFrequencyByStep(gTxVfo, Direction);
 
@@ -43,17 +43,18 @@ void VFO_Up_Down(int8_t Direction) {
         //gRequestSaveChannel = 1;
         main_push_message(RADIO_SAVE_CHANNEL);
         main_push_message(RADIO_VFO_CONFIGURE);        
-        //LogUartf("freq up/down. %u \r\n",  gTxVfo->freq_config_RX.Frequency);
+        LogUartf("freq up/down. %u \r\n", gTxVfo->freq_config_RX.Frequency);
         return;
     }
 
-    Next = RADIO_FindNextChannel((uint8_t)(Channel + Direction), Direction, false, 0);
+    const uint8_t Next = RADIO_FindNextChannel((uint8_t)(Channel + Direction), Direction, false, 0);
     if (Next == 0xFF)
         return;
     if (Channel == Next)
         return;
-    gEeprom.MrChannel[gEeprom.TX_VFO] = Next;
-    gEeprom.ScreenChannel[gEeprom.TX_VFO] = Next;
+    gMrChannel[gSettings.activeVFO] = Next;
+    gScreenChannel[gSettings.activeVFO] = Next;
     main_push_message(RADIO_SAVE_VFO);
     main_push_message(RADIO_VFO_CONFIGURE_RELOAD);
+    LogUartf("channel up/down. %u \r\n", Next);
 }

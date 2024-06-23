@@ -1346,15 +1346,15 @@ static void AutomaticPresetChoose(uint32_t f) {
 
 void APP_RunSpectrum() {
   // TX here coz it always? set to active VFO
-  vfo =  gEeprom.TX_VFO;
+  vfo =  gSettings.activeVFO;
 
   // set the current frequency in the middle of the display
-  /*currentFreq = initialFreq = gEeprom.VfoInfo[vfo].pRX->Frequency -
+  /*currentFreq = initialFreq = gVfoInfo[vfo].pRX->Frequency -
                               ((GetStepsCount() / 2) * GetScanStep());*/
 
   BackupRegisters();
 
-  VFO_Info_t vfoi = gEeprom.VfoInfo[vfo];
+  VFO_Info_t vfoi = gVfoInfo[vfo];
 
   initialFreq = vfoi.pRX->Frequency;
   currentFreq = initialFreq;

@@ -75,12 +75,12 @@ void MainVFO_showRSSI(void) {
 
     if ( FUNCTION_IsRx() ) {
 
-        const int16_t s0_dBm   = -gEeprom.S0_LEVEL;                  // S0 .. base level
+        const int16_t s0_dBm   = 0;//-gSettings.S0_LEVEL;                  // S0 .. base level
 	    const int16_t rssi_dBm = BK4819_GetRSSI_dBm() + dBmCorrTable[gRxVfo->Band];
 
-        int s0_9 = gEeprom.S0_LEVEL - gEeprom.S9_LEVEL;
+        int s0_9 = 255;//gSettings.S0_LEVEL - gSettings.S9_LEVEL;
         const uint8_t s_level = (uint8_t)MIN(MAX((int32_t)(rssi_dBm - s0_dBm)*100 / (s0_9*100/9), 0), 9); // S0 - S9
-        uint8_t overS9dBm = (uint8_t)MIN(MAX(rssi_dBm + gEeprom.S9_LEVEL, 0), 99);
+        uint8_t overS9dBm = (uint8_t)MIN(MAX(rssi_dBm + 255/*gSettings.S9_LEVEL*/, 0), 99);
         uint8_t overS9Bars = (uint8_t)MIN(overS9dBm/10, 9);
 
         memset(bar, '@', s_level + overS9Bars);
@@ -153,8 +153,6 @@ void MainVFO_showCTCSS(const char *tx_rx, uint8_t code_type, uint8_t code_value,
 
 uint8_t StatusLine = 0;
 
-uint8_t vfoNumA = 0;
-
 typedef struct {
     char name[20];
     uint32_t lower_freq;
@@ -225,7 +223,7 @@ uint16_t GetRegRadioValue(uint8_t st) {
 }
 
 void LockAGC( bool lockAGC ) {
-  RADIO_SetupAGC(gEeprom.VfoInfo[vfoNumA].Modulation == MODULATION_AM, lockAGC);
+  RADIO_SetupAGC(gVfoInfo[gSettings.activeVFO].Modulation == MODULATION_AM, lockAGC);
 }
 
 void SetRegRadioValue(uint8_t st, bool add) {  
@@ -255,22 +253,8 @@ void SetRegRadioValue(uint8_t st, bool add) {
 void MainVFO_showVFO(void) {
 
     char String[17] = { 0 };
-    //uint8_t vfoNumA;
-    //uint8_t vfoNumB;
-
-    if(gEeprom.TX_VFO == 0) {
-        vfoNumA = 0;
-        //vfoNumB = 1;
-    } else {
-        vfoNumA = 1;
-        //vfoNumB = 0;
-    }
-
-    const VFO_Info_t *vfoInfoA = &gEeprom.VfoInfo[vfoNumA];
-    //const VFO_Info_t *vfoInfoB = &gEeprom.VfoInfo[vfoNumB];
-
-    //const bool isChannelModeA = IS_MR_CHANNEL(gEeprom.ScreenChannel[vfoNumA]);
-    //const bool isChannelModeB = IS_MR_CHANNEL(gEeprom.ScreenChannel[vfoNumB]);
+    
+    const VFO_Info_t *vfoInfoA = &gVfoInfo[gSettings.activeVFO];
 
     const enum VfoState_t state = gVfoState;
 
@@ -280,7 +264,7 @@ void MainVFO_showVFO(void) {
     UI_fillRect(0, 7, 128, 38, true);
 
     // VFO
-    //UI_printf(&font_10, TEXT_ALIGN_LEFT, 3, 0, yPosVFO - 7, true, true, vfoNumA == 0 ? "VFO A" : "VFO B");
+    //UI_printf(&font_10, TEXT_ALIGN_LEFT, 3, 0, yPosVFO - 7, true, true, gSettings.activeVFO == 0 ? "VFO A" : "VFO B");
 
     if (state == VFO_STATE_TX){
         frequency = vfoInfoA->pTX->Frequency;
@@ -288,20 +272,20 @@ void MainVFO_showVFO(void) {
         frequency = vfoInfoA->pRX->Frequency;
     }
 
-    if ( IS_MR_CHANNEL(gEeprom.ScreenChannel[vfoNumA]) ) {
+    if ( IS_MR_CHANNEL(gScreenChannel[gSettings.activeVFO]) ) {
         // Channel Name
         memcpy(String, vfoInfoA->Name, 16);
         if (String[0] == 0) {
-            UI_printf(&font_10, TEXT_ALIGN_LEFT, 3, 0, yPosVFO - 7, true, true, "CH-%03u", gEeprom.ScreenChannel[vfoNumA] + 1);
+            UI_printf(&font_10, TEXT_ALIGN_LEFT, 3, 0, yPosVFO - 7, true, true, "CH-%03u", gScreenChannel[gSettings.activeVFO] + 1);
         } else {
-            UI_printf(&font_10, TEXT_ALIGN_LEFT, 3, 0, yPosVFO - 7, true, true, "M%03u", gEeprom.ScreenChannel[vfoNumA] + 1);
+            UI_printf(&font_10, TEXT_ALIGN_LEFT, 3, 0, yPosVFO - 7, true, true, "M%03u", gScreenChannel[gSettings.activeVFO] + 1);
             UI_printf(&font_10, TEXT_ALIGN_RIGHT, UI_nextX + 4, 124, yPosVFO - 8, false, false, String);
         }
     } else {
         UI_printf(&font_10, TEXT_ALIGN_LEFT, 3, 0, yPosVFO - 8, false, false, "%s", getBandName(frequency));
     }
 
-   UI_printf(&font_n_20, TEXT_ALIGN_LEFT, 2, 0, yPosVFO + 9, false, false, vfoNumA == 0 ? "/" : "*");
+   UI_printf(&font_n_20, TEXT_ALIGN_LEFT, 2, 0, yPosVFO + 9, false, false, gSettings.activeVFO == 0 ? "/" : "*");
 
     // Frequency
 
@@ -388,7 +372,7 @@ void MainVFO_renderFunction() {
     MainVFO_showVFO();
 
     if (GUI_inputNotEmpty()) {
-        if (IS_MR_CHANNEL(gEeprom.ScreenChannel[gEeprom.TX_VFO])) {
+        if (IS_MR_CHANNEL(gScreenChannel[gSettings.activeVFO])) {
             GUI_inputShow("Input Memory", "M ");
         } else {
             GUI_inputShowFreq("Input Freq.");
@@ -451,7 +435,7 @@ void MainVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
                     main_push_message(key == KEY_UP ? RADIO_VFO_UP : RADIO_VFO_DOWN);
                 } else if (state == KEY_RELEASED ) {
                     // save if key released
-                    if (IS_FREQ_CHANNEL(gEeprom.ScreenChannel[gEeprom.TX_VFO])) {
+                    if (IS_FREQ_CHANNEL(gScreenChannel[gSettings.activeVFO])) {
                         main_push_message(RADIO_SAVE_CHANNEL);
                     } else {
                         main_push_message(RADIO_SAVE_VFO);
@@ -487,7 +471,7 @@ void MainVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
             case KEY_0:
             case KEY_STAR:
             case KEY_F:
-                if (IS_MR_CHANNEL(gEeprom.ScreenChannel[gEeprom.TX_VFO])) {
+                if (IS_MR_CHANNEL(gScreenChannel[gSettings.activeVFO])) {
                     GUI_inputAppendKey(key, 3, false);
                 } else {
                     GUI_inputAppendKey(key, 9, true);
@@ -495,7 +479,7 @@ void MainVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
             break;
             case KEY_MENU:
                 if (GUI_inputGetSize() > 0) {
-                    if (IS_MR_CHANNEL(gEeprom.ScreenChannel[gEeprom.TX_VFO])) {
+                    if (IS_MR_CHANNEL(gScreenChannel[gSettings.activeVFO])) {
                         const uint16_t selChannel = (uint16_t)GUI_inputGetNumberClear() - 1;
                         main_push_message_value(RADIO_SET_CHANNEL, selChannel);
                     } else {
@@ -537,19 +521,19 @@ void MainVFO_renderPopupFunction(APPS_Popup_t popup) {
     switch (popup) {
         case APP_POPUP_TXP:
             GUI_showPopup(popupW, popupH, &startX, &startY);
-            UI_printf(&font_small, TEXT_ALIGN_CENTER, startX, startX + popupW - 2, startY, true, false, "VFO %s - TX POWER", gEeprom.TX_VFO == 0 ? "A" : "B");
+            UI_printf(&font_small, TEXT_ALIGN_CENTER, startX, startX + popupW - 2, startY, true, false, "VFO %s - TX POWER", gSettings.activeVFO == 0 ? "A" : "B");
             popupListSize = ARRAY_SIZE(gSubMenu_TXP) - 1;
             popupShowList(popupListSelected, popupListSize, startX, startY + 8, startX + popupW - 2, gSubMenu_TXP);
             break;
         case APP_POPUP_W_N:
             GUI_showPopup(popupW, popupH, &startX, &startY);
-            UI_printf(&font_small, TEXT_ALIGN_CENTER, startX, startX + popupW - 2, startY, true, false, "VFO %s - BANDWIDTH", gEeprom.TX_VFO == 0 ? "A" : "B");
+            UI_printf(&font_small, TEXT_ALIGN_CENTER, startX, startX + popupW - 2, startY, true, false, "VFO %s - BANDWIDTH", gSettings.activeVFO == 0 ? "A" : "B");
             popupListSize = ARRAY_SIZE(gSubMenu_W_N) - 1;
             popupShowList(popupListSelected, popupListSize, startX, startY + 8, startX + popupW - 2, gSubMenu_W_N);
             break;
         case APP_POPUP_AM:
             GUI_showPopup(popupW, popupH, &startX, &startY);
-            UI_printf(&font_small, TEXT_ALIGN_CENTER, startX, startX + popupW - 2, startY, true, false, "VFO %s - MODULATION", gEeprom.TX_VFO == 0 ? "A" : "B");
+            UI_printf(&font_small, TEXT_ALIGN_CENTER, startX, startX + popupW - 2, startY, true, false, "VFO %s - MODULATION", gSettings.activeVFO == 0 ? "A" : "B");
             popupListSize = MODULATION_UKNOWN - 1;
             popupShowList(popupListSelected, popupListSize, startX, startY + 8, startX + popupW - 2, gModulationStr);
             break;

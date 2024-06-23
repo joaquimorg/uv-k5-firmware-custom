@@ -33,8 +33,8 @@ static void NextMemChannel(void);
 void CHFRSCANNER_Start(const bool storeBackupSettings, const int8_t scan_direction)
 {
 	if (storeBackupSettings) {
-		initialCROSS_BAND_RX_TX = gEeprom.CROSS_BAND_RX_TX;
-		gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
+		initialCROSS_BAND_RX_TX = gSettings.CROSS_BAND_RX_TX;
+		gSettings.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
 		gScanKeepResult = false;
 	}
 	
@@ -91,7 +91,7 @@ void CHFRSCANNER_ContinueScanning(void)
 
 void CHFRSCANNER_Found(void)
 {
-	switch (gEeprom.SCAN_RESUME_MODE)
+	switch (gSettings.SCAN_RESUME_MODE)
 	{
 		case SCAN_RESUME_TO:
 			if (!gScanPauseMode)
@@ -123,7 +123,7 @@ void CHFRSCANNER_Found(void)
 void CHFRSCANNER_Stop(void)
 {
 	if(initialCROSS_BAND_RX_TX != CROSS_BAND_OFF) {
-		gEeprom.CROSS_BAND_RX_TX = initialCROSS_BAND_RX_TX;
+		gSettings.CROSS_BAND_RX_TX = initialCROSS_BAND_RX_TX;
 		initialCROSS_BAND_RX_TX = CROSS_BAND_OFF;
 	}
 	
@@ -132,9 +132,9 @@ void CHFRSCANNER_Stop(void)
 	const uint32_t chFr = gScanKeepResult ? lastFoundFrqOrChan : initialFrqOrChan;
 	const bool channelChanged = chFr != initialFrqOrChan;
 	if (IS_MR_CHANNEL(gNextMrChannel)) {
-		gEeprom.MrChannel[gEeprom.RX_VFO]     = chFr;
-		gEeprom.ScreenChannel[gEeprom.RX_VFO] = chFr;
-		RADIO_ConfigureChannel(gEeprom.RX_VFO, VFO_CONFIGURE_RELOAD);
+		gMrChannel[gSettings.activeVFO]     = chFr;
+		gScreenChannel[gSettings.activeVFO] = chFr;
+		RADIO_ConfigureChannel(gSettings.activeVFO, VFO_CONFIGURE_RELOAD);
 
 		if(channelChanged) {
 			SETTINGS_SaveVfoIndices();
@@ -146,7 +146,7 @@ void CHFRSCANNER_Stop(void)
 		RADIO_ApplyOffset(gRxVfo);
 		RADIO_ConfigureSquelchAndOutputPower(gRxVfo);
 		if(channelChanged) {
-			SETTINGS_SaveChannel(gRxVfo->CHANNEL_SAVE, gEeprom.RX_VFO, gRxVfo, 1);
+			SETTINGS_SaveChannel(gRxVfo->CHANNEL_SAVE, gSettings.activeVFO, gRxVfo, 1);
 		}
 	}
 
@@ -180,9 +180,9 @@ static void NextFreqChannel(void)
 static void NextMemChannel(void)
 {
 	static unsigned int prev_mr_chan = 0;
-	const bool          enabled      = (gEeprom.SCAN_LIST_DEFAULT < 2) ? gEeprom.SCAN_LIST_ENABLED[gEeprom.SCAN_LIST_DEFAULT] : true;
-	const int           chan1        = (gEeprom.SCAN_LIST_DEFAULT < 2) ? gEeprom.SCANLIST_PRIORITY_CH1[gEeprom.SCAN_LIST_DEFAULT] : -1;
-	const int           chan2        = (gEeprom.SCAN_LIST_DEFAULT < 2) ? gEeprom.SCANLIST_PRIORITY_CH2[gEeprom.SCAN_LIST_DEFAULT] : -1;
+	const bool          enabled      = (gSettings.SCAN_LIST_DEFAULT < 2) ? gSettings.SCAN_LIST_ENABLED[gSettings.SCAN_LIST_DEFAULT] : true;
+	const int           chan1        = (gSettings.SCAN_LIST_DEFAULT < 2) ? gSettings.SCANLIST_PRIORITY_CH1[gSettings.SCAN_LIST_DEFAULT] : -1;
+	const int           chan2        = (gSettings.SCAN_LIST_DEFAULT < 2) ? gSettings.SCANLIST_PRIORITY_CH2[gSettings.SCAN_LIST_DEFAULT] : -1;
 	const unsigned int  prev_chan    = gNextMrChannel;
 	unsigned int        chan         = 0;
 
@@ -218,10 +218,10 @@ static void NextMemChannel(void)
 			// this bit doesn't yet work if the other VFO is a frequency
 			case SCAN_NEXT_CHAN_DUAL_WATCH:
 				// dual watch is enabled - include the other VFO in the scan
-//				if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
+//				if (gSettings.DUAL_WATCH != DUAL_WATCH_OFF)
 //				{
-//					chan = (gEeprom.RX_VFO + 1) & 1u;
-//					chan = gEeprom.ScreenChannel[chan];
+//					chan = (gSettings.activeVFO + 1) & 1u;
+//					chan = gScreenChannel[chan];
 //					if (IS_MR_CHANNEL(chan))
 //					{
 //						currentScanList = SCAN_NEXT_CHAN_DUAL_WATCH;
@@ -241,7 +241,7 @@ static void NextMemChannel(void)
 
 	if (!enabled || chan == 0xff)
 	{
-		chan = RADIO_FindNextChannel(gNextMrChannel + gScanStateDir, gScanStateDir, (gEeprom.SCAN_LIST_DEFAULT < 2) ? true : false, gEeprom.SCAN_LIST_DEFAULT);
+		chan = RADIO_FindNextChannel(gNextMrChannel + gScanStateDir, gScanStateDir, (gSettings.SCAN_LIST_DEFAULT < 2) ? true : false, gSettings.SCAN_LIST_DEFAULT);
 		if (chan == 0xFF)
 		{	// no valid channel found
 			chan = MR_CHANNEL_FIRST;
@@ -252,10 +252,10 @@ static void NextMemChannel(void)
 
 	if (gNextMrChannel != prev_chan)
 	{
-		gEeprom.MrChannel[    gEeprom.RX_VFO] = gNextMrChannel;
-		gEeprom.ScreenChannel[gEeprom.RX_VFO] = gNextMrChannel;
+		gMrChannel[    gSettings.activeVFO] = gNextMrChannel;
+		gScreenChannel[gSettings.activeVFO] = gNextMrChannel;
 
-		RADIO_ConfigureChannel(gEeprom.RX_VFO, VFO_CONFIGURE_RELOAD);
+		RADIO_ConfigureChannel(gSettings.activeVFO, VFO_CONFIGURE_RELOAD);
 		RADIO_SetupRegisters(true);
 
 		//gUpdateDisplay = true;

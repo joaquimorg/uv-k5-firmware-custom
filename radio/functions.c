@@ -92,14 +92,14 @@ void FUNCTION_Foreground(const FUNCTION_Type_t PreviousFunction)
 		gDTMF_CallState == DTMF_CALL_STATE_RECEIVED ||
 		gDTMF_CallState == DTMF_CALL_STATE_RECEIVED_STAY)
 	{
-		gDTMF_auto_reset_time_500ms = gEeprom.DTMF_auto_reset_time * 2;
+		gDTMF_auto_reset_time_500ms = gSettings.DTMF_auto_reset_time * 2;
 	}
 #endif*/
 	//gUpdateStatus = true;
 }
 
 void FUNCTION_PowerSave() {
-	//gPowerSave_10ms = gEeprom.BATTERY_SAVE * 10;
+	//gPowerSave_10ms = gSettings.batSave * 10;
 	//gPowerSaveCountdownExpired = false;
 
 	//gRxIdleMode = true;
@@ -175,7 +175,7 @@ void FUNCTION_Transmit()
 	DTMF_Reply();
 
 	if (gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_APOLLO)
-		BK4819_PlaySingleTone(2525, 250, 0, gEeprom.DTMF_SIDE_TONE);
+		BK4819_PlaySingleTone(2525, 250, 0, false);
 /*
 #if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
 	if (gAlarmState != ALARM_STATE_OFF) {

@@ -3,7 +3,7 @@
 # 0 = disable
 # 1 = enable
 
-ENABLE_REMOTE_CONTROL			?= 1
+ENABLE_REMOTE_CONTROL			?= 0
 ENABLE_UART_DEBUG			  	?= 1
 
 #------------------------------------------------------------------------------
@@ -161,7 +161,6 @@ LIBS =
 
 C_OBJECTS = $(addprefix $(BUILD)/, $(C_SRC:.c=.o) )
 ASM_OBJECTS = $(addprefix $(BUILD)/, $(ASM_SRC:.S=.o) )
-
 
 OBJECTS = $(C_OBJECTS) $(ASM_OBJECTS)
 

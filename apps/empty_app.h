@@ -21,7 +21,7 @@
 #include "gui/gui.h"
 
 void EmptyAPP_initFunction() {    
-    
+    app_push_message(APP_MSG_TIMEOUT_NO_RETURN_MAIN);
 }
 
 void EmptyAPP_renderFunction() {

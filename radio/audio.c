@@ -42,7 +42,7 @@ void AUDIO_PlayBeep(BEEP_Type_t Beep)
 	    Beep != BEEP_440HZ_500MS &&
 	    Beep != BEEP_880HZ_200MS &&
 	    Beep != BEEP_880HZ_500MS &&
-	   !gEeprom.BEEP_CONTROL)
+	   !gSettings.beep)
 		return;
 
 	/*if (gCurrentFunction == FUNCTION_RECEIVE)

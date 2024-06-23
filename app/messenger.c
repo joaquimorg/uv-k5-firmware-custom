@@ -80,7 +80,7 @@ void MSG_FSKSendData() {
 	//LogUartf("\n BANDWIDTH : 0x%.4X", dev_val);
 	{
 		uint16_t deviation = 850;
-		switch (gEeprom.VfoInfo[gEeprom.TX_VFO].CHANNEL_BANDWIDTH)
+		switch (gVfoInfo[gSettings.activeVFO].CHANNEL_BANDWIDTH)
 		{
 			case BK4819_FILTER_BW_WIDE:     deviation = 1050; break;
 			case BK4819_FILTER_BW_NARROW:   deviation =  850; break;

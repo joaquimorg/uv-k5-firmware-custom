@@ -39,6 +39,7 @@
 #include "gui/gui.h"
 #include "ui/status.h"
 #include "apps/apps.h"
+#include "apps/reset_app.h"
 #include "apps/welcome.h"
 #include "apps/main_vfo.h"
 #include "apps/settings_vfo.h"
@@ -55,6 +56,8 @@ StaticTask_t app_task_buffer;
 static StaticQueue_t appTasksQueue;
 QueueHandle_t appTasksMsgQueue;
 uint8_t appQueueStorageArea[ QUEUE_LENGTH * APP_ITEM_SIZE ];
+
+static bool isFromBoot = true;
 
 /*-----------------------------------------------------------*/
 
@@ -133,6 +136,13 @@ void render_timer_callback(TimerHandle_t xTimer) {
 void keyboard_callback(KEY_Code_t key, KEY_State_t state) {
     xTimerReset(idleTimer, 0);
     
+    if ( currentApp == APP_WELCOME && isFromBoot ) {
+        if ( key == KEY_SIDE1 && state == KEY_PRESSED ) {
+            load_application(APP_RESET);
+            return;
+        }
+    }
+
     if ( !BACKLIGHT_IsOn() ) {
         app_push_message(APP_MSG_WAKEUP);
     } else {
@@ -184,11 +194,15 @@ void app_task(void* arg) {
     xTimerStart(renderTimer, 0);
     xTimerStart(lightTimer, 0);
 
-    load_application(APP_WELCOME);
-    
-    //LogUartf("Task APPs Ready\r\n");
-
     keyboard_init();
+
+    if ( gSettings.settingsVersion != SETTINGS_VERSION ) {
+        load_application(APP_RESET);
+    } else {
+        load_application(APP_WELCOME);
+    }
+    
+    //LogUartf("Task APPs Ready\r\n");    
     
     APP_Messages_t msg;
 
@@ -202,6 +216,7 @@ void app_task(void* arg) {
                     break;
 
                 case APP_MSG_TIMEOUT:
+                    isFromBoot = false;
                     if ( currentApp != APP_MAIN_VFO && autoReturntoMain ) {
                         load_application(APP_MAIN_VFO);
                     } else {
@@ -293,12 +308,19 @@ void change_application(app_t *application) {
 void load_application(APPS_t application) {
     clearMainAppStatus();
     switch (application) {
+         case APP_RESET:
+            setMainAppStatus("RESET");
+            change_application(&APPReset);
+            break;
+
         case APP_WELCOME:
+            setMainAppStatus("");
             change_application(&APPWelcome);
             break;
 
-        case APP_MAIN_VFO:            
-            change_application(&APPMainVFO);
+        case APP_MAIN_VFO:
+            setMainAppStatus("VFO");
+            change_application(&APPMainVFO);            
             break;
 
         case APP_EMPTY:

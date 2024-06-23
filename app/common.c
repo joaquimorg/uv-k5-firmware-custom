@@ -12,7 +12,7 @@ void COMMON_KeypadLockToggle()
         gCurrentFunction != FUNCTION_TRANSMIT)
     {	// toggle the keyboad lock
 
-        gEeprom.KEY_LOCK = !gEeprom.KEY_LOCK;
+        gSettings.KEY_LOCK = !gSettings.KEY_LOCK;
 
         gRequestSaveSettings = true;
     }
@@ -23,12 +23,12 @@ void COMMON_SwitchVFOs()
 #ifdef ENABLE_SCAN_RANGES    
     gScanRangeStart = 0;
 #endif
-    gEeprom.TX_VFO ^= 1;
+    gSettings.activeVFO ^= 1;
 
-    if (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF)
-        gEeprom.CROSS_BAND_RX_TX = gEeprom.TX_VFO + 1;
-    if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
-        gEeprom.DUAL_WATCH = gEeprom.TX_VFO + 1;
+    if (gSettings.CROSS_BAND_RX_TX != CROSS_BAND_OFF)
+        gSettings.CROSS_BAND_RX_TX = gSettings.activeVFO + 1;
+    if (gSettings.DUAL_WATCH != DUAL_WATCH_OFF)
+        gSettings.DUAL_WATCH = gSettings.activeVFO + 1;
 
     //gRequestSaveSettings  = 1;
     //gFlagReconfigureVfos  = true;
@@ -40,22 +40,22 @@ void COMMON_SwitchVFOs()
 void COMMON_SwitchVFOMode()
 {
 
-    if (gEeprom.VFO_OPEN) {
+    //if (gSettings.VFO_OPEN) {
         if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE))
         {	// swap to frequency mode
-            gEeprom.ScreenChannel[gEeprom.TX_VFO] = gEeprom.FreqChannel[gEeprom.TX_VFO];
+            gScreenChannel[gSettings.activeVFO] = gFreqChannel[gSettings.activeVFO];
             //gRequestSaveVFO            = true;
             //gVfoConfigureMode          = VFO_CONFIGURE_RELOAD;
             return;
         }
 
-        uint8_t Channel = RADIO_FindNextChannel(gEeprom.MrChannel[gEeprom.TX_VFO], 1, false, 0);
+        uint8_t Channel = RADIO_FindNextChannel(gMrChannel[gSettings.activeVFO], 1, false, 0);
         if (Channel != 0xFF)
         {	// swap to channel mode
-            gEeprom.ScreenChannel[gEeprom.TX_VFO] = Channel;
+            gScreenChannel[gSettings.activeVFO] = Channel;
             //gRequestSaveVFO     = true;
             //gVfoConfigureMode   = VFO_CONFIGURE_RELOAD;
             return;
         }
-    }
+    //}
 }

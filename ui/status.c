@@ -53,9 +53,10 @@ void UI_DisplayStatus()
 
 	GUI_drawBattery();
 
-	switch (gSetting_battery_text) {
+	switch (gSettings.batteryStyle) {
 		default:
 		case 0:
+			UI_nextX = 18;
 			break;
 
 		case 1:	{	// voltage
@@ -88,71 +89,16 @@ void UI_DisplayStatus()
 	}
 
 	// KEY-LOCK indicator
-	if (gEeprom.KEY_LOCK) {
+	if (gSettings.keylock) {
 		UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, STATUS_YPOS, true, false, "]");		
 	}
 	else if (gWasFKeyPressed) {
 		UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, STATUS_YPOS, true, false, "[");
 	}
 
-#ifdef ENABLE_MESSENGER
-	if (hasNewMessage > 0) { // New Message indicator
-		if (hasNewMessage == 1) {
-			UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, STATUS_YPOS, true, false, "#");
-		}
+	if(gSettings.crossBand) { // XB - crossband
+		UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, STATUS_YPOS, true, false, "XB");
 	}
-#endif
-
-#ifdef ENABLE_DTMF_CALLING
-	if (gSetting_KILLED) {
-	}
-	else
-#endif
-#ifdef ENABLE_FMRADIO
-	if (gFmRadioMode) { // FM indicator
-	}
-	else
-#endif
-	{ // SCAN indicator
-		/*if (gScanStateDir != SCAN_OFF || SCANNER_IsScanning()) {
-			char * s = "";
-			if (IS_MR_CHANNEL(gNextMrChannel) && !SCANNER_IsScanning()) { // channel mode
-				switch(gEeprom.SCAN_LIST_DEFAULT) {
-					case 0: s = "1"; break;
-					case 1: s = "2"; break;
-					case 2: s = "*"; break;
-				}
-			}
-			else {	// frequency mode
-				s = "S";
-			}
-			UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, STATUS_YPOS, true, false, "%c", s);
-		}*/
-	}
-
-	//if(!SCANNER_IsScanning()) {
-		uint8_t dw = (uint8_t)((gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) + (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) * 2);
-		if(dw == 1 || dw == 3) { // DWR - dual watch + respond
-			if(gDualWatchActive) {
-				UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, STATUS_YPOS, true, false, "DW");
-				//memcpy(line + x + (dw==1?0:2), BITMAP_TDR1, sizeof(BITMAP_TDR1) - (dw==1?0:5));
-			} else {
-				UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, STATUS_YPOS, true, false, "><");
-				//memcpy(line + x + 3, BITMAP_TDR2, sizeof(BITMAP_TDR2));
-			}
-		}
-		else if(dw == 2) { // XB - crossband
-			UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, STATUS_YPOS, true, false, "XB");
-			//memcpy(line + x + 2, BITMAP_XB, sizeof(BITMAP_XB));
-		}
-	//}
-
-#ifdef ENABLE_VOX
-	// VOX indicator
-	if (gEeprom.VOX_SWITCH) {
-		UI_printf(&font_small, TEXT_ALIGN_LEFT, UI_nextX + STATUS_SPACE, 0, STATUS_YPOS, true, false, "VOX");
-	}
-#endif
 
 	// Show App Status / Name
 	UI_printf(&font_small, TEXT_ALIGN_RIGHT, 64, 128, STATUS_YPOS, true, false, "%s", gMainAppStatus);

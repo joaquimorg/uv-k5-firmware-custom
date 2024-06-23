@@ -52,20 +52,18 @@ void BACKLIGHT_InitHardware()
 		0;
 }
 
-void BACKLIGHT_TurnOn(void)
-{
-	if (gEeprom.BACKLIGHT_TIME == 0) {
+void BACKLIGHT_TurnOn(void) {
+	if (gSettings.backlight == 0) {
 		BACKLIGHT_TurnOff();
 		return;
 	}
 
 	backlightOn = true;
-	BACKLIGHT_SetBrightness(gEeprom.BACKLIGHT_MAX);
+	BACKLIGHT_SetBrightness(gSettings.backlight);
 }
 
-uint32_t BACKLIGHT_getTime(void)
-{
-	switch (gEeprom.BACKLIGHT_TIME) {
+uint32_t BACKLIGHT_getTime(void) {
+	switch (gSettings.backlightTime) {
 		default:
 		case 1:	// 5 sec
 			return 5 * 1000;
@@ -84,42 +82,24 @@ uint32_t BACKLIGHT_getTime(void)
 	}
 }
 
-void BACKLIGHT_TurnOff()
-{
-
+void BACKLIGHT_TurnOff() {
 	if ( BACKLIGHT_getTime() == 0 ) return;
-
-#ifdef ENABLE_BLMIN_TMP_OFF
-	register uint8_t tmp;
-
-	if (gEeprom.BACKLIGHT_MIN_STAT == BLMIN_STAT_ON)
-		tmp = gEeprom.BACKLIGHT_MIN;
-	else
-		tmp = 0;
-
-	BACKLIGHT_SetBrightness(tmp);
-#else
-	BACKLIGHT_SetBrightness(gEeprom.BACKLIGHT_MIN);
-#endif
-	//gBacklightCountdown_500ms = 0;
+	BACKLIGHT_SetBrightness(0);
 	backlightOn = false;
 }
 
-bool BACKLIGHT_IsOn()
-{
+bool BACKLIGHT_IsOn() {
 	return backlightOn;
 }
 
 static uint8_t currentBrightness;
 
-void BACKLIGHT_SetBrightness(uint8_t brigtness)
-{
+void BACKLIGHT_SetBrightness(uint8_t brigtness) {
 	currentBrightness = brigtness;
 	PWM_PLUS0_CH0_COMP = (uint32_t)(1 << brigtness) - 1;
 	//PWM_PLUS0_SWLOAD = 1;
 }
 
-uint8_t BACKLIGHT_GetBrightness(void)
-{
+uint8_t BACKLIGHT_GetBrightness(void) {
 	return currentBrightness;
 }

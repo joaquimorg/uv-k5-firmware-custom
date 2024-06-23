@@ -507,14 +507,13 @@ void BOARD_ADC_GetBatteryInfo(uint16_t *pVoltage, uint16_t *pCurrent)
 
 void BOARD_Init(void)
 {
-	//BOARD_PORTCON_Init();
-	//BOARD_GPIO_Init();
+	BOARD_PORTCON_Init();
+	BOARD_GPIO_Init();
 	BACKLIGHT_InitHardware();
 	BOARD_ADC_Init();
 	ST7565_Init();
 
 	//BK1080_Init0();
-
 
 	CRC_Init();
 

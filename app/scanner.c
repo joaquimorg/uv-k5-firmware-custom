@@ -191,15 +191,15 @@ static void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 			uint8_t chan;
 			if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE)) {
 				chan = gScanChannel;
-				gEeprom.MrChannel[gEeprom.TX_VFO] = chan;
+				gMrChannel[gSettings.activeVFO] = chan;
 			}
 			else {
 				chan = gTxVfo->Band + FREQ_CHANNEL_FIRST;
-				gEeprom.FreqChannel[gEeprom.TX_VFO] = chan;
+				gFreqChannel[gSettings.activeVFO] = chan;
 			}
 
 			gTxVfo->CHANNEL_SAVE = chan;
-			gEeprom.ScreenChannel[gEeprom.TX_VFO] = chan;
+			gScreenChannel[gSettings.activeVFO] = chan;
 
 			gRequestDisplayScreen = DISPLAY_SCANNER;
 			gRequestSaveChannel = 2;
@@ -346,7 +346,7 @@ void SCANNER_Start(bool singleFreq)
 void SCANNER_Stop(void)
 {
 	if(SCANNER_IsScanning()) {
-		gEeprom.CROSS_BAND_RX_TX = gBackup_CROSS_BAND_RX_TX;
+		gSettings.CROSS_BAND_RX_TX = gBackup_CROSS_BAND_RX_TX;
 		gVfoConfigureMode        = VFO_CONFIGURE_RELOAD;
 		gFlagResetVfos           = true;
 		//gUpdateStatus            = true;
