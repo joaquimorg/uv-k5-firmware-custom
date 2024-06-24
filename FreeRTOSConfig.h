@@ -55,7 +55,7 @@
 #define configCPU_CLOCK_HZ                       ( 48000000U )
 #define configTICK_RATE_HZ                       ((TickType_t)1000U)
 #define configMAX_PRIORITIES                     ( 5 )
-#define configMINIMAL_STACK_SIZE                 ((uint16_t)64)
+#define configMINIMAL_STACK_SIZE                 ((uint16_t)84)
 //#define configTOTAL_HEAP_SIZE                    ((size_t)3072)
 #define configMAX_TASK_NAME_LEN                  ( 6 )
 #define configUSE_TRACE_FACILITY                 0
@@ -76,7 +76,7 @@
 #define configUSE_TIMERS                         1
 #define configTIMER_TASK_PRIORITY                ( 1 )
 #define configTIMER_QUEUE_LENGTH                 20
-#define configTIMER_TASK_STACK_DEPTH             160
+#define configTIMER_TASK_STACK_DEPTH             200
 
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */

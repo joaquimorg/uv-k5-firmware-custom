@@ -125,13 +125,13 @@ void RADIO_ConfigureChannel(const uint8_t VFO, const uint8_t configure)
 {
 	VFO_Info_t *pVfo = &gVfoInfo[VFO];
 
-	if (!gSetting_350EN) {
+	/*if (!gSetting_350EN) {
 		if (gFreqChannel[VFO] == FREQ_CHANNEL_FIRST + BAND5_350MHz)
 			gFreqChannel[VFO] = FREQ_CHANNEL_FIRST + BAND6_400MHz;
 
 		if (gScreenChannel[VFO] == FREQ_CHANNEL_FIRST + BAND5_350MHz)
 			gScreenChannel[VFO] = FREQ_CHANNEL_FIRST + BAND6_400MHz;
-	}
+	}*/
 
 	uint8_t channel = gScreenChannel[VFO];
 
@@ -140,7 +140,7 @@ void RADIO_ConfigureChannel(const uint8_t VFO, const uint8_t configure)
 		if (IS_MR_CHANNEL(channel)) {
 			channel = RADIO_FindNextChannel(channel, RADIO_CHANNEL_UP, false, VFO);
 			if (channel == 0xFF) {
-				channel                    = gFreqChannel[VFO];
+				channel             = gFreqChannel[VFO];
 				gScreenChannel[VFO] = gFreqChannel[VFO];
 			}
 			else {
@@ -155,7 +155,7 @@ void RADIO_ConfigureChannel(const uint8_t VFO, const uint8_t configure)
 	ChannelAttributes_t att = gMR_ChannelAttributes[channel];
 	if (att.__val == 0xFF) { // invalid/unused channel
 		if (IS_MR_CHANNEL(channel)) {
-			channel                    = gFreqChannel[VFO];
+			channel             = gFreqChannel[VFO];
 			gScreenChannel[VFO] = channel;
 		}
 
@@ -357,12 +357,12 @@ void RADIO_ConfigureChannel(const uint8_t VFO, const uint8_t configure)
 		pVfo->pTX = &pVfo->freq_config_RX;
 	}
 
-	if (!gSetting_350EN)
+	/*if (!gSetting_350EN)
 	{
 		FREQ_Config_t *pConfig = pVfo->pRX;
 		if (pConfig->Frequency >= 35000000 && pConfig->Frequency < 40000000)
 			pConfig->Frequency = 43300000;
-	}
+	}*/
 
 	pVfo->Compander = att.compander;
 
@@ -506,7 +506,7 @@ static void RADIO_SelectCurrentVfo(void)
 void RADIO_SelectVfos(void)
 {
 	// if crossband without DW is used then RX_VFO is the opposite to the TX_VFO
-	gSettings.activeVFO = /*(gSettings.CROSS_BAND_RX_TX == CROSS_BAND_OFF || gSettings.DUAL_WATCH != DUAL_WATCH_OFF) ? gSettings.activeVFO :*/ !gSettings.activeVFO;
+	//gSettings.activeVFO = (gSettings.CROSS_BAND_RX_TX == CROSS_BAND_OFF || gSettings.DUAL_WATCH != DUAL_WATCH_OFF) ? gSettings.activeVFO : !gSettings.activeVFO;
 
 	gTxVfo = &gVfoInfo[gSettings.activeVFO];
 	gRxVfo = &gVfoInfo[gSettings.activeVFO];

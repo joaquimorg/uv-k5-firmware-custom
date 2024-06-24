@@ -446,8 +446,9 @@ void COMMON_SwitchVFOs()
 /*#ifdef ENABLE_SCAN_RANGES    
     gScanRangeStart = 0;
 #endif*/
-    //gSettings.activeVFO ^= 1;
-	gSettings.activeVFO = !gSettings.activeVFO;
+    gSettings.activeVFO ^= 1;
+
+	//LogUartf("VFO %i \r\n", gSettings.activeVFO);
 
     /*if (gSettings.CROSS_BAND_RX_TX != CROSS_BAND_OFF)
         gSettings.CROSS_BAND_RX_TX = gSettings.activeVFO + 1;
@@ -655,7 +656,7 @@ void main_task(void* arg) {
 
 	for (;;) {
 		
-    	if (xQueueReceive(mainTasksMsgQueue, &msg, pdMS_TO_TICKS(1))) {
+    	if (xQueueReceive(mainTasksMsgQueue, &msg, pdMS_TO_TICKS(5))) {
 			switch(msg.message) {
 				case MAIN_MSG_INIT:
 					//LogUartf("MSG INIT \r\n");
