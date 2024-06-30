@@ -24,13 +24,15 @@ void Welcome_renderFunction() {
     
     const uint16_t batteryPercentage = (uint16_t)BATTERY_VoltsToPercent(gBatteryVoltageAverage);
 
-	UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 18, "Open Radio FW", true, false);    
-    UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 32, "version "VERSION_STRING, false, true);
-    UI_drawString(&font_small, TEXT_ALIGN_CENTER, 0, 128, 42, __DATE__, true, false);
+    UI_showLogo();
+
+	UI_drawString(&font_small, TEXT_ALIGN_CENTER, 64, 128, 18, "Open Radio FW", true, false);    
+    UI_drawString(&font_small, TEXT_ALIGN_CENTER, 64, 128, 32, "V "VERSION_STRING, false, true);
+    UI_drawString(&font_small, TEXT_ALIGN_CENTER, 64, 128, 42, __DATE__, true, false);
 	
-    UI_printf(&font_small, TEXT_ALIGN_CENTER, 0, 128, 50, true, false,	"^ %u.%02uV - %3i%%", gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100, batteryPercentage);
+    UI_printf(&font_small, TEXT_ALIGN_CENTER, 64, 128, 50, true, false,	"^ %u.%02uV - %3i%%", gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100, batteryPercentage);
 	
-    UI_drawString(&font_10, TEXT_ALIGN_CENTER, 0, 128, 60, "2024 - joaquim.org", true, false);
+    UI_drawString(&font_small, TEXT_ALIGN_CENTER, 64, 128, 60, "2024 - joaquim.org", true, false);
 
 }
 

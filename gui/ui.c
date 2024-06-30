@@ -359,3 +359,14 @@ void UI_printf(const GFXfont * font, TEXT_Align_t tAlign, uint8_t xstart, uint8_
 
 	UI_drawStringInt(font, tAlign, xstart, xend, y, text, isBlack, isFill, false);
 }
+
+extern const uint8_t boot_logo[];
+
+void UI_showLogo(void) {
+	uint16_t logo = 0;
+    for (uint8_t i = 0; i < 8; i++) {
+        for (uint8_t j = 0; j < 64; j++) {
+            gFrameBuffer[i][j] = boot_logo[logo++];
+        }
+    }
+}

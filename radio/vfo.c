@@ -43,8 +43,8 @@ void VFO_Up_Down(int8_t Direction) {
         BK4819_SetFrequency(frequency);
         BK4819_RX_TurnOn();
         //gRequestSaveChannel = 1;
+        main_push_message(RADIO_VFO_CONFIGURE);
         main_push_message(RADIO_SAVE_CHANNEL);
-        //main_push_message(RADIO_VFO_CONFIGURE);        
         //LogUartf("freq up/down. %u \r\n", gTxVfo->freq_config_RX.Frequency);
         return;
     }
@@ -56,7 +56,7 @@ void VFO_Up_Down(int8_t Direction) {
         return;
     gMrChannel[gSettings.activeVFO] = Next;
     gScreenChannel[gSettings.activeVFO] = Next;
+    main_push_message(RADIO_VFO_CONFIGURE_RELOAD);
     main_push_message(RADIO_SAVE_VFO);
-    //main_push_message(RADIO_VFO_CONFIGURE_RELOAD);
     //LogUartf("channel up/down. %u \r\n", Next);
 }
