@@ -495,14 +495,24 @@ void SETTINGS_WriteVfoIndices(void) {
 
 	EEPROM_ReadBuffer(0x0E80, State, sizeof(State));
 
-	State[0] = gScreenChannel[0];
-	State[1] = gMrChannel[0];
-	State[2] = gFreqChannel[0];
-	State[3] = gScreenChannel[1];
-	State[4] = gMrChannel[1];
-	State[5] = gFreqChannel[1];
+	// Validate is data is changed !
 
-	EEPROM_WriteBuffer(0x0E80, State, sizeof(State));
+	if ( 	State[0] != gScreenChannel[0] || 
+			State[1] != gMrChannel[0] || 
+			State[2] != gFreqChannel[0] || 
+			State[3] != gScreenChannel[1] || 
+			State[4] != gMrChannel[1] || 
+			State[5] != gFreqChannel[1] ) {
+
+		State[0] = gScreenChannel[0];
+		State[1] = gMrChannel[0];
+		State[2] = gFreqChannel[0];
+		State[3] = gScreenChannel[1];
+		State[4] = gMrChannel[1];
+		State[5] = gFreqChannel[1];
+		EEPROM_WriteBuffer(0x0E80, State, sizeof(State));
+	}
+
 }
 
 void SETTINGS_SaveSettings(void) {
