@@ -597,6 +597,7 @@ void RADIO_Handler(void) {
 	}*/
 
 	CheckRadioInterrupts();
+
 	if (gIsReceiving) {
 		if (g_CTCSS_Lost && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE && BK4819_GetCTCType() == 1) {
 			g_CTCSS_Lost = false;
@@ -755,21 +756,25 @@ void main_task(void* arg) {
 				case RADIO_CDCSS_FOUND:
 					break;
 
-				case RADIO_VFO_UP:
+				case RADIO_VFO_UP:					
+					main_push_message(RADIO_SQUELCH_FOUND);
 					VFO_Up_Down(1);
 					break;
 
 				case RADIO_VFO_DOWN:
+					main_push_message(RADIO_SQUELCH_FOUND);
 					VFO_Up_Down(-1);
 					break;
 
 				case RADIO_VFO_SWITCH:
+					main_push_message(RADIO_SQUELCH_FOUND);
 					COMMON_SwitchVFOs();
 					main_push_message(RADIO_SAVE_VFO);
 					main_push_message(RADIO_RECONFIGURE_VFO);
 					break;
 
 				case RADIO_VFO_SWITCH_MODE:
+					main_push_message(RADIO_SQUELCH_FOUND);
                 	COMMON_SwitchVFOMode();
 					main_push_message(RADIO_SAVE_VFO);
 					main_push_message(RADIO_VFO_CONFIGURE_CHANNEL);
@@ -812,11 +817,12 @@ void main_task(void* arg) {
 					xTimerStart(radioConfigTimer, 0);
                     break;
 
-				case RADIO_SET_CHANNEL:
+				case RADIO_SET_CHANNEL:					
 					if ( msg.payload != 0 ) {
 						if (!RADIO_CheckValidChannel((uint16_t)msg.payload, false, 0)) {
 				            main_push_message_value(MAIN_MSG_PLAY_BEEP, BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
 			            } else {
+							main_push_message(RADIO_SQUELCH_FOUND);
 							gMrChannel[gSettings.activeVFO]     = (uint8_t)msg.payload;
 							gScreenChannel[gSettings.activeVFO] = (uint8_t)msg.payload;
 							main_push_message(RADIO_SAVE_VFO);
@@ -827,8 +833,10 @@ void main_task(void* arg) {
 					break;
 
 				case RADIO_SET_FREQ:
-					if ( msg.payload != 0 ) {
+					if ( msg.payload != 0 ) {						
 						uint32_t frequency = msg.payload;
+						main_push_message(RADIO_SQUELCH_FOUND);
+
 						// clamp the frequency entered to some valid value
                         if (frequency < frequencyBandTable[0].lower) {
                             frequency = frequencyBandTable[0].lower;
