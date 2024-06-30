@@ -397,7 +397,7 @@ void SETTINGS_FetchChannelName(char *s, const int channel)
 
 void SETTINGS_FactoryReset(bool bIsAll)
 {
-	MEMFAULT_UNUSED(bIsAll);
+	//MEMFAULT_UNUSED(bIsAll);
 
 	if (bIsAll) {
 		gSettings = (Settings){
