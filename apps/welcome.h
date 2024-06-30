@@ -27,7 +27,7 @@ void Welcome_renderFunction() {
     UI_showLogo();
 
 	UI_drawString(&font_small, TEXT_ALIGN_CENTER, 64, 128, 18, "Open Radio FW", true, false);    
-    UI_drawString(&font_small, TEXT_ALIGN_CENTER, 64, 128, 32, "V "VERSION_STRING, false, true);
+    UI_drawString(&font_small, TEXT_ALIGN_CENTER, 64, 128, 32, VERSION_STRING, false, true);
     UI_drawString(&font_small, TEXT_ALIGN_CENTER, 64, 128, 42, __DATE__, true, false);
 	
     UI_printf(&font_small, TEXT_ALIGN_CENTER, 64, 128, 50, true, false,	"^ %u.%02uV - %3i%%", gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100, batteryPercentage);
