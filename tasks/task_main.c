@@ -42,7 +42,7 @@
 #include "driver/systick.h"
 
 #include "bsp/dp32g030/uart.h"
-#include "driver/uart.h"	
+#include "driver/uart.h"
 #include "app/uart.h"
 #include "ARMCM0.h"
 
@@ -64,8 +64,8 @@
 StackType_t main_task_stack[configMINIMAL_STACK_SIZE + 100];
 StaticTask_t main_task_buffer;
 
-//TimerHandle_t radioStatusTimer;
-//StaticTimer_t radioStatusTimerBuffer;
+TimerHandle_t radioConfigTimer;
+StaticTimer_t radioConfigTimerBuffer;
 
 #define QUEUE_LENGTH    20
 #define ITEM_SIZE       sizeof( MAIN_Messages_t )
@@ -132,7 +132,7 @@ void CheckRadioInterrupts(void)
 				uint16_t fskTxFinied : 1;
 			};
 			uint16_t __raw;
-		} interrupts;		
+		} interrupts;
 
 		interrupts.__raw = BK4819_ReadRegister(BK4819_REG_02);
 
@@ -146,7 +146,7 @@ void CheckRadioInterrupts(void)
 //		if (ctcss_shift > 0)
 //			g_CTCSS_Lost = true;
 /*
-		if (interrupts.dtmf5ToneFound) {	
+		if (interrupts.dtmf5ToneFound) {
 			const char c = DTMF_GetCharacter(BK4819_GetDTMF_5TONE_Code()); // save the RX'ed DTMF character
 			if (c != 0xff) {
 				if (gCurrentFunction != FUNCTION_TRANSMIT) {
@@ -172,7 +172,7 @@ void CheckRadioInterrupts(void)
 						gDTMF_RX[gDTMF_RX_index]   = 0;
 						gDTMF_RX_timeout           = DTMF_RX_timeout_500ms;  // time till we delete it
 						gDTMF_RX_pending           = true;
-						
+
 						SYSTEM_DelayMs(3);//fix DTMF not reply@Yurisu
 						DTMF_HandleRequest();
 					}
@@ -180,7 +180,7 @@ void CheckRadioInterrupts(void)
 				}
 			}
 		}
-*/		
+*/
 
 		if (interrupts.cssTailFound) {
 			//main_push_message(RADIO_CSS_TAIL_FOUND);
@@ -189,10 +189,10 @@ void CheckRadioInterrupts(void)
 			}*/
 		}
 
-		if (interrupts.cdcssLost) {			
+		if (interrupts.cdcssLost) {
 			gCDCSSCodeType = BK4819_GetCDCSSCodeType();
 			g_CDCSS_Lost = true;
-			//main_push_message(RADIO_CDCSS_LOST);		
+			//main_push_message(RADIO_CDCSS_LOST);
 		}
 
 		if (interrupts.cdcssFound) {
@@ -331,7 +331,7 @@ void RADIO_StartListening(/*FUNCTION_Type_t function*/)
 		( 1u << 10)                |     // AF Rx Gain-1
 		(/*gSettings.VOLUME_GAIN*/56 << 4) |     // AF Rx Gain-2
 		(/*gSettings.DAC_GAIN*/8    << 0)
-		
+
 	));     // AF DAC Gain (after Gain-1 and Gain-2)
 
 		RADIO_SetModulation(gRxVfo->Modulation);  // no need, set it now
@@ -412,7 +412,7 @@ static void (*HandleFunction_fn_table[])(void) = {
 	[FUNCTION_BAND_SCOPE] = &FUNCTION_NOP,
 };*/
 
-void APP_Function(FUNCTION_Type_t function) {	
+void APP_Function(FUNCTION_Type_t function) {
 	(void)function;
 	//HandleFunction_fn_table[function]();
 
@@ -443,7 +443,7 @@ void COMMON_SwitchVFOMode() {
 
 void COMMON_SwitchVFOs()
 {
-/*#ifdef ENABLE_SCAN_RANGES    
+/*#ifdef ENABLE_SCAN_RANGES
     gScanRangeStart = 0;
 #endif*/
     gSettings.activeVFO ^= 1;
@@ -469,7 +469,7 @@ void COMMON_SwitchVFOs()
 void HandlerGPIOB(void) {
 	/*if (GPIOB_ENUM_EQUALS(INTSTAUS, 14, ASSERTED)) {
 		GPIOB->INTCLR |= GPIO_INTCLR_14_BITS_CLEAR_EDGE;
-		CheckRadioInterrupts();		
+		CheckRadioInterrupts();
 		BK4819_WriteRegister(BK4819_REG_02, 0);
 	}*/
 }
@@ -542,7 +542,7 @@ void BK4819_SetMode(bool on) {
     BK4819_ToggleAFBit(true);
 
     SYSTEM_DelayMs(10);
-	
+
 	gCurrentCodeType = (gRxVfo->Modulation != MODULATION_FM) ? CODE_TYPE_OFF : gRxVfo->pRX->CodeType;
 	if (gCurrentCodeType != CODE_TYPE_OFF) {
 		AUDIO_AudioPathOff();
@@ -563,7 +563,7 @@ void RADIO_SetRX(bool on) {
   if (gIsReceiving == on) {
     return;
   }
-  gIsReceiving = on;  
+  gIsReceiving = on;
   BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, on);
   BK4819_SetMode(on);
 }
@@ -580,7 +580,7 @@ void RADIO_SetTransmit() {
 	RADIO_SetTxParameters();
 
 	// turn the RED LED on
-	BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);	
+	BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);
 
 	if (gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_APOLLO) {
 		BK4819_PlaySingleTone(2525, 250, 0, false);
@@ -598,7 +598,7 @@ void RADIO_Handler(void) {
 
 	CheckRadioInterrupts();
 	if (gIsReceiving) {
-		if (g_CTCSS_Lost && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE && BK4819_GetCTCType() == 1) {		
+		if (g_CTCSS_Lost && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE && BK4819_GetCTCType() == 1) {
 			g_CTCSS_Lost = false;
 			AUDIO_AudioPathOn();
 			//LogUartf("CTCSS_Lost \r\n");
@@ -612,6 +612,24 @@ void RADIO_Handler(void) {
 		}
 
 	}
+}
+
+
+void config_timer_callback(TimerHandle_t xTimer) {
+    (void)xTimer;
+
+	//LogUartf("config_timer_callback %i : %i \r\n", gRequestSaveSettings, gRequestSaveVfoIndices);
+
+    // Check if is needed to save pending changes
+	if (gRequestSaveSettings) {
+		SETTINGS_WriteSettings();
+		gRequestSaveSettings = false;
+	}
+	if (gRequestSaveVfoIndices) {
+		SETTINGS_WriteVfoIndices();
+		gRequestSaveVfoIndices = false;
+	}
+
 }
 
 
@@ -632,7 +650,7 @@ void main_task(void* arg) {
 
 	main_push_message(MAIN_MSG_INIT);
 
-	//radioStatusTimer = xTimerCreateStatic("radioStatus", pdMS_TO_TICKS(50), pdFALSE, NULL, radio_timer_callback, &radioStatusTimerBuffer);
+	radioConfigTimer = xTimerCreateStatic("radioConfig", pdMS_TO_TICKS(5000), pdFALSE, NULL, config_timer_callback, &radioConfigTimerBuffer);
 
 	BACKLIGHT_TurnOn();
 
@@ -640,9 +658,6 @@ void main_task(void* arg) {
 
 	applications_task_init();
 
-	//xTimerStart(radioStatusTimer500, 0);
-	//xTimerStart(radioStatusTimer, 0);
-	
 	//LogUartf("Main Task Ready... \r\n");
 
 	//NVIC_EnableIRQ((IRQn_Type)DP32_GPIOB_IRQn);
@@ -652,10 +667,12 @@ void main_task(void* arg) {
 	FUNCTION_Init();
 	//FUNCTION_Select(FUNCTION_RECEIVE);
 
+	//xTimerStart(radioConfigTimer, 0);
+
 	MAIN_Messages_t msg;
 
 	for (;;) {
-		
+
     	if (xQueueReceive(mainTasksMsgQueue, &msg, pdMS_TO_TICKS(5))) {
 			switch(msg.message) {
 				case MAIN_MSG_INIT:
@@ -684,8 +701,8 @@ void main_task(void* arg) {
 					RADIO_SetVfoState(VFO_STATE_NORMAL);
 					break;
 
-				case RADIO_TX:					
-					//LogUartf("RADIO_TX\r\n");					
+				case RADIO_TX:
+					//LogUartf("RADIO_TX\r\n");
 					RADIO_SetTransmit();
 					break;
 
@@ -696,8 +713,8 @@ void main_task(void* arg) {
 					RADIO_SetRX(false);
 					break;
 
-				case RADIO_SQUELCH_LOST:	
-					//LogUartf("RADIO_SQUELCH_LOST\r\n");				
+				case RADIO_SQUELCH_LOST:
+					//LogUartf("RADIO_SQUELCH_LOST\r\n");
 					RADIO_SetRX(true);
 					app_push_message(APP_MSG_RX);
                     break;
@@ -712,7 +729,7 @@ void main_task(void* arg) {
 				case RADIO_CTCSS_LOST:
 					LogUartf("CTCSS_LOST CT = (%i) CTCType = (%i) (%b)\r\n", gCurrentCodeType, BK4819_GetCTCType(), g_CDCSS_Lost);
 					//if (BK4819_GetCTCType() == 1 && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE) {
-						/*BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);						
+						/*BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
 						FUNCTION_Select(FUNCTION_INCOMING);
 						RADIO_StartListening();
 						app_push_message(APP_MSG_RX);*/
@@ -729,7 +746,7 @@ void main_task(void* arg) {
 					//if (gCDCSSCodeType == 1 && (gCurrentCodeType == CODE_TYPE_DIGITAL || gCurrentCodeType == CODE_TYPE_REVERSE_DIGITAL)) {
 						/*BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
 						FUNCTION_Select(FUNCTION_INCOMING);
-						RADIO_StartListening();						
+						RADIO_StartListening();
 						app_push_message(APP_MSG_RX);*/
 						//HandleReceive();
 					//}
@@ -761,6 +778,7 @@ void main_task(void* arg) {
 
 				case RADIO_SAVE_VFO:
 					SETTINGS_SaveVfoIndices();
+					xTimerStart(radioConfigTimer, 0);
                     break;
 
 				case RADIO_VFO_CONFIGURE_RELOAD:
@@ -785,16 +803,19 @@ void main_task(void* arg) {
 					SETTINGS_SaveChannel(gTxVfo->CHANNEL_SAVE, gSettings.activeVFO, gTxVfo, 1);
 					RADIO_SetupRegisters(true);
 					FUNCTION_Init();
+					gRequestSaveChannel = false;
+					//xTimerStart(radioConfigTimer, 0);
 					break;
 
 				case RADIO_SAVE_SETTINGS:
 					//SETTINGS_SaveSettings();
+					xTimerStart(radioConfigTimer, 0);
                     break;
 
 				case RADIO_SET_CHANNEL:
 					if ( msg.payload != 0 ) {
 						if (!RADIO_CheckValidChannel((uint16_t)msg.payload, false, 0)) {
-				            main_push_message_value(MAIN_MSG_PLAY_BEEP, BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);				            
+				            main_push_message_value(MAIN_MSG_PLAY_BEEP, BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
 			            } else {
 							gMrChannel[gSettings.activeVFO]     = (uint8_t)msg.payload;
 							gScreenChannel[gSettings.activeVFO] = (uint8_t)msg.payload;
@@ -863,7 +884,7 @@ void main_push_message(MAIN_MSG_t msg) {
 	main_push_message_value(msg, 0);
 }
 
-void main_task_init(void) {	
+void main_task_init(void) {
 
     xTaskCreateStatic(
 		main_task,

@@ -248,8 +248,8 @@ extern bool                  gFlagReconfigureVfos;
 extern uint8_t               gVfoConfigureMode;
 extern bool                  gFlagResetVfos;
 extern bool                  gRequestSaveVFO;
-extern uint8_t               gRequestSaveChannel;
-extern bool                  gRequestSaveSettings;
+//extern uint8_t               gRequestSaveChannel;
+//extern bool                  gRequestSaveSettings;
 #ifdef ENABLE_FMRADIO
 	extern bool              gRequestSaveFM;
 #endif

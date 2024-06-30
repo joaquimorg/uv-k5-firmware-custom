@@ -471,7 +471,7 @@ void MainSettings_saveSetting(void) {
 			break;
 	}
 
-	//gRequestSaveSettings = true;
+	gRequestSaveSettings = true;
 }
 
 void MainSettings_initFunction() {
@@ -605,10 +605,14 @@ void MainSettings_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
 
 }
 
+void MainSettings_exitFunction() {
+	main_push_message(RADIO_SAVE_SETTINGS);
+}
 
 app_t APPMainSettings = {
     .showStatusLine = true,
     .init = MainSettings_initFunction,
     .render = MainSettings_renderFunction,
-    .keyHandler = MainSettings_keyHandlerFunction
+    .keyHandler = MainSettings_keyHandlerFunction,
+	.exit = MainSettings_exitFunction
 };

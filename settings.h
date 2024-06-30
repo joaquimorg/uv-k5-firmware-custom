@@ -92,6 +92,10 @@ extern uint8_t		gScreenChannel[2]; // current channels set in the radio (memory 
 extern uint8_t		gFreqChannel[2]; // last frequency channels used
 extern uint8_t		gMrChannel[2]; // last memory channels used
 
+extern bool gRequestSaveSettings;
+extern bool gRequestSaveChannel;
+extern bool gRequestSaveVfoIndices;
+
 
 enum POWER_OnDisplayMode_t {
 	POWER_ON_DISPLAY_MODE_FULL_SCREEN = 0,
@@ -319,8 +323,13 @@ void     SETTINGS_FactoryReset(bool bIsAll);
 #ifdef ENABLE_FMRADIO
 	void SETTINGS_SaveFM(void);
 #endif
+
 void SETTINGS_SaveVfoIndices(void);
+void SETTINGS_WriteVfoIndices(void);
+
 void SETTINGS_SaveSettings(void);
+void SETTINGS_WriteSettings(void);
+
 void SETTINGS_SaveChannelName(uint8_t channel, const char * name);
 void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, uint8_t Mode);
 void SETTINGS_SaveBatteryCalibration(const uint16_t * batteryCalibration);

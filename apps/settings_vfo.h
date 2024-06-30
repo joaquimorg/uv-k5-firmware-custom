@@ -551,11 +551,6 @@ int SettingsMenu_GetLimits(uint8_t menu_id, uint16_t *pMin, uint32_t *pMax)
 	return 0;
 }
 
-void compareValuesInt(uint32_t value1) {
-	if ( needToSave ) return;
-	needToSave = (value1 |= settingsCurrentSubMenu);
-}
-
 void MenuVFO_saveSetting(void) {
 	FREQ_Config_t *pConfig = &gTxVfo->freq_config_RX;
 
@@ -566,22 +561,19 @@ void MenuVFO_saveSetting(void) {
 
 		case MENU_SQL:
 			gSettings.squelch = (uint16_t)(settingsCurrentSubMenu & 0x0F);
-			main_push_message(RADIO_VFO_CONFIGURE);
+			main_push_message(RADIO_VFO_CONFIGURE);			
 			break;
 
 		case MENU_STEP:
 			gTxVfo->STEP_SETTING = FREQUENCY_GetStepIdxFromSortedIdx((uint8_t)settingsCurrentSubMenu);
-			if (IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE)) {
-				main_push_message(RADIO_SAVE_CHANNEL);
+			if (!IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE)) {				
 				return;
 			}
-			return;
+			break;
 
 		case MENU_T_DCS:
-			pConfig = &gTxVfo->freq_config_TX;
-
-			// Fallthrough
-
+			pConfig = &gTxVfo->freq_config_TX;			
+			[[fallthrough]];
 		case MENU_R_DCS: {
 			if (settingsCurrentSubMenu == 0) {
 				if (pConfig->CodeType == CODE_TYPE_CONTINUOUS_TONE) {
@@ -597,55 +589,41 @@ void MenuVFO_saveSetting(void) {
 			else {
 				pConfig->CodeType = CODE_TYPE_REVERSE_DIGITAL;
 				pConfig->Code = (uint8_t)(settingsCurrentSubMenu - 105);
-			}
-
-			//gRequestSaveChannel = 1;
-			main_push_message(RADIO_SAVE_CHANNEL);
-			return;
+			}			
+			break;
 		}
 		case MENU_T_CTCS:
 			pConfig = &gTxVfo->freq_config_TX;
 			[[fallthrough]];
 		case MENU_R_CTCS: {
 			if (settingsCurrentSubMenu == 0) {
-				if (pConfig->CodeType != CODE_TYPE_CONTINUOUS_TONE) {
+				if (pConfig->CodeType != CODE_TYPE_CONTINUOUS_TONE) {					
 					return;
 				}
 				pConfig->Code     = 0;
-				pConfig->CodeType = CODE_TYPE_OFF;
+				pConfig->CodeType = CODE_TYPE_OFF;				
 			}
 			else {
 				pConfig->Code     = (uint8_t)(settingsCurrentSubMenu - 1);
 				pConfig->CodeType = CODE_TYPE_CONTINUOUS_TONE;
-			}
-
-			//gRequestSaveChannel = 1;
-			main_push_message(RADIO_SAVE_CHANNEL);
-			return;
+			}			
+			break;
 		}
 		case MENU_SFT_D:
 			gTxVfo->TX_OFFSET_FREQUENCY_DIRECTION = (uint8_t)settingsCurrentSubMenu;
-			//gRequestSaveChannel                   = 1;
-			main_push_message(RADIO_SAVE_CHANNEL);
-			return;
+			break;
 
 		case MENU_OFFSET:
 			gTxVfo->TX_OFFSET_FREQUENCY = settingsCurrentSubMenu;
-			//gRequestSaveChannel         = 1;
-			main_push_message(RADIO_SAVE_CHANNEL);
-			return;
+			break;
 
 		case MENU_SCR:
 			gTxVfo->SCRAMBLING_TYPE = (uint8_t)settingsCurrentSubMenu;
-			//gRequestSaveChannel     = 1;
-			main_push_message(RADIO_SAVE_CHANNEL);
-			return;
+			break;
 
 		case MENU_BCL:
 			gTxVfo->BUSY_CHANNEL_LOCK = (uint8_t)settingsCurrentSubMenu;
-			//gRequestSaveChannel       = 1;
-			main_push_message(RADIO_SAVE_CHANNEL);
-			return;
+			break;
 
 		/*case MENU_MEM_CH:
 			gTxVfo->CHANNEL_SAVE = (uint8_t)settingsCurrentSubMenu;
@@ -674,25 +652,23 @@ void MenuVFO_saveSetting(void) {
 			gTxVfo->Compander = (uint8_t)settingsCurrentSubMenu;
 			//SETTINGS_UpdateChannel(gTxVfo->CHANNEL_SAVE, gTxVfo, true);
 			//gVfoConfigureMode = VFO_CONFIGURE;
-			//gFlagResetVfos    = true;
-//			gRequestSaveChannel = 1;
-			return;
+			//gFlagResetVfos    = true;;
+			break;
 
 		case MENU_PTT_ID:
-			//gTxVfo->DTMF_PTT_ID_TX_MODE = settingsCurrentSubMenu;
-			//gRequestSaveChannel         = 1;
-			main_push_message(RADIO_SAVE_CHANNEL);
-			return;
+			gTxVfo->DTMF_PTT_ID_TX_MODE = settingsCurrentSubMenu;
+			break;
 
 		//case MENU_DEL_CH:
 			/*SETTINGS_UpdateChannel(settingsCurrentSubMenu, NULL, false);
 			gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
 			gFlagResetVfos    = true;*/
-			//return;
+			//break;
 
 	}
 
-	//gRequestSaveSettings = true;
+	//main_push_message(RADIO_SAVE_CHANNEL);
+	gRequestSaveChannel = true;
 }
 
 void MenuVFO_initFunction() {
@@ -841,10 +817,15 @@ void MenuVFO_keyHandlerFunction(KEY_Code_t key, KEY_State_t state) {
 
 }
 
+void MenuVFO_exitFunction() {
+	main_push_message(RADIO_SAVE_CHANNEL);
+}
+
 
 app_t APPVFOSettings = {
     .showStatusLine = true,
     .init = MenuVFO_initFunction,
     .render = MenuVFO_renderFunction,
-    .keyHandler = MenuVFO_keyHandlerFunction
+    .keyHandler = MenuVFO_keyHandlerFunction,
+	.exit = MenuVFO_exitFunction
 };

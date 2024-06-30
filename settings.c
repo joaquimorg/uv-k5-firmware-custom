@@ -17,22 +17,22 @@
 #include <string.h>
 
 #include "app/dtmf.h"
-#ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
-#endif
-#include "driver/bk1080.h"
 #include "driver/bk4819.h"
 #include "driver/eeprom.h"
 #include "misc.h"
 #include "settings.h"
 
 
-Settings gSettings;
+Settings 	gSettings;
 
 VFO_Info_t	gVfoInfo[2];
 uint8_t		gScreenChannel[2]; // current channels set in the radio (memory or frequency channels)
 uint8_t		gFreqChannel[2]; // last frequency channels used
 uint8_t		gMrChannel[2]; // last memory channels used
+
+bool 		gRequestSaveSettings = false;
+bool 		gRequestSaveChannel = false;
+bool 		gRequestSaveVfoIndices = false;
 
 
 /*static const uint32_t gDefaultFrequencyTable[] =
@@ -55,14 +55,15 @@ void SETTINGS_InitEEPROM(void) {
 		gSettings.backlightTime = 0x6;
     }
 
+	uint8_t Data[8] = {0};
 	// 0E80..0E87
-	//EEPROM_ReadBuffer(0x0E80, Data, 8);
-	gScreenChannel[0]   = /*IS_VALID_CHANNEL(Data[0]) ? Data[0] : */(FREQ_CHANNEL_FIRST + BAND6_400MHz);
-	gScreenChannel[1]   = /*IS_VALID_CHANNEL(Data[3]) ? Data[3] : */(FREQ_CHANNEL_FIRST + BAND6_400MHz);
-	gMrChannel[0]       = /*IS_MR_CHANNEL(Data[1])    ? Data[1] : */MR_CHANNEL_FIRST;
-	gMrChannel[1]       = /*IS_MR_CHANNEL(Data[4])    ? Data[4] : */MR_CHANNEL_FIRST;
-	gFreqChannel[0]     = /*IS_FREQ_CHANNEL(Data[2])  ? Data[2] : */(FREQ_CHANNEL_FIRST + BAND6_400MHz);
-	gFreqChannel[1]     = /*IS_FREQ_CHANNEL(Data[5])  ? Data[5] : */(FREQ_CHANNEL_FIRST + BAND6_400MHz);
+	EEPROM_ReadBuffer(0x0E80, Data, 8);
+	gScreenChannel[0]   = IS_VALID_CHANNEL(Data[0]) ? Data[0] : (FREQ_CHANNEL_FIRST + BAND6_400MHz);
+	gScreenChannel[1]   = IS_VALID_CHANNEL(Data[3]) ? Data[3] : (FREQ_CHANNEL_FIRST + BAND6_400MHz);
+	gMrChannel[0]       = IS_MR_CHANNEL(Data[1])    ? Data[1] : MR_CHANNEL_FIRST;
+	gMrChannel[1]       = IS_MR_CHANNEL(Data[4])    ? Data[4] : MR_CHANNEL_FIRST;
+	gFreqChannel[0]     = IS_FREQ_CHANNEL(Data[2])  ? Data[2] : (FREQ_CHANNEL_FIRST + BAND6_400MHz);
+	gFreqChannel[1]     = IS_FREQ_CHANNEL(Data[5])  ? Data[5] : (FREQ_CHANNEL_FIRST + BAND6_400MHz);
 
 #else
 	uint8_t Data[16] = {0};
@@ -481,10 +482,14 @@ void SETTINGS_FactoryReset(bool bIsAll)
 	}*/
 }
 
+void SETTINGS_SaveVfoIndices(void) {
+	gRequestSaveVfoIndices = true;
+}
 
-void SETTINGS_SaveVfoIndices(void)
-{
-	/*uint8_t State[8];
+void SETTINGS_WriteVfoIndices(void) {
+	uint8_t State[8];
+
+	if ( gRequestSaveVfoIndices == false ) return;
 
 	EEPROM_ReadBuffer(0x0E80, State, sizeof(State));
 
@@ -495,11 +500,16 @@ void SETTINGS_SaveVfoIndices(void)
 	State[4] = gMrChannel[1];
 	State[5] = gFreqChannel[1];
 
-	EEPROM_WriteBuffer(0x0E80, State);*/
+	EEPROM_WriteBuffer(0x0E80, State, sizeof(State));
 }
 
 void SETTINGS_SaveSettings(void) {
+	gRequestSaveSettings = true;
+}
 
+void SETTINGS_WriteSettings(void) {
+
+	if ( gRequestSaveSettings == false ) return;
 	EEPROM_WriteBuffer(SETTINGS_OFFSET, &gSettings, SETTINGS_SIZE);
 
 	/*uint8_t  State[8];
@@ -620,11 +630,10 @@ void SETTINGS_SaveSettings(void) {
 
 void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, uint8_t Mode)
 {
-	MEMFAULT_UNUSED(Channel);
-	MEMFAULT_UNUSED(VFO);
-	MEMFAULT_UNUSED(pVFO);
-	MEMFAULT_UNUSED(Mode);
-	/*uint16_t OffsetVFO = Channel * 16;
+
+	if ( !gRequestSaveChannel ) return;
+
+	uint16_t OffsetVFO = Channel * 16;
 
 	if (IS_FREQ_CHANNEL(Channel)) { // it's a VFO, not a channel
 		OffsetVFO  = (VFO == 0) ? 0x0C80 : 0x0C90;
@@ -639,7 +648,7 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
 
 		State._32[0] = pVFO->freq_config_RX.Frequency;
 		State._32[1] = pVFO->TX_OFFSET_FREQUENCY;
-		EEPROM_WriteBuffer(OffsetVFO + 0, State._32);
+		EEPROM_WriteBuffer(OffsetVFO + 0, State._32, sizeof(State._32));
 
 		State._8[0] =  pVFO->freq_config_RX.Code;
 		State._8[1] =  pVFO->freq_config_TX.Code;
@@ -651,27 +660,14 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
 			| (pVFO->CHANNEL_BANDWIDTH << 1)
 			| (pVFO->FrequencyReverse  << 0));
 		State._8[5] = ((pVFO->DTMF_PTT_ID_TX_MODE & 7u) << 1)
-#ifdef ENABLE_DTMF_CALLING
-			| ((pVFO->DTMF_DECODING_ENABLE & 1u) << 0)
-#endif
 		;
 		State._8[6] =  pVFO->STEP_SETTING;
 		State._8[7] =  pVFO->SCRAMBLING_TYPE;
-		EEPROM_WriteBuffer(OffsetVFO + 8, State._8);
+		EEPROM_WriteBuffer(OffsetVFO + 8, State._8, sizeof(State._8));
 
 		SETTINGS_UpdateChannel(Channel, pVFO, true);
 
-		if (IS_MR_CHANNEL(Channel)) {
-#ifndef ENABLE_KEEP_MEM_NAME
-			// clear/reset the channel name
-			SETTINGS_SaveChannelName(Channel, "");
-#else
-			if (Mode >= 3) {
-				SETTINGS_SaveChannelName(Channel, pVFO->Name);
-			}
-#endif
-		}
-	}*/
+	}
 
 }
 
@@ -699,13 +695,9 @@ void SETTINGS_SaveChannelName(uint8_t channel, const char * name)
 
 void SETTINGS_UpdateChannel(uint8_t channel, const VFO_Info_t *pVFO, bool keep)
 {
-	MEMFAULT_UNUSED(channel);
-	MEMFAULT_UNUSED(pVFO);
-	MEMFAULT_UNUSED(keep);
-#if 0
 	uint8_t  state[8];
-	MEMFAULT_UNUSED(keep);
-	MEMFAULT_UNUSED(pVFO);
+	//MEMFAULT_UNUSED(keep);
+	//MEMFAULT_UNUSED(pVFO);
 	ChannelAttributes_t  att = {
 		.band = 0xf,
 		.compander = 0,
@@ -716,27 +708,27 @@ void SETTINGS_UpdateChannel(uint8_t channel, const VFO_Info_t *pVFO, bool keep)
 	uint16_t offset = (uint16_t)(0x0D60 + (channel & ~7u));
 	EEPROM_ReadBuffer(offset, state, sizeof(state));
 
-	/*if (keep) {
-		att.band = pVFO->Band;
-		att.scanlist1 = pVFO->SCANLIST1_PARTICIPATION;
-		att.scanlist2 = pVFO->SCANLIST2_PARTICIPATION;
-		att.compander = pVFO->Compander;
+	if (keep) {
+		att.band = (uint8_t)(pVFO->Band & 0x0F);
+		//att.scanlist1 = pVFO->SCANLIST1_PARTICIPATION;
+		//att.scanlist2 = pVFO->SCANLIST2_PARTICIPATION;
+		att.compander = (uint8_t)(pVFO->Compander & 0x03);
 		if (state[channel & 7u] == att.__val)
 			return; // no change in the attributes
-	}*/
+	}
 
 	state[channel & 7u] = att.__val;
-	EEPROM_WriteBuffer(offset, state);
+	EEPROM_WriteBuffer(offset, state, sizeof(state));
 
 	gMR_ChannelAttributes[channel] = att;
 
-	if (IS_MR_CHANNEL(channel)) {	// it's a memory channel
+	/*if (IS_MR_CHANNEL(channel)) {	// it's a memory channel
 		if (!keep) {
 			// clear/reset the channel name
 			SETTINGS_SaveChannelName(channel, "");
 		}
-	}
-#endif
+	}*/
+
 }
 
 void SETTINGS_WriteBuildOptions(void)

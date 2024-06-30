@@ -296,6 +296,9 @@ void app_push_message(APP_MSG_t msg) {
 
 void change_application(app_t *application) {
     if ( currentApplication != application ) {
+        if (currentApplication->exit) {
+            currentApplication->exit();
+        }
         xTimerStop(renderTimer, 0);
         currentApplication = application;        
         if (currentApplication->init) {
@@ -307,6 +310,7 @@ void change_application(app_t *application) {
 
 void load_application(APPS_t application) {
     clearMainAppStatus();
+
     switch (application) {
          case APP_RESET:
             setMainAppStatus("RESET");

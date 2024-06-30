@@ -14,7 +14,7 @@ void COMMON_KeypadLockToggle()
 
         gSettings.KEY_LOCK = !gSettings.KEY_LOCK;
 
-        gRequestSaveSettings = true;
+        //gRequestSaveSettings = true;
     }
 }
 

@@ -163,8 +163,8 @@ bool              gFlagReconfigureVfos;
 uint8_t           gVfoConfigureMode;
 bool              gFlagResetVfos;
 bool              gRequestSaveVFO;
-uint8_t           gRequestSaveChannel;
-bool              gRequestSaveSettings;
+//uint8_t           gRequestSaveChannel;
+//bool              gRequestSaveSettings;
 #ifdef ENABLE_FMRADIO
 	bool          gRequestSaveFM;
 #endif
