@@ -437,7 +437,7 @@ void SETTINGS_FactoryReset(bool bIsAll)
 			.reserved4 = 0xFF,
 			.radioName = "UV-K5/8",
 		};
-		SETTINGS_SaveSettings();
+		SETTINGS_WriteSettings();
 	}
 	/*uint16_t i;
 	uint8_t  Template[8];
